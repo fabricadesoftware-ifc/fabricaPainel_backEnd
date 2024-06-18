@@ -14,13 +14,23 @@ from drf_spectacular.views import (
 )
 from core.usuario.router import router as usuario_router
 from core.uploader.router import router as uploader_router
-from core.fabrica_painel.views.assessment import AssessmentViewSet
+
+from core.fabrica_painel.views import (
+    AssessmentViewSet,
+    KeywordViewSet,
+    TeamViewSet,
+    WorkViewSet
+    )
 
 router = DefaultRouter()
 router.register("assessment", AssessmentViewSet)
+router.register("keyword", KeywordViewSet)
+router.register("team", TeamViewSet)
+router.register("work", WorkViewSet)
 
 urlpatterns = [
     path("api/", include(router.urls)),
+
     path('admin/', admin.site.urls),
     path("token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
