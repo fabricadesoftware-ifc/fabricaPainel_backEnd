@@ -21,6 +21,7 @@ from core.fabrica_painel.views import (
     TeamViewSet,
     WorkViewSet
     )
+from core.usuario.use_case.register_validation import create_user
 
 router = DefaultRouter()
 router.register("assessment", AssessmentViewSet)
@@ -30,7 +31,7 @@ router.register("work", WorkViewSet)
 
 urlpatterns = [
     path("api/", include(router.urls)),
-
+    path('api/register/', create_user, name='create_user'),
     path('admin/', admin.site.urls),
     path("token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
