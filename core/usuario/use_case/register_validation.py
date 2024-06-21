@@ -18,6 +18,9 @@ def create_user(request):
 
     if not email or not registration:
         return Response({"message": _("Email and matricula are required.")}, status=status.HTTP_400_BAD_REQUEST)
+    
+    if Usuario.objects.filter(email=email).exists():
+        return Response({"message": _("This user already exist.")}, status=status.HTTP_400_BAD_REQUEST)
 
     if not is_value_in_pdf(file_path, registration):
         return Response({"message": _("Invalid registration.")}, status=status.HTTP_400_BAD_REQUEST)
