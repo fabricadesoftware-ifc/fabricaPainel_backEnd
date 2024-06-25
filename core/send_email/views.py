@@ -3,14 +3,20 @@ from django.core.mail import BadHeaderError, send_mail
 from django.http import HttpResponse
 from rest_framework import status
 from rest_framework.views import APIView
+from dotenv import load_dotenv
+
+import os
+
+load_dotenv()
 
 
 class EmailAPIView(APIView):
     def post(self, request, *args, **kwargs):
         subject = request.POST.get("subject", "Nome do email")
         message = request.POST.get("message", "Conteúdo do email")
-        recipient_list = ["lucasantonete@gmail.com", "lucasantonete@hotmail.com"]
-        from_email = "lucasantonete.ifc@gmail.com"
+        recipient_list = []
+        from_email = os.getenv("EMAIL_HOST_USER")
+
         try:
             send_mail(
                 subject,
