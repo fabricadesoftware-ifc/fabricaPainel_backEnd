@@ -96,7 +96,7 @@ DATABASES = {
     }
 }
 
-# DATABASES = {y
+# DATABASES = {
 #   'default': {
 #   'ENGINE': "django.db.backends.postgresql",
 #   'NAME': os.getenv("POSTGRES_NAME"),
@@ -132,7 +132,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = "UTC"
+TIME_ZONE = "America/Sao_Paulo"
 
 USE_I18N = True
 
