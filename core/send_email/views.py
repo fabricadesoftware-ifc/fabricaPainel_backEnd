@@ -12,8 +12,9 @@ load_dotenv()
 
 class EmailAPIView(APIView):
     def post(self, request, *args, **kwargs):
-        subject = request.POST.get("subject", "Nome do email")
-        message = request.POST.get("message", "Conteúdo do email")
+        # Get the fields 'subject' and 'message' from the request body
+        subject = request.data['subject']
+        message = request.data['message']
         recipient_list = []
         from_email = os.getenv("EMAIL_HOST_USER")
 
