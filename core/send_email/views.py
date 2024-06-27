@@ -1,21 +1,24 @@
-from django.core.exceptions import ValidationError
-from django.core.mail import BadHeaderError, send_mail
 from django.http import HttpResponse
-from rest_framework import status
+from django.core.mail import BadHeaderError, send_mail
+from django.core.exceptions import ValidationError
+from rest_framework import permissions, status
 from rest_framework.views import APIView
 from dotenv import load_dotenv
 
 import os
 
+
 load_dotenv()
 
 
 class EmailAPIView(APIView):
+    permission_classes = [permissions.AllowAny]
+
     def post(self, request, *args, **kwargs):
         # Get the fields 'subject' and 'message' from the request body
-        subject = request.data['subject']
-        message = request.data['message']
-        recipient_list = []
+        subject = request.data["subject"]
+        message = request.data["message"]
+        recipient_list = ["marcusviniciusgraciano04@gmail.com"]
         from_email = os.getenv("EMAIL_HOST_USER")
 
         try:
