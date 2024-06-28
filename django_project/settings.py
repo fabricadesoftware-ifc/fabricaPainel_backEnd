@@ -160,11 +160,13 @@ AUTH_USER_MODEL = "usuario.Usuario"
 GRAPH_MODELS = {
     "all_applications": True,
     "group_models": True,
-}
+ }
 
-EMAIL_BACKEND: str = os.getenv("EMAIL_BACKEND")
-EMAIL_HOST: str = os.getenv("EMAIL_HOST")
-EMAIL_PORT: int = os.getenv("EMAIL_PORT")
-EMAIL_USE_TLS: bool = os.getenv("EMAIL_USE_TLS")
-EMAIL_HOST_USER: str = os.getenv("EMAIL_HOST_USER")
-EMAIL_HOST_PASSWORD: str = os.getenv("EMAIL_HOST_PASSWORD")
+EMAIL_BACKEND = os.getenv("EMAIL_BACKEND")
+EMAIL_HOST = os.getenv("EMAIL_HOST")
+EMAIL_PORT = os.getenv("EMAIL_PORT")
+EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS")
+EMAIL_HOST_USER = 'fabrica.painel.integracao@gmail.com'
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
+
+
