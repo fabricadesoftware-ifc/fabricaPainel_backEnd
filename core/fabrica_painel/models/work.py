@@ -20,7 +20,8 @@ class Work(models.Model):
     advisor = models.ForeignKey(
         Usuario,
         on_delete=models.PROTECT,
-        related_name="advisor"
+        related_name="advisor",
+        limit_choices_to={"is_advisor": True}
     )
     initial_submission_work_date = models.DateTimeField(default=timezone.now)
     final_submission_work_date = models.DateTimeField()
