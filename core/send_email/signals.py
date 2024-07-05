@@ -29,13 +29,24 @@ def email_work_info_to_advisor(sender, instance: Work, created, **kwargs):
         email_recipient_list: list[str] = [instance.advisor.email]
         email_subject: str = f"{instance.edition} - Submissão de trabalho"
 
+        # Fallback to use when HTML message is not supported
         email_message: str = f"""
         Título do Trabalho submetido:
         {instance.title}
         Campo do Trabalho submetido:
-        {instance.title}
+        {instance.field}
         Resumo do Trabalho submetido:
         {instance.abstract}
+        """
+
+        # Formatted message
+        email_html_message: str = f"""
+        <h2>Título do Trabalho submetido:</h2>
+        <h3>{instance.title}</h3>
+        <h2>Campo do Trabalho submetido:</h2>
+        <h3>{instance.field}</h3>
+        <h2>Resumo do Trabalho submetido:</h2>
+        <h3>{instance.abstract}</h3>
         """
 
         try:
@@ -44,6 +55,7 @@ def email_work_info_to_advisor(sender, instance: Work, created, **kwargs):
                 email_message,
                 from_email,
                 email_recipient_list,
+                html_message=email_html_message,
                 fail_silently=False,
             )
 
