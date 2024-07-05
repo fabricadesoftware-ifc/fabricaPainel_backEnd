@@ -1,5 +1,4 @@
 from django.db import models
-from django.utils import timezone
 
 from core.fabrica_painel.models.edition import Edition
 from core.fabrica_painel.models.field import Field
@@ -23,8 +22,8 @@ class Work(models.Model):
         related_name="advisor",
         limit_choices_to={"is_advisor": True}
     )
-    initial_submission_work_date = models.DateTimeField(default=timezone.now)
-    final_submission_work_date = models.DateTimeField()
+    initial_submission_work_date = models.DateTimeField(blank=True, null=True)
+    final_submission_work_date = models.DateTimeField(blank=True, null=True)
 
     def __str__(self):
         return self.title
