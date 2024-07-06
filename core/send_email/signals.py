@@ -3,6 +3,7 @@ import os
 from django.core.mail import send_mail
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.urls import reverse
 from dotenv import load_dotenv
 
 from core.fabrica_painel.models import Work
@@ -29,6 +30,10 @@ def email_work_info_to_advisor(sender, instance: Work, created, **kwargs):
         email_recipient_list: list[str] = [instance.advisor.email]
         email_subject: str = f"{instance.edition} - Submissão de trabalho"
 
+        accept_work_path = reverse("accept-work", kwargs={"work_id": instance.id})
+        print(f"{accept_work_path = }")
+        accept_work_link = f"http://localhost:8000/{accept_work_path}"
+
         # Fallback to use when HTML message is not supported
         email_message: str = f"""
         Título do Trabalho submetido:
@@ -37,6 +42,8 @@ def email_work_info_to_advisor(sender, instance: Work, created, **kwargs):
         {instance.field}
         Resumo do Trabalho submetido:
         {instance.abstract}
+        Para aceitar essa submissão, clique no seguinte link:
+        {accept_work_link}
         """
 
         # Formatted message
@@ -47,6 +54,7 @@ def email_work_info_to_advisor(sender, instance: Work, created, **kwargs):
         <h3>{instance.field}</h3>
         <h2>Resumo do Trabalho submetido:</h2>
         <h3>{instance.abstract}</h3>
+        Clique <a href={accept_work_link}>aqui</a> para aceitar essa submissão
         """
 
         try:

@@ -19,7 +19,7 @@ from core.fabrica_painel.views import (
     TeamViewSet,
     WorkViewSet,
 )
-from core.send_email.views.emailapiview import EmailAPIView
+from core.send_email.views import EmailAPIView, accept_work
 from core.uploader.router import router as uploader_router
 from core.usuario.router import router as usuario_router
 from core.usuario.use_case.register_validation import create_user
@@ -50,6 +50,7 @@ urlpatterns = [
         SpectacularRedocView.as_view(url_name="schema"),
         name="redoc",
     ),
+    path("accept-work/<int:work_id>/", accept_work, name="accept-work"),
 ]
 
 urlpatterns += static(settings.MEDIA_ENDPOINT, document_root=settings.MEDIA_ROOT)
