@@ -15,20 +15,29 @@ from rest_framework_simplejwt.views import (
 
 from core.fabrica_painel.views import (
     AssessmentViewSet,
+    AssessmentsViewSet,
     KeywordViewSet,
     TeamViewSet,
     WorkViewSet,
+    EditionViewSet,
+    FieldViewSet,
+    )
+
 )
 from core.send_email.views import EmailAPIView, accept_work
 from core.uploader.router import router as uploader_router
 from core.usuario.router import router as usuario_router
 from core.usuario.use_case.register_validation import create_user
 
+
 router = DefaultRouter()
 router.register("assessment", AssessmentViewSet)
+router.register("assessments", AssessmentsViewSet)
 router.register("keyword", KeywordViewSet)
 router.register("team", TeamViewSet)
 router.register("work", WorkViewSet)
+router.register("edition", EditionViewSet)
+router.register("field", FieldViewSet)
 
 urlpatterns = [
     path("api/", include(router.urls)),
