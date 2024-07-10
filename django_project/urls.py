@@ -1,26 +1,27 @@
-from django.contrib import admin
-from django.urls import path, include
-from rest_framework.routers import DefaultRouter
 from django.conf import settings
 from django.conf.urls.static import static
-from rest_framework_simplejwt.views import (
-    TokenObtainPairView,
-    TokenRefreshView,
-)
+from django.contrib import admin
+from django.urls import include, path
 from drf_spectacular.views import (
     SpectacularAPIView,
     SpectacularRedocView,
     SpectacularSwaggerView,
 )
-from core.usuario.router import router as usuario_router
-from core.uploader.router import router as uploader_router
+from rest_framework.routers import DefaultRouter
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+)
 
 from core.fabrica_painel.views import (
     AssessmentViewSet,
     KeywordViewSet,
     TeamViewSet,
-    WorkViewSet
-    )
+    WorkViewSet,
+)
+from core.send_email.views import EmailAPIView, accept_work
+from core.uploader.router import router as uploader_router
+from core.usuario.router import router as usuario_router
 from core.usuario.use_case.register_validation import create_user
 
 router = DefaultRouter()
@@ -31,10 +32,11 @@ router.register("work", WorkViewSet)
 
 urlpatterns = [
     path("api/", include(router.urls)),
-    path('api/register/', create_user, name='create_user'),
-    path('admin/', admin.site.urls),
-    path("token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
-    path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
+    path("api/email/", EmailAPIView.as_view(), name="email"),
+    path("api/register/", create_user, name="create_user"),
+    path("admin/", admin.site.urls),
+    path("api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
+    path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("api/", include(usuario_router.urls)),
     path("api/media/", include(uploader_router.urls)),
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
@@ -48,6 +50,7 @@ urlpatterns = [
         SpectacularRedocView.as_view(url_name="schema"),
         name="redoc",
     ),
+    path("accept-work/<str:verification_token>/", accept_work, name="accept-work"),
 ]
 
 urlpatterns += static(settings.MEDIA_ENDPOINT, document_root=settings.MEDIA_ROOT)
