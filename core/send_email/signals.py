@@ -1,4 +1,5 @@
 import os
+from uuid import uuid4
 
 from django.core.mail import send_mail
 from django.db.models.signals import post_save
@@ -30,8 +31,12 @@ def email_work_info_to_advisor(sender, instance: Work, created, **kwargs):
         email_recipient_list: list[str] = [instance.advisor.email]
         email_subject: str = f"{instance.edition} - Submissão de trabalho"
 
-        accept_work_path = reverse("accept-work", kwargs={"work_id": instance.id})
-        print(f"{accept_work_path = }")
+        token: str = str(uuid4())
+        instance.verification_token = token
+        instance.save()
+
+        accept_work_path = reverse("accept-work",
+                                   kwargs={"verification_token": token})
         accept_work_link = f"http://localhost:8000/{accept_work_path}"
 
         # Fallback to use when HTML message is not supported

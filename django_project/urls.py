@@ -50,7 +50,7 @@ urlpatterns = [
         SpectacularRedocView.as_view(url_name="schema"),
         name="redoc",
     ),
-    path("accept-work/<int:work_id>/", accept_work, name="accept-work"),
+    path("accept-work/<str:verification_token>/", accept_work, name="accept-work"),
 ]
 
 urlpatterns += static(settings.MEDIA_ENDPOINT, document_root=settings.MEDIA_ROOT)
