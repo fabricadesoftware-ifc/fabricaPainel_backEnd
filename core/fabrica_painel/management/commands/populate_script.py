@@ -111,6 +111,8 @@ class Command(BaseCommand):
         if "assessment" in kwargs["models"]:
             create_assessment(
                 base_configs,
+                min_grade=0,
+                max_grade=100
             )
             self.stdout.write(self.style.SUCCESS("Assessment succesfully created!"))
 
