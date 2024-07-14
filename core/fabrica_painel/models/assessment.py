@@ -5,7 +5,6 @@ from core.fabrica_painel.models.work import Work
 class Assessment(models.Model):
     registration =  models.ForeignKey(Usuario,
         related_name="assessment",
-        limit_choices_to={'user_type': Usuario.UserType}, 
         on_delete=models.PROTECT)
     work = models.ForeignKey(Work, on_delete=models.PROTECT)
     grade = models.FloatField()
