@@ -22,7 +22,7 @@ from core.fabrica_painel.views import (
     TeamViewSet,
     WorkViewSet,
 )
-from core.send_email.views import EmailAPIView, accept_work
+from core.fabrica_painel.views.work import accept_work
 from core.uploader.router import router as uploader_router
 from core.usuario.router import router as usuario_router
 from core.usuario.use_case.register_validation import create_user
@@ -38,7 +38,6 @@ router.register("field", FieldViewSet)
 
 urlpatterns = [
     path("api/", include(router.urls)),
-    path("api/email/", EmailAPIView.as_view(), name="email"),
     path("api/register/", create_user, name="create_user"),
     path("admin/", admin.site.urls),
     path("api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),

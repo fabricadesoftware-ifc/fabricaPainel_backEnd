@@ -35,7 +35,6 @@ INSTALLED_APPS = [
     "core.fabrica_painel",
     "core.usuario",
     "core.uploader",
-    "core.send_email",
 ]
 
 MIDDLEWARE = [
