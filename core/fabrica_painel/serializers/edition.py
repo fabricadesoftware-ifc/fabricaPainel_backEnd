@@ -18,6 +18,7 @@ class EditionDetailSerializer(serializers.ModelSerializer):
             "final_evaluators_date",
             "banner",
             "logo",
+            "workload",
         ]
 
 
@@ -36,4 +37,5 @@ class EditionWriteSerializer(serializers.ModelSerializer):
             "final_evaluators_date",
             "banner",
             "logo",
+            "workload",
         ]

@@ -11,6 +11,7 @@ class Edition(models.Model):
     final_advisor_date = models.DateTimeField("Data de fim de orientação")
     initial_evaluators_date = models.DateTimeField("Data de início para avaliadores")
     final_evaluators_date = models.DateTimeField("Data de fim para avaliadores")
+    workload = models.IntegerField("Carga horária")
     banner = models.ForeignKey(
         Image,
         related_name="+",
