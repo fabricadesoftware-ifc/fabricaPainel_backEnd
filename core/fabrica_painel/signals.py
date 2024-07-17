@@ -25,7 +25,6 @@ def email_work_info_to_advisor(sender, instance: Work, created, **kwargs):
         the submission will be rejected.
     """
     if created:
-        print("YOU FOOL, YOU FELL FOR IT!")
 
         from_email: str = os.getenv("EMAIL_HOST_USER")
         email_recipient_list: list[str] = [instance.advisor.email]
