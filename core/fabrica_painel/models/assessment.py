@@ -14,6 +14,8 @@ class Assessment(models.Model):
         related_name="assessments_evaluator",
         limit_choices_to={'is_evaluator': True})
     date_time = models.DateTimeField()
+    student_feedback = models.TextField()
+    committee_feedback = models.TextField()
 
     def __str__(self):
         return f"{self.registration} - {self.work}"

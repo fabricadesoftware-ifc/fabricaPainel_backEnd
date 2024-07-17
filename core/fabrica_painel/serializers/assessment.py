@@ -12,6 +12,8 @@ class AssessmentDetailSerializer(serializers.ModelSerializer):
             "grade",
             "evaluator",
             "date_time",
+            "committee_feedback",
+            "student_feedback",
         ]
 
 class AssessmentWriteSerializer(serializers.ModelSerializer):
@@ -23,6 +25,8 @@ class AssessmentWriteSerializer(serializers.ModelSerializer):
             "grade",
             "evaluator",
             "date_time",
+            "committee_feedback",
+            "student_feedback",
         ]
 
 
