@@ -11,7 +11,7 @@ class Work(models.Model):
     title = models.CharField(max_length=255)
     abstract = models.TextField()
     edition = models.ForeignKey(Edition, on_delete=models.PROTECT)
-    field = models.ForeignKey(Field, on_delete=models.PROTECT)
+    field = models.ManyToManyField(Field, related_name="fields", blank=True, null=True, default=None)
     advisor = models.ForeignKey(
         Usuario,
         on_delete=models.PROTECT,
