@@ -1,7 +1,6 @@
 import os
 from uuid import uuid4
 
-from django.core.mail import send_mail
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.urls import reverse
@@ -31,7 +30,7 @@ def email_work_info_to_advisor(sender, instance: Work, created, **kwargs):
         from_email: str = os.getenv("EMAIL_HOST_USER")
         email_recipient_list: list[str] = [instance.advisor.email]
         email_subject: str = f"{instance.edition} - Submissão de trabalho"
-
+        
         token: str = str(uuid4())
         instance.verification_token = token
         instance.save()
@@ -41,3 +40,5 @@ def email_work_info_to_advisor(sender, instance: Work, created, **kwargs):
         accept_work_link = f"http://localhost:8000/{accept_work_path}"
 
         async_to_sync(send_work_email_to_advisor)(instance, email_subject, from_email, email_recipient_list, accept_work_link)
+
+        
