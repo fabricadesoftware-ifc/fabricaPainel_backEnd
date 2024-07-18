@@ -15,11 +15,18 @@ class CustomUserAdmin(UserAdmin):
         "email",
         "is_staff",
         "is_active",
+        "is_advisor",
+        "is_evaluator",
+        "field",
     )
     list_filter = (
         "email",
         "is_staff",
         "is_active",
+        "is_advisor",
+        "is_evaluator",
+        "field",
+
     )
     fieldsets = (
         (None, {"fields": ("email", "password")}),
@@ -34,7 +41,7 @@ class CustomUserAdmin(UserAdmin):
         ),
         (
             _("Personal info"),
-            {"fields": (['user_type','is_advisor','is_evaluator','field'])},
+            {"fields": (['user_type','is_advisor','is_evaluator','field',])},
         ),
         (
             _("Permissions"),
@@ -51,6 +58,10 @@ class CustomUserAdmin(UserAdmin):
                     "email",
                     "password1",
                     "password2",
+                    "is_advisor",
+                    "is_evaluator",
+                    "user_type",
+                    "field",
                     "is_staff",
                     "is_active",
                     "groups",

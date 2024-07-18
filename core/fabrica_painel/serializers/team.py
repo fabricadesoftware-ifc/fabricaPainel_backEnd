@@ -9,7 +9,6 @@ class TeamDetailSerializer(serializers.ModelSerializer):
         fields: list[str] = [
             'id',
             'team_student',
-            'work'
         ]
 
 
@@ -18,5 +17,4 @@ class TeamWriteSerializer(serializers.ModelSerializer):
         model = Team
         fields: list[str] = [
             'team_student',
-            'work'
         ]

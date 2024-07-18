@@ -1,9 +1,9 @@
 from rest_framework import serializers
-from core.fabrica_painel.models.ods import SustainableGoals
+from core.fabrica_painel.models.ods import Ods
 
-class SustainableGoalsSerializer(serializers.ModelSerializer):
+class OdsSerializer(serializers.ModelSerializer):
     class Meta:
-        model = SustainableGoals
+        model = Ods
         fields: list[str] = [
             "id",
             "name",

@@ -5,4 +5,4 @@ from .team import TeamViewSet
 from .edition import EditionViewSet
 from .assessments import AssessmentsViewSet
 from .assessment import AssessmentViewSet
-from .ods import SustainableGoalsViewSet
+from .ods import OdsViewSet

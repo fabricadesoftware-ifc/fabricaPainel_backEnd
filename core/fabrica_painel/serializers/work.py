@@ -14,7 +14,10 @@ class WorkDetailSerializer(serializers.ModelSerializer):
             'field',
             'advisor',
             'initial_submission_work_date',
-            'final_submission_work_date'
+            'final_submission_work_date',
+            'verification_token',
+            'team',
+            'ods'
         ]
 
 
@@ -28,5 +31,7 @@ class WorkWriteSerializer(serializers.ModelSerializer):
             'field',
             'advisor',
             'initial_submission_work_date',
-            'final_submission_work_date'
+            'final_submission_work_date',
+            'team',
+            'ods'
         ]
