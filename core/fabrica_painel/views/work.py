@@ -52,31 +52,8 @@ class WorkViewSet(ModelViewSet):
             
             # Enviar o sinal
             data_updated.send(sender=Work, instance=instance, accept_work_link=accept_work_link)
-        
+
+
         return response
 
-@api_view(["GET"])
-def accept_work(request, verification_token) -> Response:
-    try:
-        work = Work.objects.get(verification_token=verification_token)
-    except Work.DoesNotExist:
-        return Response(
-            {"error": "Trabalho não encontrado."},
-            status=status.HTTP_404_NOT_FOUND,
-        )
-
-    work.final_submission_work_date = timezone.now()
-    work.verification_token = None
-    work.save()
-
-    email_student_recipient_list = [work.team]
-    from_email = os.getenv("EMAIL_HOST_USER")
-
-    if work.final_submission_work_date is not None:
-        async_to_sync(send_work_email_to_student)(from_email, email_student_recipient_list)
-
-    return Response(
-        {"message": "Trabalho aceito."},
-        status=status.HTTP_200_OK,
-    )
-
+        
