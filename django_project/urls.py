@@ -22,7 +22,7 @@ from core.fabrica_painel.views import (
     TeamViewSet,
     WorkViewSet,
 )
-from core.fabrica_painel.views.accept_work import accept_work
+from core.fabrica_painel.views import approve_work, reject_work
 from core.uploader.router import router as uploader_router
 from core.usuario.router import router as usuario_router
 from core.usuario.use_case.register_validation import create_user
@@ -55,7 +55,8 @@ urlpatterns = [
         SpectacularRedocView.as_view(url_name="schema"),
         name="redoc",
     ),
-    path("accept-work/<str:verification_token>/", accept_work, name="accept-work"),
+    path("accept-work/<str:verification_token>/", approve_work, name="accept-work"),
+    path("reject-work/<str:pk>/", reject_work, name="reject-work"),
 ]
 
 urlpatterns += static(settings.MEDIA_ENDPOINT, document_root=settings.MEDIA_ROOT)

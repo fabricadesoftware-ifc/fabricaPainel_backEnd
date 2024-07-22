@@ -1,8 +1,7 @@
-
 import asyncio
 from django.core.mail import send_mail
 
-async def send_work_email_to_advisor(instance, email_subject, from_email, email_recipient_list, accept_work_link):
+async def send_work_email_to_advisor(instance, email_subject, from_email, email_recipient_list, accept_work_link, reject_work_link):
         
         await asyncio.sleep(1)
         # Fallback to use when HTML message is not supported
@@ -26,6 +25,7 @@ async def send_work_email_to_advisor(instance, email_subject, from_email, email_
         <h2>Resumo do Trabalho submetido:</h2>
         <h3>{instance.abstract}</h3>
         Clique <a href={accept_work_link}>aqui</a> para aceitar essa submissão
+        Clique <a href={reject_work_link}>aqui</a> para rejeitar essa submissão
         """
 
         try:

@@ -21,11 +21,17 @@ class Work(models.Model):
     initial_submission_work_date = models.DateTimeField(blank=True, null=True)
     final_submission_work_date = models.DateTimeField(blank=True, null=True)
     verification_token = models.CharField(max_length=100, blank=True, null=True)
+    reject_submission_work_date = models.DateTimeField(blank=True, null=True)
     team = models.ForeignKey(Team, on_delete=models.PROTECT)
     ods = models.ManyToManyField(Ods, related_name="SustainableGoals", default=None) 
+    class WorkStatus(models.IntegerChoices):
+        PENDING = 0, "Pendente"
+        APPROVED = 1, "Aprovado"
+        REJECTED = 2, "Rejeitado"
+    status = models.IntegerField(choices=WorkStatus.choices, default=WorkStatus.PENDING)
 
     def __str__(self) -> str:
-        return f"{self.title} - {self.team}"
+        return f"{self.title} - {self.team} - {self.WorkStatus}"
 
     class Meta:
         verbose_name = "Trabalho"

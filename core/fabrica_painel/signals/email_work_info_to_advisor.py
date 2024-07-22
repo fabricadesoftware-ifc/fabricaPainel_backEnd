@@ -38,6 +38,10 @@ def email_work_info_to_advisor(sender, instance: Work, created, **kwargs):
                                    kwargs={"verification_token": token})
         accept_work_link = f"http://localhost:8000/{accept_work_path}"
 
-        async_to_sync(send_work_email_to_advisor)(instance, email_subject, from_email, email_recipient_list, accept_work_link)
+        reject_work_path = reverse("reject-work",
+                                      kwargs={"pk": instance.pk})
+        reject_work_link = f"http://localhost:8000/{reject_work_path}"
+
+        async_to_sync(send_work_email_to_advisor)(instance, email_subject, from_email, email_recipient_list, accept_work_link, reject_work_link)
 
         

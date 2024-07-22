@@ -1,13 +1,7 @@
 from rest_framework.viewsets import ModelViewSet
 from drf_spectacular.utils import extend_schema
 from django.utils import timezone
-from rest_framework import status
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
-from asgiref.sync import async_to_sync
 from django.urls import reverse
-from core.fabrica_painel.use_case.send_work_email_to_student import send_work_email_to_student
-from core.fabrica_painel.use_case.send_work_update_to_advisor import notify_advisor_on_data_update
 
 
 from core.fabrica_painel.models.work import Work
@@ -16,12 +10,10 @@ from core.fabrica_painel.serializers.work import (
     WorkWriteSerializer
 )
 
-import os 
-from dotenv import load_dotenv
 from uuid import uuid4
 from core.fabrica_painel.signals.signal_work_update import data_updated
 
-load_dotenv()
+
 
 @extend_schema(tags=["work"])
 class WorkViewSet(ModelViewSet):
