@@ -12,6 +12,7 @@ from core.fabrica_painel.serializers.work import (
 
 from uuid import uuid4
 from core.fabrica_painel.signals.signal_work_update import data_updated
+from core.fabrica_painel.signals.signal_work_advisor_update import advisor_changed
 
 
 
@@ -29,9 +30,22 @@ class WorkViewSet(ModelViewSet):
     def update(self, request, *args, **kwargs):
         work = Work.objects.get(pk=self.kwargs["pk"])
         response = super().update(request, *args, **kwargs)
+        old_advisor = work.advisor
         instance = self.get_object()
-        
-        if work.verification_token is None and work.final_submission_work_date is not None:
+        new_advisor = instance.advisor
+
+        if work.verification_token is not None and old_advisor != new_advisor:
+                print(f"{old_advisor} {new_advisor} {instance}") 
+                advisor_changed.send(
+                    sender=Work,
+                    instance=instance,
+                    request=request,
+                    old_advisor=old_advisor,
+                    new_advisor=new_advisor
+                )
+
+        elif work.verification_token is None and work.final_submission_work_date is not None:
+           
             token = str(uuid4())
             work.verification_token = token
             work.final_submission_work_date = None
@@ -41,10 +55,8 @@ class WorkViewSet(ModelViewSet):
 
             accept_work_path = reverse("accept-work", kwargs={"verification_token": token})
             accept_work_link = f"http://localhost:8000{accept_work_path}"
-            
-            # Enviar o sinal
-            data_updated.send(sender=Work, instance=instance, accept_work_link=accept_work_link)
 
+            data_updated.send(sender=Work, instance=instance, accept_work_link=accept_work_link)
 
         return response
 

@@ -31,7 +31,7 @@ class Work(models.Model):
     status = models.IntegerField(choices=WorkStatus.choices, default=WorkStatus.PENDING)
 
     def __str__(self) -> str:
-        return f"{self.title} - {self.team} - {self.WorkStatus}"
+        return f"{self.title} - {self.team} - {self.status}"
 
     class Meta:
         verbose_name = "Trabalho"
