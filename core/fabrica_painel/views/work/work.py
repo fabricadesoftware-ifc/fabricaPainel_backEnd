@@ -50,8 +50,6 @@ class WorkViewSet(ModelViewSet):
             work.verification_token = token
             work.final_submission_work_date = None
             work.save()
-            work.final_submission_work_date = timezone.now()
-            work.save()
 
             accept_work_path = reverse("accept-work", kwargs={"verification_token": token})
             accept_work_link = f"http://localhost:8000{accept_work_path}"

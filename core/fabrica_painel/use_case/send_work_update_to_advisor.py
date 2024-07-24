@@ -1,4 +1,3 @@
-import asyncio
 from django.core.mail import send_mail
 from django.dispatch import receiver
 from core.fabrica_painel.signals.signal_work_update import data_updated

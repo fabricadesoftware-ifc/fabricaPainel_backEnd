@@ -30,4 +30,4 @@ class Edition(models.Model):
     )
 
     def __str__(self):
-        return self.edition_name
+        return f"{self.edition_name} - {self.year}"
