@@ -5,8 +5,8 @@ from rest_framework.response import Response
 from asgiref.sync import async_to_sync
 from core.fabrica_painel.use_case.send_email_student.send_work_approve_email_to_student import send_work_approve_email_to_student
 from core.fabrica_painel.use_case.send_email_student.send_work_new_status_approve_email_to_student import send_work_new_status_approve_email_to_student
-
-from core.fabrica_painel.models.work import Work
+from core.fabrica_painel.models import Edition
+from core.fabrica_painel.models import Work
 
 import os 
 from dotenv import load_dotenv
@@ -24,8 +24,11 @@ def approve_work(request, verification_token) -> Response:
         )
     email_student_recipient_list = [work.team]
     from_email = os.getenv("EMAIL_HOST_USER")
+    edition = Edition.objects.get(id=work.edition.id)
 
-    if work.status == Work.WorkStatus.REJECTED:
+    print(edition)
+    if work.status == Work.WorkStatus.REJECTED and edition.final_advisor_date > timezone.now():
+        print(edition.final_advisor_date)
         work.final_submission_work_date = timezone.now()
         work.verification_token = None
         work.status = Work.WorkStatus.APPROVED
@@ -38,7 +41,9 @@ def approve_work(request, verification_token) -> Response:
         {"message": "O trabalho que tinha sido recusado foi aceito."},
         status=status.HTTP_200_OK,
         )
-    else:
+
+    elif edition.final_advisor_date > timezone.now():
+        print(edition.final_advisor_date, "adsad")
         work.final_submission_work_date = timezone.now()
         work.verification_token = None
         work.status = Work.WorkStatus.APPROVED
@@ -51,4 +56,7 @@ def approve_work(request, verification_token) -> Response:
         status=status.HTTP_200_OK,
         )
 
+    return Response(
+        {"error": "Data limite para aceitar o trabalho expirou."},
+        )
    

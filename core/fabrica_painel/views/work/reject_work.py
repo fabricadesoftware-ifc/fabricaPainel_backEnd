@@ -7,7 +7,8 @@ from core.fabrica_painel.use_case.send_email_student.send_work_reject_email_to_s
 from core.fabrica_painel.use_case.send_email_student.send_work_new_status_reject_email_to_student import send_work_new_status_reject_email_to_student
 from uuid import uuid4
 
-from core.fabrica_painel.models.work import Work
+from core.fabrica_painel.models import Work
+from core.fabrica_painel.models import Edition
 
 
 import os 
@@ -27,8 +28,9 @@ def reject_work(request, *args, **kwargs) -> Response:
     email_student_recipient_list = [work.team]
     from_email = os.getenv("EMAIL_HOST_USER")
     token = uuid4()
+    edition = Edition.objects.get(id=work.edition.id)
 
-    if work.final_submission_work_date is not None and work.verification_token is None:
+    if work.final_submission_work_date is not None and work.verification_token is None and edition.final_advisor_date > timezone.now():
         work.final_submission_work_date = None
         work.verification_token = token
         work.status = Work.WorkStatus.REJECTED
@@ -40,7 +42,7 @@ def reject_work(request, *args, **kwargs) -> Response:
             {"message": "O Trabalho que estava aceito foi rejeitado."},
             status=status.HTTP_200_OK,
         )
-    else :
+    elif edition.final_advisor_date > timezone.now():
         work.status = Work.WorkStatus.REJECTED
         work.reject_submission_work_date = timezone.now()
         work.save()

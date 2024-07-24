@@ -27,7 +27,6 @@ def validate_work_date_submission_is_valid(attrs):
     edition = Edition.objects.get(id=attrs['edition'].id)
     print(edition, "AQUI AQUI AQUI AQUI AQUI")
     return attrs['initial_submission_work_date'] > edition.final_submission_date
-
         
 
 class WorkWriteSerializer(serializers.ModelSerializer):
