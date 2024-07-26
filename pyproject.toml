@@ -24,13 +24,15 @@ dependencies = [
     "passage-identity>=2.1.4",
     "pdfplumber>=0.11.1",
     "faker>=26.0.0",
+    "celery>=5.4.0",
+    "django-celery-results>=2.5.1",
 ]
 requires-python = "==3.11.*"
 readme = "README.md"
 license = {text = "MIT"}
 
 [tool.pdm.scripts]
-dev = "python manage.py runserver"
+dev = "python manage.py runserver localhost:8000"
 runserver = "python manage.py runserver"
 createsuperuser = "python manage.py createsuperuser"
 migrate = "python manage.py migrate"
