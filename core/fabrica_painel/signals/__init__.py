@@ -1,3 +1,1 @@
 from .email_work_info_to_advisor import email_work_info_to_advisor
-from .signal_work_advisor_update import advisor_changed
-from .signal_work_update import data_updated

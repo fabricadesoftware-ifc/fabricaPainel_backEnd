@@ -1,18 +1,18 @@
-from django.utils import timezone
-from rest_framework import status
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
+import os 
 from asgiref.sync import async_to_sync
-from core.fabrica_painel.use_case.send_email_student.send_work_reject_email_to_student import send_work_reject_email_to_student
-from core.fabrica_painel.use_case.send_email_student.send_work_new_status_reject_email_to_student import send_work_new_status_reject_email_to_student
+from django.utils import timezone
+from dotenv import load_dotenv
 from uuid import uuid4
 
-from core.fabrica_painel.models import Work
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework import status
+
+from core.fabrica_painel.tasks.send_email_student import send_work_new_status_reject_email_to_student
+from core.fabrica_painel.tasks.send_email_student import send_work_reject_email_to_student
+
 from core.fabrica_painel.models import Edition
-
-
-import os 
-from dotenv import load_dotenv
+from core.fabrica_painel.models import Work
 
 load_dotenv()
 
@@ -30,6 +30,9 @@ def reject_work(request, *args, **kwargs) -> Response:
     token = uuid4()
     edition = Edition.objects.get(id=work.edition.id)
 
+    student = work.team.team_student
+    student_id = student.id
+
     if work.final_submission_work_date is not None and work.verification_token is None and edition.final_advisor_date > timezone.now():
         work.final_submission_work_date = None
         work.verification_token = token
@@ -37,7 +40,7 @@ def reject_work(request, *args, **kwargs) -> Response:
         work.reject_submission_work_date = timezone.now()
         work.save()
     
-        async_to_sync(send_work_new_status_reject_email_to_student)(from_email, email_student_recipient_list)
+        send_work_new_status_reject_email_to_student.delay(student_id)
         return Response(
             {"message": "O Trabalho que estava aceito foi rejeitado."},
             status=status.HTTP_200_OK,
@@ -46,7 +49,7 @@ def reject_work(request, *args, **kwargs) -> Response:
         work.status = Work.WorkStatus.REJECTED
         work.reject_submission_work_date = timezone.now()
         work.save()
-        async_to_sync(send_work_reject_email_to_student)(from_email, email_student_recipient_list)
+        send_work_reject_email_to_student.delay(student_id)
         return Response(
             {"message": "O Trabalho foi rejeitado."},
             status=status.HTTP_200_OK,

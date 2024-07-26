@@ -2,6 +2,12 @@
 
 ## Diagrama do banco de dados.
 
+## Para rodar o RabbitMQ e o Celery: 
+
+```powershell
+ pdm run celery -A django_project worker --loglevel=info
+```
+
 ## Populate: 
 
 Script created to speed up the process of creating database registers. Used for testing purposes only.

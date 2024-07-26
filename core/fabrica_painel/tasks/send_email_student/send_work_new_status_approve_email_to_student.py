@@ -1,20 +1,25 @@
 
-import asyncio
 from django.core.mail import send_mail
-from asgiref.sync import sync_to_async
+from celery import shared_task
 
-async def send_work_new_status_approve_email_to_student(from_email, email_student_recipient_list):
-    await asyncio.sleep(1)
+from core.usuario.models import Usuario as User
+
+@shared_task
+def send_work_new_status_approve_email_to_student(from_email, student_id):
+    student = User.objects.get(id=student_id)
+
+    print("opa", student)
+    recipient_list = [student]
     email_message = """
     Olá, estudante!
     Seu trabalho teve o status mudado para aceito!
     """
-    
-    await sync_to_async(send_mail)(
+
+    send_mail(
         "Seu trabalho que tinha sido rejeitado pelo seu orientador, mas agora o status foi alterado para aceito pelo Orientador.!",
         email_message,
         from_email,
-        email_student_recipient_list,
+        recipient_list,
     )
 
 

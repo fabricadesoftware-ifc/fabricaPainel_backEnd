@@ -23,10 +23,10 @@ class WorkDetailSerializer(serializers.ModelSerializer):
             'status'
         ]
 
-def validate_work_date_submission_is_valid(attrs):
-    edition = Edition.objects.get(id=attrs['edition'].id)
-    print(edition, "AQUI AQUI AQUI AQUI AQUI")
-    return attrs['initial_submission_work_date'] > edition.final_submission_date
+# def validate_work_date_submission_is_valid(attrs):
+#     edition = Edition.objects.get(id=attrs['edition'].id)
+#     print(edition, "AQUI AQUI AQUI AQUI AQUI")
+#     return attrs['initial_submission_work_date'] > edition.final_submission_date
         
 
 class WorkWriteSerializer(serializers.ModelSerializer):
@@ -43,7 +43,7 @@ class WorkWriteSerializer(serializers.ModelSerializer):
             'ods'
         ]
     
-    def validate(self, attrs):
-        if validate_work_date_submission_is_valid(attrs):
-            raise serializers.ValidationError("Data de submissão inicial não pode ser maior que a data final da edição.")
-        return super().validate(attrs)
+    # def validate(self, attrs):
+    #     if validate_work_date_submission_is_valid(attrs):
+    #         raise serializers.ValidationError("Data de submissão inicial não pode ser maior que a data final da edição.")
+    #     return super().validate(attrs)

@@ -7,5 +7,5 @@ class FabricaPainelConfig(AppConfig):
 
     def ready(self) -> None:
         import core.fabrica_painel.signals
-        import core.fabrica_painel.use_case
+        import core.fabrica_painel.tasks
 

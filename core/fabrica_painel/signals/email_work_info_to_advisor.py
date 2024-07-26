@@ -1,29 +1,19 @@
 import os
 from uuid import uuid4
+from dotenv import load_dotenv
 
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.urls import reverse
-from dotenv import load_dotenv
-from asgiref.sync import async_to_sync
-from core.fabrica_painel.use_case.send_work_email_to_advisor import send_work_email_to_advisor
+
+from core.fabrica_painel.tasks.send_email_advisor.send_work_email_to_advisor import send_work_email_to_advisor
 from core.fabrica_painel.models import Work
 
 load_dotenv()
 
-
 @receiver(post_save, sender=Work)
 def email_work_info_to_advisor(sender, instance: Work, created, **kwargs):
-    """
-    Create an use case so that the
-        advisor receives an e-mail with all of the work info
-            when a student submits the work.
 
-    If the work is accepted by the advisor,
-        initial_submission_work_date will be filled,
-    otherwise,
-        the submission will be rejected.
-    """
     if created:
 
         from_email: str = os.getenv("EMAIL_HOST_USER")
@@ -42,6 +32,6 @@ def email_work_info_to_advisor(sender, instance: Work, created, **kwargs):
                                       kwargs={"pk": instance.pk})
         reject_work_link = f"http://localhost:8000/{reject_work_path}"
 
-        async_to_sync(send_work_email_to_advisor)(instance, email_subject, from_email, email_recipient_list, accept_work_link, reject_work_link)
+        send_work_email_to_advisor.delay(instance.id, email_subject, from_email, email_recipient_list, accept_work_link, reject_work_link)
 
         
