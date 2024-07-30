@@ -14,22 +14,23 @@ sudo apt-get install rabbitmq-server
 sudo systemctl start rabbitmq-server
 sudo systemctl enable rabbitmq-server
 ```
-  - criar o vhost:
+  - Criar o vhost:
     
 ```powershell
   sudo rabbitmqctl add_vhost fabricapainel
-```
-
-## Para rodar o RabbitMQ e o Celery: 
-
-```powershell
- pdm run celery -A django_project worker --loglevel=info
 ```
 
 - De permissão ao seu usuario no vhost:
 
 ```powershell
   sudo rabbitmqctl set_permissions -p fabricahistologia SEUUSUARIO ".*" ".*" ".*"
+```
+
+
+## Para rodar o RabbitMQ e o Celery: 
+
+```powershell
+ pdm run celery -A django_project worker --loglevel=info
 ```
 
 ## Populate: 
