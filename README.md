@@ -33,6 +33,12 @@ sudo systemctl enable rabbitmq-server
  pdm run celery -A django_project worker --loglevel=info
 ```
 
+- Acessar o Painel de controle do flower:
+- 
+```powershell
+  pdm run python -m celery -A django_project flower
+```
+
 ## Populate: 
 
 Script created to speed up the process of creating database registers. Used for testing purposes only.
