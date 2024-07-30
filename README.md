@@ -9,10 +9,16 @@ sudo apt-get update
 sudo apt-get install rabbitmq-server
 ```
 - Rodar o servidor RabbitMQ:
-  ```powershell
-  sudo systemctl start rabbitmq-server
-  sudo systemctl enable rabbitmq-server
-  ```
+  
+```powershell
+sudo systemctl start rabbitmq-server
+sudo systemctl enable rabbitmq-server
+```
+  - criar o vhost:
+    
+```powershell
+  sudo rabbitmqctl add_vhost fabricapainel
+```
 
 ## Para rodar o RabbitMQ e o Celery: 
 
