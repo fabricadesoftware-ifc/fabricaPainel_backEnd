@@ -26,6 +26,12 @@ sudo systemctl enable rabbitmq-server
  pdm run celery -A django_project worker --loglevel=info
 ```
 
+- De permissão ao seu usuario no vhost:
+
+```powershell
+  sudo rabbitmqctl set_permissions -p fabricahistologia SEUUSUARIO ".*" ".*" ".*"
+```
+
 ## Populate: 
 
 Script created to speed up the process of creating database registers. Used for testing purposes only.
