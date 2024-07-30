@@ -2,6 +2,18 @@
 
 ## Diagrama do banco de dados.
 
+## Para rodar o sistema é necessário fazer as seguintes etapas:
+- Instalar o RabbitMQ no seu computador, para sistemas derivados do Debian de o seguinte comando:
+```powershell
+sudo apt-get update
+sudo apt-get install rabbitmq-server
+```
+- Rodar o servidor RabbitMQ:
+  ```powershell
+  sudo systemctl start rabbitmq-server
+  sudo systemctl enable rabbitmq-server
+  ```
+
 ## Para rodar o RabbitMQ e o Celery: 
 
 ```powershell
