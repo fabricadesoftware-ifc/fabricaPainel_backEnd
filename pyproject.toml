@@ -26,20 +26,22 @@ dependencies = [
     "faker>=26.0.0",
     "celery>=5.4.0",
     "django-celery-results>=2.5.1",
+    "pandas>=2.2.2",
 ]
 requires-python = "==3.11.*"
 readme = "README.md"
 license = {text = "MIT"}
 
 [tool.pdm.scripts]
-dev = "python manage.py runserver localhost:8000"
-runserver = "python manage.py runserver"
-createsuperuser = "python manage.py createsuperuser"
-migrate = "python manage.py migrate"
-makemigrations = "python manage.py makemigrations"
-shell = "python manage.py shell"
-populate = "python manage.py populate_script"
+dev = "python src/manage.py runserver localhost:8000"
+runserver = "python src/manage.py runserver"
+createsuperuser = "python src/manage.py createsuperuser"
+migrate = "python src/manage.py migrate"
+makemigrations = "python src/manage.py makemigrations"
+shell = "python src/manage.py shell"
+populate = "python src/manage.py populate_script"
 
 
 [tool.pdm]
 distribution = false
+
