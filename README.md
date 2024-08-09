@@ -1,6 +1,6 @@
 # Fabrica Painel backend.
 
-## Diagrama do banco de dados.
+
 
 ## Para rodar o sistema é necessário fazer as seguintes etapas:
 - Instalar o RabbitMQ no seu computador, para sistemas derivados do Debian de o seguinte comando:
@@ -63,6 +63,7 @@ pdm run populate edition --locale it_IT,ja_JP --instances 5
 ``` 
 This command will create: 5 instances of the edition model, using italian and japanese localization.
 
+## Diagrama do banco de dados.
 
 ![alt text](images/diagram.png)
 
