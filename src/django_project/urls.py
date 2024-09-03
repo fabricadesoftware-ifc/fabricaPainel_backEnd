@@ -12,38 +12,20 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
+from core.work.views import approve_work, reject_work, CanceledWork
+from core.user.utils import student_register, reset_password, forget_password
 
-from core.fabrica_painel.views import (
-    AssessmentsViewSet,
-    AssessmentViewSet,
-    EditionViewSet,
-    FieldViewSet,
-    KeywordViewSet,
-    TeamViewSet,
-    WorkViewSet,
-)
-from core.fabrica_painel.views import approve_work, reject_work
-from core.uploader.router import router as uploader_router
-from core.user.router import router as user_router
-from core.user.utils.student_register import student_register
 
 router = DefaultRouter()
-router.register("assessment", AssessmentViewSet)
-router.register("assessments", AssessmentsViewSet)
-router.register("keyword", KeywordViewSet)
-router.register("team", TeamViewSet)
-router.register("work", WorkViewSet)
-router.register("edition", EditionViewSet)
-router.register("field", FieldViewSet)
 
 urlpatterns = [
     path("api/", include(router.urls)),
     path("api/student_register/", student_register, name="create_user"),
+    path("api/forget_password/", forget_password, name="forget_password"),
+    path("api/reset_password/", reset_password, name="reset_password"),
     path("admin/", admin.site.urls),
     path("api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
-    path("api/", include(user_router.urls)),
-    path("api/media/", include(uploader_router.urls)),
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     path(
         "api/swagger/",
@@ -57,6 +39,7 @@ urlpatterns = [
     ),
     path("accept-work/<str:verification_token>/", approve_work, name="accept-work"),
     path("reject-work/<str:pk>/", reject_work, name="reject-work"),
+    path("canceled-work/<str:pk>/", CanceledWork.as_view(), name="canceled-work"),
 ]
 
 urlpatterns += static(settings.MEDIA_ENDPOINT, document_root=settings.MEDIA_ROOT)

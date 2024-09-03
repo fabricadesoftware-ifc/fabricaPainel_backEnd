@@ -3,8 +3,6 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from .managers import CustomUserManager
-from core.fabrica_painel.models.edition import Edition
-from core.fabrica_painel.models.field import Field
 
 class User(AbstractUser):
     username = None
@@ -12,8 +10,12 @@ class User(AbstractUser):
     registration = models.IntegerField(null=True, unique=True)
     name = models.CharField(max_length=255, null=True)
     is_advisor = models.BooleanField(default=False, null=True, blank=True)
-    is_evaluator = models.BooleanField(default=False, null=True, blank=True)
-    field = models.ForeignKey(Field, on_delete=models.PROTECT, null=True)
+    password_reset_token = models.CharField(
+        _("Password Reset Token"), max_length=255, blank=True, null=True
+    )
+    password_reset_token_created = models.DateTimeField(
+        _("Password Reset Token Created"), blank=True, null=True
+    )  
     class UserType(models.TextChoices):
         STUDENT = "STUDENT", _("Student")
         TEACHER = "TEACHER", _("Teacher")
@@ -33,7 +35,8 @@ class User(AbstractUser):
     objects = CustomUserManager()
 
     def __str__(self):
-        return self.email
+        return self.email + " - " + (self.name or "No Name")
+
 
     class Meta:
         verbose_name = "Usuário"
@@ -41,3 +44,14 @@ class User(AbstractUser):
         ordering = ["-date_joined"]
 
 
+class Evaluator(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="evaluator")
+    
+
+    def __str__(self):
+        return self.user.name
+
+    class Meta:
+        verbose_name = "Avaliador"
+        verbose_name_plural = "Avaliadores"
+        ordering = ["-user__date_joined"]

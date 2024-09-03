@@ -3,8 +3,13 @@ from django.contrib.auth.admin import UserAdmin
 from django.utils.translation import gettext_lazy as _
 
 from .forms import CustomUserChangeForm, CustomUserCreationForm
-from .models import User
+from .models import User, Evaluator
 
+@admin.register(Evaluator)
+class EvaluatorAdmin(admin.ModelAdmin):
+    list_display = ("user",)
+    search_fields = ("user",)
+    ordering = ("user",)
 
 @admin.register(User)
 class CustomUserAdmin(UserAdmin):
@@ -13,19 +18,21 @@ class CustomUserAdmin(UserAdmin):
     model = User
     list_display = (
         "email",
+        "name",
+        "registration",
         "is_staff",
         "is_active",
         "is_advisor",
-        "is_evaluator",
-        "field",
+       
     )
     list_filter = (
         "email",
+        "name",
+        "registration",
         "is_staff",
         "is_active",
         "is_advisor",
-        "is_evaluator",
-        "field",
+
 
     )
     fieldsets = (
@@ -41,7 +48,7 @@ class CustomUserAdmin(UserAdmin):
         ),
         (
             _("Personal info"),
-            {"fields": (['user_type','is_advisor','is_evaluator','field','is_confirmed'])},
+            {"fields": (['user_type','is_advisor','is_confirmed'])},
         ),
         (
             _("Permissions"),
@@ -58,13 +65,13 @@ class CustomUserAdmin(UserAdmin):
                     "email",
                     "password1",
                     "password2",
+                    "name",
+                    "registration",
                     "is_advisor",
-                    "is_evaluator",
                     "user_type",
-                    "field",
                     "is_staff",
                     "is_active",
-                    "is_confirmed"
+                    "is_confirmed",
                     "groups",
                     "user_permissions",
                 ),

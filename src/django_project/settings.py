@@ -33,9 +33,13 @@ INSTALLED_APPS = [
     "django_extensions",
     "django_filters",
     "drf_spectacular",
-    "core.fabrica_painel",
     "core.user",
     "core.uploader",
+    "core.work",
+    "core.assessment",
+    "core.edition",
+    "core.field",
+    "core.cross_cutting_themes",
 ]
 
 MIDDLEWARE = [
@@ -130,7 +134,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
 
-LANGUAGE_CODE = "en-us"
+LANGUAGE_CODE = "pt-br"
 
 TIME_ZONE = "America/Sao_Paulo"
 
@@ -175,3 +179,4 @@ CELERY_TASK_TIME_LIMIT = 30 * 60
 CELERY_BROKER_URL = 'amqp://lucas:240600@localhost/fabricapainel'
 CELERY_RESULT_BACKEND = 'rpc://'
 
+TOKEN_EXPIRATION_SECONDS = 1200 
