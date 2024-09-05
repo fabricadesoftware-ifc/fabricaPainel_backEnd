@@ -6,6 +6,7 @@ from core.assessment.router import router as assessment_router
 from core.work.router import router as work_router
 from core.uploader.router import router as uploader_router
 from core.user.router import router as user_router
+from core.cross_cutting_themes.router import router as cross_cutting_themes_router
 
 router = DefaultRouter()
 router.registry.extend(edition_router.registry)
@@ -14,4 +15,5 @@ router.registry.extend(assessment_router.registry)
 router.registry.extend(work_router.registry)
 router.registry.extend(uploader_router.registry)
 router.registry.extend(user_router.registry)
+router.registry.extend(cross_cutting_themes_router.registry)
 

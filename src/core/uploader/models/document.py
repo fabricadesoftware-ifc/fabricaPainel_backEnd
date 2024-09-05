@@ -3,7 +3,7 @@ import uuid
 
 from django.db import models
 
-from utils.files import get_content_type
+from core.__seedwork.utils.files import get_content_type
 
 def document_file_path(document, _):
     content_type = get_content_type(document.file)

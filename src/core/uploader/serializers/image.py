@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from core.uploader.models import Image
-from utils.files import CONTENT_TYPE_JPG, CONTENT_TYPE_PNG, get_content_type
+from core.__seedwork.utils.files import CONTENT_TYPE_JPG, CONTENT_TYPE_PNG, get_content_type
 
 
 class ImageUploadSerializer(serializers.ModelSerializer):

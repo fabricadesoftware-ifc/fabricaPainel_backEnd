@@ -3,7 +3,7 @@ import uuid
 
 from django.db import models
 
-from utils.files import get_content_type
+from core.__seedwork.utils.files import get_content_type
 
 
 def image_file_path(image, _):

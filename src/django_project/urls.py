@@ -14,9 +14,8 @@ from rest_framework_simplejwt.views import (
 )
 from core.work.views import approve_work, reject_work, CanceledWork
 from core.user.utils import student_register, reset_password, forget_password
+from .router import router
 
-
-router = DefaultRouter()
 
 urlpatterns = [
     path("api/", include(router.urls)),
@@ -37,7 +36,7 @@ urlpatterns = [
         SpectacularRedocView.as_view(url_name="schema"),
         name="redoc",
     ),
-    path("accept-work/<str:verification_token>/", approve_work, name="accept-work"),
+    path("accept-work/<str:verification_token>/", approve_work, name="approve-work"),
     path("reject-work/<str:pk>/", reject_work, name="reject-work"),
     path("canceled-work/<str:pk>/", CanceledWork.as_view(), name="canceled-work"),
 ]

@@ -15,7 +15,7 @@ def send_work_cancel_email_to_student(work_id: str, from_email: str) -> None:
     
 
     subject: str = 'Trabalho cancelado com sucesso.'
-    message : str = f'Olá {work.team}, o trabalho {work.title} foi cancelado, o seu orientador tambem foi informado.'
+    message : str = f'Olá {work.team}, o trabalho {work.title} foi cancelado com sucesso.'
 
     email_student_recipient_list: list = [students_emails]
 

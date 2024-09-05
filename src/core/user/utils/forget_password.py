@@ -1,14 +1,17 @@
-from rest_framework import status 
-from rest_framework.decorators import api_view, permission_classes, authentication_classes
-from tasks.send_forget_password_email import send_forget_password_email
-from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
-from core.user.models import User
 import datetime
 import secrets
 import pytz
 
+from rest_framework import status 
+from rest_framework.decorators import api_view, permission_classes, authentication_classes
+from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
+from drf_spectacular.utils import extend_schema
 
+from core.user.models import User
+from tasks.send_forget_password_email import send_forget_password_email
+
+extend_schema(tags=["forget_password"])
 @api_view(['POST'])
 @permission_classes([AllowAny])
 @authentication_classes([])

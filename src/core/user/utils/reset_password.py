@@ -1,13 +1,17 @@
+import pytz
 from typing import Any, Dict, Optional
+from datetime import datetime, timedelta
+
 from rest_framework import status
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.request import Request
 from rest_framework.response import Response
-from datetime import datetime, timedelta
+from drf_spectacular.utils import extend_schema
+
 from core.user.models import User
 from django_project.settings import TOKEN_EXPIRATION_SECONDS
-import pytz
 
+extend_schema(tags=["forget_password"])
 @api_view(["POST"])
 @authentication_classes([])
 @permission_classes([])

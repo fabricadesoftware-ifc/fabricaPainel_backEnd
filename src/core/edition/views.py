@@ -7,7 +7,6 @@ from core.edition.serializers import (
     EditionWriteSerializer
 )
 
-
 @extend_schema(tags=["edition"])
 class EditionViewSet(ModelViewSet):
     queryset = Edition.objects.all()

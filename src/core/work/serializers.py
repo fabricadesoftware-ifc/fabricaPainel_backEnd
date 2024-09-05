@@ -5,7 +5,7 @@ from core.work.models import Work
 from core.work.models import Keyword
 from core.work.models import Team
 from core.work.models import Ods
-from core.edition.models import Edition
+from core.__seedwork.validations.validate_work_date_submission import validate_work_date_submission_is_valid
 
 class OdsSerializer(serializers.ModelSerializer):
     class Meta:
@@ -26,7 +26,7 @@ class WorkDetailSerializer(serializers.ModelSerializer):
             'edition',
             'field',
             'evaluator',
-            'advisor',
+            'cross_cutting_theme',
             'initial_submission_work_date',
             'final_submission_work_date',
             'verification_token',
@@ -34,17 +34,7 @@ class WorkDetailSerializer(serializers.ModelSerializer):
             'ods',
             'reject_submission_work_date',
             'status'
-        ]
-def validate_work_date_submission_is_valid(attrs):
-    if 'edition' not in attrs:
-        raise ValueError("A chave 'edition' não está presente em attrs")
-
-    edition = Edition.objects.get(id=attrs['edition'].id)
-    
-    if attrs['initial_submission_work_date'] > edition.final_submission_date:
-        return True  
-    return False
-        
+        ]    
 
 class WorkWriteSerializer(serializers.ModelSerializer):
     class Meta:
@@ -55,19 +45,19 @@ class WorkWriteSerializer(serializers.ModelSerializer):
             'edition',
             'field',
             'evaluator',
-            'advisor',
+            'cross_cutting_theme',
             'initial_submission_work_date',
             'team',
             'ods'
         ]
     
     def validate(self, attrs):
-        if validate_work_date_submission_is_valid(attrs):
-            raise serializers.ValidationError("Data de submissão inicial não pode ser maior que a data final da edição.")
+        request = self.context.get('request')
+        if request and request.method == 'POST':
+            if validate_work_date_submission_is_valid(attrs):
+                raise serializers.ValidationError("Fora da data de submissão")
         return super().validate(attrs)
     
-
-
 class KeywordDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Keyword

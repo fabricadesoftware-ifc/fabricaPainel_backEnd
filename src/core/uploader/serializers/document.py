@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from core.uploader.models import Document
-from utils.files import CONTENT_TYPE_PDF, get_content_type
+from core.__seedwork.utils.files import CONTENT_TYPE_PDF, get_content_type
 
 
 class DocumentUploadSerializer(serializers.ModelSerializer):

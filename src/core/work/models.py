@@ -4,6 +4,7 @@ from core.edition.models import Edition
 from core.user.models import User, Evaluator
 from core.field.models import Field
 from core.cross_cutting_themes.models import CrossCuttingTheme
+from uuid import uuid4
     
 class Team(models.Model):
     team_members = models.ManyToManyField(User)
@@ -20,6 +21,7 @@ class Ods(models.Model):
         return self.name
 
 class Work(models.Model):
+    id = models.UUIDField(primary_key=True, default = uuid4, editable=False)
     title = models.CharField(max_length=255)
     abstract = models.TextField()
     edition = models.ForeignKey(Edition, on_delete=models.PROTECT)
