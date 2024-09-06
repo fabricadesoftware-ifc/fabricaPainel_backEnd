@@ -159,7 +159,7 @@ STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 CORS_ALLOW_ALL_ORIGINS = True
-AUTH_USER_MODEL = "user.User"
+AUTH_USER_MODEL = "user_django_app.User"
 
 GRAPH_MODELS = {
     "all_applications": True,
