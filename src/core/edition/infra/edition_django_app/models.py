@@ -12,6 +12,7 @@ class Edition(models.Model):
     initial_evaluators_date = models.DateTimeField("Data de início para avaliadores")
     final_evaluators_date = models.DateTimeField("Data de fim para avaliadores")
     workload = models.IntegerField("Carga horária")
+    is_open = models.BooleanField("Está aberto", default=False)
     banner = models.ForeignKey(
         Image,
         related_name="+",

@@ -19,6 +19,7 @@ class EditionDetailSerializer(serializers.ModelSerializer):
             "banner",
             "logo",
             "workload",
+            "is_open"
         ]
 
 
@@ -38,4 +39,5 @@ class EditionWriteSerializer(serializers.ModelSerializer):
             "banner",
             "logo",
             "workload",
+            "is_open"
         ]
