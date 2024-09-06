@@ -5,8 +5,8 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 
-from tasks import send_work_new_status_reject_email_to_student
-from tasks import send_work_reject_email_to_student
+from core.work.domain.tasks import send_work_new_status_reject_email_to_student
+from core.work.domain.tasks import send_work_reject_email_to_student
 
 from core.edition.infra.edition_django_app.models import Edition
 from core.work.infra.work_django_app.models import Work

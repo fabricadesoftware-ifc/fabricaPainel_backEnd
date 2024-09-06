@@ -4,8 +4,8 @@ from rest_framework import status
 from django.utils import timezone
 from django_project.settings import EMAIL_HOST_USER
 
-from tasks import send_work_approve_email_to_student
-from tasks import send_work_new_status_approve_email_to_student
+from core.work.domain.tasks import send_work_approve_email_to_student
+from core.work.domain.tasks import send_work_new_status_approve_email_to_student
 from core.work.infra.work_django_app.models import Edition
 from core.work.infra.work_django_app.models import Work
 

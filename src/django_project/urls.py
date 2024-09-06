@@ -13,13 +13,12 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
 from core.work.infra.work_django_app.views import approve_work, reject_work, CanceledWork
-from core.user.infra.user_django_app.utils import student_register, reset_password, forget_password
+from core.user.infra.user_django_app.utils import reset_password, forget_password
 from .router import router
 
 
 urlpatterns = [
     path("api/", include(router.urls)),
-    path("api/student_register/", student_register, name="create_user"),
     path("api/forget_password/", forget_password, name="forget_password"),
     path("api/reset_password/", reset_password, name="reset_password"),
     path("admin/", admin.site.urls),

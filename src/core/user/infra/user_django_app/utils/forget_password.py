@@ -9,7 +9,7 @@ from rest_framework.permissions import AllowAny
 from drf_spectacular.utils import extend_schema
 
 from core.user.infra.user_django_app.models import User
-from tasks.send_forget_password_email import send_forget_password_email
+from core.work.domain.tasks.send_forget_password_email import send_forget_password_email
 
 extend_schema(tags=["forget_password"])
 @api_view(['POST'])
