@@ -1,0 +1,2 @@
+from core.cross_cutting_themes.domain.validations.validate_cross_cutting_themes_is_advisor import validate_cross_cutting_themes_is_advisor
+from core.cross_cutting_themes.domain.validations.validate_cross_cutting_themes_date import validate_cross_cutting_themes_date_is_valid

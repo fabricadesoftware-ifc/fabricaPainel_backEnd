@@ -1,9 +1,7 @@
 from rest_framework import serializers
+
 from core.edition.infra.edition_django_app.models import Edition
-
-
-
-
+from core.edition.domain.validations import validate_dates, validate_year
 class EditionDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Edition
@@ -30,7 +28,6 @@ class EditionDetailSerializer(serializers.ModelSerializer):
 
 
 class EditionWriteSerializer(serializers.ModelSerializer):
-    
     class Meta:
         model = Edition
         fields: list[str] = [
@@ -52,3 +49,13 @@ class EditionWriteSerializer(serializers.ModelSerializer):
             "workload",
             "is_open"
         ]
+
+    def validate(self, attrs):
+        request = self.context.get('request')   
+        if request and request.method == 'POST':
+            try:
+                validate_dates(attrs)
+                validate_year(attrs)
+            except ValueError as e:
+                raise serializers.ValidationError(str(e))
+        return super().validate(attrs)

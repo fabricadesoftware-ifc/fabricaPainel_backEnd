@@ -16,7 +16,6 @@ class OdsSerializer(serializers.ModelSerializer):
         ]
 
 class WorkDetailSerializer(serializers.ModelSerializer):
-   
     class Meta:
         model = Work
         fields: list[str] = [

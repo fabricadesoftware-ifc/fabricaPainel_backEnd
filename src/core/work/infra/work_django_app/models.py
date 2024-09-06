@@ -1,10 +1,10 @@
 from django.db import models
+from uuid import uuid4
 
 from core.edition.infra.edition_django_app.models import Edition
 from core.user.infra.user_django_app.models import User, Evaluator
 from core.field.infra.field_django_app.models import Field
 from core.cross_cutting_themes.infra.cross_cutting_themes_django_app.models import CrossCuttingTheme
-from uuid import uuid4
     
 class Team(models.Model):
     team_members = models.ManyToManyField(User)
@@ -12,7 +12,6 @@ class Team(models.Model):
     def __str__(self) -> str:
         members = ", ".join([user.name if user.name else "Unknown" for user in self.team_members.all()])
         return f"Team Members: {members}"
-
 
 class Ods(models.Model):
     name = models.CharField(max_length=255, verbose_name="Sustainable Goal")
@@ -48,8 +47,6 @@ class Work(models.Model):
         verbose_name = "Trabalho"
         verbose_name_plural = "Trabalhos"
         ordering = ["-title"]
-
-
 
 class Keyword(models.Model):
     name = models.CharField(max_length=255)

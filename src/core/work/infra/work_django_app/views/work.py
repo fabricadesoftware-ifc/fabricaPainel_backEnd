@@ -11,7 +11,7 @@ from core.work.infra.work_django_app.serializers import (
     WorkWriteSerializer
 )
 from core.cross_cutting_themes.infra.cross_cutting_themes_django_app.models import CrossCuttingTheme
-from core.__seedwork.actions.work_paths import create_paths_and_links
+from core.work.domain.actions.work_paths import create_paths_and_links
 
 from core.work.domain.tasks import notify_advisor_on_data_update
 
