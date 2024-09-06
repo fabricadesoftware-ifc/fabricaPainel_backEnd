@@ -11,6 +11,8 @@ class Edition(models.Model):
     final_advisor_date = models.DateTimeField("Data de fim de orientação")
     initial_evaluators_date = models.DateTimeField("Data de início para avaliadores")
     final_evaluators_date = models.DateTimeField("Data de fim para avaliadores")
+    initial_registration_theme_date = models.DateTimeField("Data de início para inscrição de temas")
+    final_registration_theme_date = models.DateTimeField("Data de fim para inscrição de temas")
     workload = models.IntegerField("Carga horária")
     is_open = models.BooleanField("Está aberto", default=False)
     banner = models.ForeignKey(
