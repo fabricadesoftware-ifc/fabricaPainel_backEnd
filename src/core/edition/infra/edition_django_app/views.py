@@ -18,3 +18,9 @@ class EditionViewSet(ModelViewSet):
         return EditionWriteSerializer
     http_method_names = ["get", "post", "patch", "delete"]
     
+@extend_schema(tags=["edition"])
+class EditionOpenViewSet(ModelViewSet):
+    queryset = Edition.objects.filter(is_open=True)
+    serializer_class = EditionDetailSerializer
+    http_method_names = ["get"]
+

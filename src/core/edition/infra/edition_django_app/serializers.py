@@ -12,7 +12,7 @@ class EditionDetailSerializer(serializers.ModelSerializer):
             "year",
             "theme",
             "edition_name",
-            "initil_submission_date",
+            "initial_submission_date",
             "final_submission_date",
             "initial_advisor_date",
             "final_advisor_date",
