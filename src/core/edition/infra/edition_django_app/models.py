@@ -13,6 +13,8 @@ class Edition(models.Model):
     final_evaluators_date = models.DateTimeField("Data de fim para avaliadores")
     initial_registration_theme_date = models.DateTimeField("Data de início para inscrição de temas")
     final_registration_theme_date = models.DateTimeField("Data de fim para inscrição de temas")
+    initial_registration_evaluator_date = models.DateTimeField("Data de início para inscrição de avaliadores")
+    final_registration_evaluator_date = models.DateTimeField("Data de fim para inscrição de avaliadores")
     workload = models.IntegerField("Carga horária")
     is_open = models.BooleanField("Está aberto", default=False)
     banner = models.ForeignKey(
