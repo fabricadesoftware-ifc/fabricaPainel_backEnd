@@ -5,4 +5,6 @@ from core.user.infra.user_django_app import views
 app_name = "core.user.infra.user_django_app"
 
 router = DefaultRouter()
-router.register("users", views.UserViewSet)
+router.register("users", views.UserViewSet, basename="user")
+router.register("advisors", views.AdvisorViewSet, basename="advisor")
+router.register("evaluators", views.EvaluatorViewSet, basename="evaluator")
