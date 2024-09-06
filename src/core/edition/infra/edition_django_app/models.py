@@ -5,7 +5,7 @@ class Edition(models.Model):
     year = models.IntegerField()
     theme = models.CharField(max_length=255)
     edition_name = models.CharField(max_length=255)
-    initil_submission_date = models.DateField("Data de início de submissão")
+    initial_submission_date = models.DateField("Data de início de submissão")
     final_submission_date = models.DateField("Data de fim de submissão")
     initial_advisor_date = models.DateField("Data de início de orientação")
     final_advisor_date = models.DateField("Data de fim de orientação")
