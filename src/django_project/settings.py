@@ -33,13 +33,13 @@ INSTALLED_APPS = [
     "django_extensions",
     "django_filters",
     "drf_spectacular",
-    "core.user",
-    "core.uploader",
-    "core.work",
-    "core.assessment",
-    "core.edition",
-    "core.field",
-    "core.cross_cutting_themes",
+    "core.user.infra.user_django_app",
+    "core.uploader.infra.uploader_django_app",
+    "core.work.infra.work_django_app",
+    "core.assessment.infra.assessment_django_app",
+    "core.edition.infra.edition_django_app",
+    "core.field.infra.field_django_app",
+    "core.cross_cutting_themes.infra.cross_cutting_themes_django_app",
 ]
 
 MIDDLEWARE = [

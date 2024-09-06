@@ -1,6 +1,6 @@
 from faker.providers import DynamicProvider
 
-from core.work.models import Field
+from core.work.infra.work_django_app.models import Field
 
 fields_provider = DynamicProvider(
     provider_name="painel_fields",

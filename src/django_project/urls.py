@@ -12,8 +12,8 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
-from core.work.views import approve_work, reject_work, CanceledWork
-from core.user.utils import student_register, reset_password, forget_password
+from core.work.infra.work_django_app.views import approve_work, reject_work, CanceledWork
+from core.user.infra.user_django_app.utils import student_register, reset_password, forget_password
 from .router import router
 
 

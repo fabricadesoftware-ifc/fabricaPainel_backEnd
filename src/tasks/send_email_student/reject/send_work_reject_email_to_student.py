@@ -2,7 +2,7 @@ from django.core.mail import send_mail
 from celery import shared_task
 
 from django_project.settings import EMAIL_HOST_USER
-from core.user.models import User
+from core.user.infra.user_django_app.models import User
 
 @shared_task
 def send_work_reject_email_to_student(students_ids):

@@ -1,6 +1,6 @@
 from faker import Faker
 
-from core.assessment.models import Assessments
+from core.assessment.infra.assessment_django_app.models import Assessments
 
 from .providers import users_provider, works_provider
 

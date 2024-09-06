@@ -2,7 +2,7 @@ from random import choices
 
 from faker import Faker
 
-from core.user.models import User
+from core.user.infra.user_django_app.models import User
 
 from .providers import fields_provider
 

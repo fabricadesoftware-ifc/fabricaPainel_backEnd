@@ -1,7 +1,7 @@
 from django.core.mail import send_mail
 from celery import shared_task
 
-from core.user.models import User
+from core.user.infra.user_django_app.models import User
 
 @shared_task
 def send_work_approve_email_to_student(from_email, students_ids):

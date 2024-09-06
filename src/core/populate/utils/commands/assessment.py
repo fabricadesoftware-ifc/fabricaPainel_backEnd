@@ -3,7 +3,7 @@ import random
 from django.utils import timezone
 from faker import Faker
 
-from core.assessment.models import Assessment
+from core.assessment.infra.assessment_django_app.models import Assessment
 
 from .providers import evaluators_provider, users_provider, works_provider
 

@@ -3,7 +3,7 @@ from celery import shared_task
 
 from django_project.settings import EMAIL_HOST_USER
 
-from core.work.models import Work
+from core.work.infra.work_django_app.models import Work
 
 @shared_task
 def notify_advisor_on_data_update(work_id, accept_work_link, reject_work_link):

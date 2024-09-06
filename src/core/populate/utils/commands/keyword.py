@@ -1,6 +1,6 @@
 from faker import Faker
 
-from core.work.models import Keyword
+from core.work.infra.work_django_app.models import Keyword
 
 from .providers import works_provider
 

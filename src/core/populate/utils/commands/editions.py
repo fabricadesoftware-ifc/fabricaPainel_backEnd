@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from django.utils.timezone import get_default_timezone
 from faker import Faker
 
-from core.edition.models import Edition
+from core.edition.infra.edition_django_app.models import Edition
 
 
 def create_edition(basic_configs: dict, **options):

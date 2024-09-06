@@ -1,7 +1,7 @@
 from django.core.mail import send_mail
 from celery import shared_task
 
-from core.work.models import Work
+from core.work.infra.work_django_app.models import Work
 
 @shared_task
 def send_work_email_to_advisor(work_id, email_subject, from_email, email_recipient_list, accept_work_link, reject_work_link, students_emails):

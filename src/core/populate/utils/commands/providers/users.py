@@ -1,6 +1,6 @@
 from faker.providers import DynamicProvider
 
-from core.user.models import User
+from core.user.infra.user_django_app.models import User
 
 advisors_provider = DynamicProvider(
     provider_name="painel_advisors",

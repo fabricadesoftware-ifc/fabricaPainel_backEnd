@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
 from faker import Faker
 
-from core.work.models import Field
+from core.work.infra.work_django_app.models import Field
 
 
 def create_field(basic_configs: dict, **options):

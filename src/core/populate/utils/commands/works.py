@@ -1,6 +1,6 @@
 from faker import Faker
 
-from core.work.models import Work
+from core.work.infra.work_django_app.models import Work
 
 from .providers import advisors_provider, editions_provider, fields_provider
 

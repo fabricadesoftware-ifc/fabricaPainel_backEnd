@@ -1,12 +1,12 @@
 from rest_framework.routers import DefaultRouter
 
-from core.edition.router import router as edition_router
-from core.field.router import router as field_router
-from core.assessment.router import router as assessment_router
-from core.work.router import router as work_router
-from core.uploader.router import router as uploader_router
-from core.user.router import router as user_router
-from core.cross_cutting_themes.router import router as cross_cutting_themes_router
+from core.edition.infra.edition_django_app.router import router as edition_router
+from core.field.infra.field_django_app.router import router as field_router
+from core.assessment.infra.assessment_django_app.router import router as assessment_router
+from core.work.infra.work_django_app.router import router as work_router
+from core.uploader.infra.uploader_django_app.router import router as uploader_router
+from core.user.infra.user_django_app.router import router as user_router
+from core.cross_cutting_themes.infra.cross_cutting_themes_django_app.router import router as cross_cutting_themes_router
 
 router = DefaultRouter()
 router.registry.extend(edition_router.registry)

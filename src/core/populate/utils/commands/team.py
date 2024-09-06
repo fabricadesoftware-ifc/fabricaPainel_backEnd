@@ -1,6 +1,6 @@
 from faker import Faker
 
-from core.work.models import Team
+from core.work.infra.work_django_app.models import Team
 
 from .providers import students_provider, works_provider
 

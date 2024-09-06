@@ -1,6 +1,6 @@
 from collections import defaultdict
 
-from core.work.models import Work
+from core.work.infra.work_django_app.models import Work
 
 def distribute_works_evenly():
     # 1. Obter todos os trabalhos que ainda não têm um orientador atribuído

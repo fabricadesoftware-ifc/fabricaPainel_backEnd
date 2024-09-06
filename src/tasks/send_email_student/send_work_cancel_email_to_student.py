@@ -1,6 +1,6 @@
 from django.core.mail import send_mail
 from celery import shared_task
-from core.work.models import Work
+from core.work.infra.work_django_app.models import Work
 
 
 
