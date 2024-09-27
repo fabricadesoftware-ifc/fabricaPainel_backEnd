@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-
+from celery.schedules import crontab
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -17,8 +17,6 @@ DEBUG = True
 ALLOWED_HOSTS = []
 
 
-# Application definition
-
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -33,6 +31,7 @@ INSTALLED_APPS = [
     "django_extensions",
     "django_filters",
     "drf_spectacular",
+    "core.populate.infra.populate_django_app",
     "core.user.infra.user_django_app",
     "core.uploader.infra.uploader_django_app",
     "core.work.infra.work_django_app",
@@ -59,6 +58,14 @@ REST_FRAMEWORK = {
     # "DEFAULT_PERMISSION_CLASSES": [
     #     "rest_framework.permissions.DjangoModelPermissions",
     # ],
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle'
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '5/min',
+        'user': '50/day'
+    },
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
@@ -158,7 +165,17 @@ STATIC_URL = "static/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOWED_ORIGINS: list[str] = [
+    "http://127.0.0.1:5174",
+    "http://127.0.0.1:5173",
+    "http://127.0.0.1:3000",
+]
+
+CORS_ALLOW_METHODS = (
+    "GET",
+    "PATCH",
+    "POST",
+)
 AUTH_USER_MODEL = "user_django_app.User"
 
 GRAPH_MODELS = {
@@ -178,5 +195,15 @@ CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60
 CELERY_BROKER_URL = 'amqp://lucas:240600@localhost/fabricapainel'
 CELERY_RESULT_BACKEND = 'rpc://'
+
+
+CELERY_BEAT_SCHEDULE = {
+    'check_final_submission_date_and_assign_advisors': {
+        'task': 'core.assign_work_to_advisor', 
+        'schedule': crontab(hour=20, minute=53),  # horario dessa bomba
+        'args': (),
+    },
+}
+
 
 TOKEN_EXPIRATION_SECONDS = 1200 
