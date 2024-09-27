@@ -78,21 +78,24 @@ SPECTACULAR_SETTINGS = {
     "VERSION": "1.0.0",
 }
 
+import os
+
 TEMPLATES = [
     {
-        "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
-        "APP_DIRS": True,
-        "OPTIONS": {
-            "context_processors": [
-                "django.template.context_processors.debug",
-                "django.template.context_processors.request",
-                "django.contrib.auth.context_processors.auth",
-                "django.contrib.messages.context_processors.messages",
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [os.path.join(BASE_DIR, 'src/core/__seedwork/domain/templates')],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
             ],
         },
     },
 ]
+
 
 WSGI_APPLICATION = "django_project.wsgi.application"
 
@@ -193,14 +196,13 @@ EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 CELERY_TIMEZONE = "America/Sao_Paulo"
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60
-CELERY_BROKER_URL = 'amqp://lucas:240600@localhost/fabricapainel'
 CELERY_RESULT_BACKEND = 'rpc://'
 
 
 CELERY_BEAT_SCHEDULE = {
     'check_final_submission_date_and_assign_advisors': {
         'task': 'core.assign_work_to_advisor', 
-        'schedule': crontab(hour=20, minute=53),  # horario dessa bomba
+        'schedule': crontab(hour=15, minute=54),  # horario dessa bomba
         'args': (),
     },
 }
