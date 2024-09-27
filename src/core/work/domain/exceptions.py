@@ -1,0 +1,8 @@
+from typing import Any
+
+
+class InvalidContractType(Exception):
+    def __init__(self, invalid_type: Any) -> None:
+        self.status: Any = invalid_type
+        self.message = f"Invalid contract type: {invalid_type}"
+        super().__init__(self.message)
