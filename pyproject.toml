@@ -6,7 +6,7 @@ authors = [
     {name = "lucasantonete@gmail.com", email = "lucasantonete@gmail.com"},
 ]
 dependencies = [
-    "django>=5.0.6",
+    "django>=5.1.1",
     "djangorestframework>=3.15.1",
     "django-cors-headers>=4.3.1",
     "djangorestframework-simplejwt>=5.3.1",
@@ -27,6 +27,8 @@ dependencies = [
     "celery>=5.4.0",
     "django-celery-results>=2.5.1",
     "pandas>=2.2.2",
+    "pyexcel-ods3>=0.6.1",
+    "shell>=1.0.1",
 ]
 requires-python = "==3.11.*"
 readme = "README.md"
@@ -39,8 +41,11 @@ createsuperuser = "python src/manage.py createsuperuser"
 migrate = "python src/manage.py migrate"
 makemigrations = "python src/manage.py makemigrations"
 shell = "python src/manage.py shell"
-populate = "python src/manage.py populate_script"
+populate = "python src/manage.py populate"
 celery = "celery -A django_project worker -l info"
+celery_beat = "celery -A src.django_project beat --loglevel=info"
+
+
 
 
 [tool.pdm]
