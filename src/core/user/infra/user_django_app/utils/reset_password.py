@@ -3,16 +3,18 @@ from typing import Any, Dict, Optional
 from datetime import datetime, timedelta
 
 from rest_framework import status
-from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.decorators import api_view, authentication_classes, permission_classes, throttle_classes
 from rest_framework.request import Request
 from rest_framework.response import Response
 from drf_spectacular.utils import extend_schema
+from rest_framework.throttling import AnonRateThrottle
 
 from core.user.infra.user_django_app.models import User
 from django_project.settings import TOKEN_EXPIRATION_SECONDS
 
 extend_schema(tags=["forget_password"])
 @api_view(["POST"])
+@throttle_classes([AnonRateThrottle])
 @authentication_classes([])
 @permission_classes([])
 def reset_password(request: Request, *args: Any, **kwargs: Dict[str, Any]) -> Response:

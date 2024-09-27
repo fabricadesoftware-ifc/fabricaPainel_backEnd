@@ -3,16 +3,19 @@ import secrets
 import pytz
 
 from rest_framework import status 
-from rest_framework.decorators import api_view, permission_classes, authentication_classes
+from rest_framework.decorators import api_view, permission_classes, authentication_classes, throttle_classes
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from drf_spectacular.utils import extend_schema
+from rest_framework.throttling import AnonRateThrottle
 
 from core.user.infra.user_django_app.models import User
 from core.work.domain.tasks.send_forget_password_email import send_forget_password_email
 
+
 extend_schema(tags=["forget_password"])
 @api_view(['POST'])
+@throttle_classes([AnonRateThrottle])
 @permission_classes([AllowAny])
 @authentication_classes([])
 def forget_password(request):
