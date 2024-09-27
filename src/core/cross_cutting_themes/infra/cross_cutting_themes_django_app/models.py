@@ -6,7 +6,6 @@ class CrossCuttingTheme(models.Model):
     advisor = models.ManyToManyField(
         User,
         limit_choices_to={"is_advisor": True},
-        related_name="advisor",
         blank=True,
     )
 
