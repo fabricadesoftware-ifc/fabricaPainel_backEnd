@@ -2,11 +2,13 @@ from rest_framework.viewsets import ModelViewSet
 from drf_spectacular.utils import extend_schema
 from core.work.infra.work_django_app.models import Team
 from core.work.infra.work_django_app.serializers import TeamDetailSerializer, TeamWriteSerializer
+from rest_framework.throttling import UserRateThrottle
 
 @extend_schema(tags=['team'])
 class TeamViewSet(ModelViewSet):
     queryset = Team.objects.all()
     serializer_class = TeamDetailSerializer
+    throttle_classes = [UserRateThrottle]
 
     def get_serializer_class(self):
         if self.action in ['list', 'retrive']:

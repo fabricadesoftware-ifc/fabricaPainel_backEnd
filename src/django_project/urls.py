@@ -7,7 +7,7 @@ from drf_spectacular.views import (
     SpectacularRedocView,
     SpectacularSwaggerView,
 )
-from rest_framework.routers import DefaultRouter
+
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,

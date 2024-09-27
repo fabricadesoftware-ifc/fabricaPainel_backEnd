@@ -1,7 +1,8 @@
 from django.utils import timezone
 from uuid import uuid4
 
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, throttle_classes
+from rest_framework.throttling import UserRateThrottle
 from rest_framework.response import Response
 from rest_framework import status
 
@@ -13,6 +14,7 @@ from core.work.infra.work_django_app.models import Work
 
 
 @api_view(["GET"])
+@throttle_classes([UserRateThrottle])
 def reject_work(request, *args, **kwargs) -> Response:
     try:
         work = Work.objects.get(pk=kwargs["pk"])

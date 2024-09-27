@@ -6,11 +6,13 @@ from core.edition.infra.edition_django_app.serializers import (
     EditionDetailSerializer,
     EditionWriteSerializer
 )
+from core.edition.infra.edition_django_app.filters import EditionFilter
 
 @extend_schema(tags=["edition"])
 class EditionViewSet(ModelViewSet):
     queryset = Edition.objects.all()
     serializer_class = EditionDetailSerializer
+    filterset_class = EditionFilter
 
     def get_serializer_class(self):
         if self.action in ["list", "retrieve"]:

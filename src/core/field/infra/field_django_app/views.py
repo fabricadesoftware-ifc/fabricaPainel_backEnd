@@ -3,11 +3,13 @@ from drf_spectacular.utils import extend_schema
 
 from core.field.infra.field_django_app.models import Field
 from core.field.infra.field_django_app.serializers import FieldRetriveSerializer, FieldWriteSerializer
+from core.field.infra.field_django_app.filters import FieldFilter   
 
 @extend_schema(tags=["field"])
 class FieldViewSet(ModelViewSet):
     queryset = Field.objects.all()
     serializer_class = FieldRetriveSerializer
+    filterset_class = FieldFilter
 
     def get_serializer_class(self):
         if self.action in ["list", "retrieve"]:

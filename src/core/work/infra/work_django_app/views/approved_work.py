@@ -1,14 +1,16 @@
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, throttle_classes
 from rest_framework.response import Response
+from rest_framework.throttling import UserRateThrottle
 from rest_framework import status
 from django.utils import timezone
-from django_project.settings import EMAIL_HOST_USER
 
+from django_project.settings import EMAIL_HOST_USER
 from core.work.domain.tasks import send_work_approve_email_to_student
 from core.work.domain.tasks import send_work_new_status_approve_email_to_student
 from core.work.infra.work_django_app.models import Edition
 from core.work.infra.work_django_app.models import Work
 
+@throttle_classes([UserRateThrottle])
 @api_view(["GET"])
 def approve_work(request, verification_token) -> Response:
     try:

@@ -5,6 +5,7 @@ from core.edition.infra.edition_django_app.models import Edition
 from core.user.infra.user_django_app.models import User, Evaluator
 from core.field.infra.field_django_app.models import Field
 from core.cross_cutting_themes.infra.cross_cutting_themes_django_app.models import CrossCuttingTheme
+from core.work.domain.value_objects import WorkStatusType
     
 class Team(models.Model):
     team_members = models.ManyToManyField(User)
@@ -14,15 +15,27 @@ class Team(models.Model):
         return f"Team Members: {members}"
 
 class Ods(models.Model):
-    name = models.CharField(max_length=255, verbose_name="Sustainable Goal")
+    name = models.CharField(max_length=255, verbose_name="Sustainable Goal", unique=True)
 
     def __str__(self) -> str:
         return self.name
 
 class Work(models.Model):
-    id = models.UUIDField(primary_key=True, default = uuid4, editable=False)
-    title = models.CharField(max_length=255)
-    abstract = models.TextField()
+    PENDING = WorkStatusType.Type.PENDING.value
+    APPROVED = WorkStatusType.Type.APPROVED.value
+    NEEDS_CHANGES = WorkStatusType.Type.NEEDS_CHANGES.value
+    CANCELED = WorkStatusType.Type.CANCELED.value
+    
+    WORK_TYPE_STATUS_CHOICE = (
+        (PENDING, WorkStatusType.Type.PENDING.label),
+        (APPROVED, WorkStatusType.Type.APPROVED.label),
+        (NEEDS_CHANGES, WorkStatusType.Type.NEEDS_CHANGES.label),
+        (CANCELED, WorkStatusType.Type.CANCELED.label),
+    )
+    
+    id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
+    title = models.CharField(max_length=255, verbose_name="Título", blank=True)
+    abstract = models.TextField(blank=True, null=True)
     edition = models.ForeignKey(Edition, on_delete=models.PROTECT)
     field = models.ManyToManyField(Field, default=None, blank=True)
     evaluator = models.ManyToManyField(Evaluator, related_name="evaluator", default=None, blank=True)
@@ -32,16 +45,12 @@ class Work(models.Model):
     verification_token = models.CharField(max_length=100, blank=True, null=True)
     reject_submission_work_date = models.DateTimeField(blank=True, null=True)
     team = models.ForeignKey(Team, on_delete=models.PROTECT)
-    ods = models.ManyToManyField(Ods, related_name="SustainableGoals", default=None) 
-    class WorkStatus(models.IntegerChoices):
-        PENDING = 0, "Pendente"
-        APPROVED = 1, "Aprovado"
-        REJECTED = 2, "Rejeitado"
-        CANCELED = 3, "Cancelado"
-    status = models.IntegerField(choices=WorkStatus.choices, default=WorkStatus.PENDING)
+    ods = models.ManyToManyField(Ods, related_name="SustainableGoals", default=None)
+    status = models.PositiveSmallIntegerField(choices=WORK_TYPE_STATUS_CHOICE, default=PENDING)
+    advisor = models.ForeignKey(User, on_delete=models.PROTECT, related_name="advisor", limit_choices_to={"is_advisor": True}, default=None, blank=True, null=True)
 
     def __str__(self) -> str:
-        return f"{self.title} - {self.team} - {self.status}"
+        return f"{self.title} - {self.team} - {self.get_status_display()}"
 
     class Meta:
         verbose_name = "Trabalho"

@@ -3,20 +3,24 @@ from drf_spectacular.utils import extend_schema
 
 from .models import User, Evaluator
 from .serializers import UserSerializer, EvaluatorSerializer
+from .filters import UserFilter
 
 @extend_schema(tags=["users"])
 class UserViewSet(ModelViewSet):
     queryset = User.objects.filter(is_confirmed=True)
     serializer_class = UserSerializer
+    filterset_class = UserFilter
 
 @extend_schema(tags=["advisors"])
 class AdvisorViewSet(ModelViewSet):
     queryset = User.objects.filter(is_advisor=True)
     serializer_class = UserSerializer
     http_method_names: list[str] = ["get"]
+    filterset_class = UserFilter
 
 @extend_schema(tags=["evaluators"])
 class EvaluatorViewSet(ModelViewSet):
     queryset = Evaluator.objects.all()
     serializer_class = EvaluatorSerializer
     http_method_names: list[str] = ["get"]
+    filterset_class = UserFilter

@@ -1,17 +1,16 @@
+from uuid import uuid4
 from rest_framework.viewsets import ModelViewSet
 from drf_spectacular.utils import extend_schema
-from uuid import uuid4
-from rest_framework import status
-from rest_framework.response import Response
+from rest_framework.throttling import UserRateThrottle
 
 from core.work.infra.work_django_app.models import Work
-from core.edition.infra.edition_django_app.models import Edition
 from core.work.infra.work_django_app.serializers import (
     WorkDetailSerializer,
     WorkWriteSerializer
 )
 from core.cross_cutting_themes.infra.cross_cutting_themes_django_app.models import CrossCuttingTheme
 from core.work.domain.actions.work_paths import create_paths_and_links
+from core.work.infra.work_django_app.filters import WorkFilter
 
 from core.work.domain.tasks import notify_advisor_on_data_update
 
@@ -20,6 +19,8 @@ from core.work.domain.tasks import notify_advisor_on_data_update
 class WorkViewSet(ModelViewSet):
     queryset = Work.objects.all()
     serializer_class = WorkDetailSerializer
+    throttle_classes = [UserRateThrottle]
+    filterset_class = WorkFilter
 
     def get_serializer_class(self):
         if self.action in ["list", "retrieve"]:

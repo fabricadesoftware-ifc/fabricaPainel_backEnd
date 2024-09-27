@@ -6,6 +6,6 @@ def validate_work_date_submission_is_valid(attrs):
 
     edition = Edition.objects.get(id=attrs['edition'].id)
     
-    if attrs['initial_submission_work_date'] > edition.final_submission_date:
+    if edition.initial_submission_date > edition.final_submission_date:
         return True  
     return False

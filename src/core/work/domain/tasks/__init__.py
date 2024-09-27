@@ -1,6 +1,6 @@
-from .send_email_advisor.update.send_work_update_to_advisor import notify_advisor_on_data_update
+from .send_email_advisor.send_work_update_to_advisor import notify_advisor_on_data_update
 
-from .send_email_advisor.to_approve.send_work_email_to_advisor import send_work_email_to_advisor
+from .send_email_advisor.send_work_email_to_advisor import send_work_email_to_advisor
 
 from .send_email_advisor.send_work_cancel_email_to_advisor import send_work_cancel_email_to_advisor
 
