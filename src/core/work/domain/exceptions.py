@@ -1,7 +1,7 @@
 from typing import Any
 
 
-class InvalidContractType(Exception):
+class InvalidType(Exception):
     def __init__(self, invalid_type: Any) -> None:
         self.status: Any = invalid_type
         self.message = f"Invalid contract type: {invalid_type}"

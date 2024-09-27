@@ -1,10 +1,20 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-
+from core.field.infra.field_django_app.models import Field
+from core.user.domain.value_objects import UserType
 from .managers import CustomUserManager
 
+
 class User(AbstractUser):
+    STUDENT = UserType.Type.STUDENT.value
+    TEACHER = UserType.Type.TEACHER.value
+    ADMIN = UserType.Type.ADMIN.value
+    USER_TYPE_CHOICE = (
+        (STUDENT, UserType.Type.STUDENT),
+        (TEACHER, UserType.Type.TEACHER),
+        (ADMIN, UserType.Type.ADMIN),
+    )
     username = None
     email = models.EmailField(_("e-mail address"), unique=True)
     registration = models.IntegerField(null=True, unique=True)
@@ -16,16 +26,8 @@ class User(AbstractUser):
     password_reset_token_created = models.DateTimeField(
         _("Password Reset Token Created"), blank=True, null=True
     )  
-    class UserType(models.TextChoices):
-        STUDENT = "STUDENT", _("Student")
-        TEACHER = "TEACHER", _("Teacher")
-        ADMIN = "ADMIN", _("Admin")
-
-    user_type = models.CharField(
-        max_length=10,
-        choices=UserType.choices,
-        default=UserType.STUDENT,
-    )
+    field = models.ForeignKey(Field, on_delete=models.SET_NULL, null=True)
+    user_type = models.CharField(max_length=10,choices=USER_TYPE_CHOICE, default=STUDENT)
     is_confirmed = models.BooleanField(default=False)
 
     USERNAME_FIELD = "email"

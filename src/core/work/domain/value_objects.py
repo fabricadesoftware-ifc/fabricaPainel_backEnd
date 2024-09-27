@@ -13,7 +13,7 @@ class WorkStatusType(ValueObject):
     class Type(Enum):
         PENDING = (1, "Pendente")
         APPROVED = (2, "Aprovado")
-        REJECTED = (3, "Rejeitado")
+        NEEDS_CHANGES = (3, "Pendente com Alterações")
         CANCELED = (4, "Cancelado")
 
      
