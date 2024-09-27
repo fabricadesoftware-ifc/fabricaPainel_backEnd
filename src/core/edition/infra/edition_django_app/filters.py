@@ -11,4 +11,4 @@ class EditionFilter(FilterSet):
 
     class Meta:
         model = Edition
-        fields = ['number', 'date']
+        fields = ['date']

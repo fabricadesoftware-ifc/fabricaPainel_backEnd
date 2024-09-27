@@ -3,7 +3,7 @@ from enum import Enum
 from typing import Literal, Union
 from core.__seedwork.domain.utils.utils import Either
 from core.__seedwork.domain.value_objects import ValueObject
-from core.work.domain.exceptions import InvalidContractType
+from core.work.domain.exceptions import InvalidType
 
 @dataclass(frozen=True, slots=True)
 class WorkStatusType(ValueObject):
@@ -37,7 +37,7 @@ class WorkStatusType(ValueObject):
         try:
             return WorkStatusType.Type(value)  
         except ValueError as ex:
-            raise InvalidContractType(value) from ex 
+            raise InvalidType(value) from ex 
 
     @staticmethod
     def create(value: Union["Type", str]):
