@@ -12,13 +12,7 @@ app.conf.update(
     broker_connection_retry_on_startup=True,
 )
 app.conf.task_always_eager = False
-
-# Using a string here means the worker doesn't have to serialize
-# the configuration object to child processes.
-# - namespace='CELERY' means all celery-related configuration keys
-#   should have a `CELERY_` prefix.
 app.config_from_object('django.conf:settings', namespace='CELERY')
-
 app.autodiscover_tasks([
     'core.__seedwork.domain.tasks',
 ])

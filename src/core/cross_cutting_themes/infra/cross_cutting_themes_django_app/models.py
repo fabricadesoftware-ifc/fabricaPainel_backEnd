@@ -3,6 +3,7 @@ from core.user.infra.user_django_app.models import User
 
 class CrossCuttingTheme(models.Model):
     name = models.CharField(max_length=255, unique=True)
+    description = models.CharField(max_length=255, blank=True, null=True)
     advisor = models.ManyToManyField(
         User,
         limit_choices_to={"is_advisor": True},

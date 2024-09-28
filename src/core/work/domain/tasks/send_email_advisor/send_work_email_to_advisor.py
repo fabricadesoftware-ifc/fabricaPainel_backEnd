@@ -9,18 +9,22 @@ def send_work_email_to_advisor(work_id, email_subject, from_email, email_recipie
     try:
         work = Work.objects.get(id=work_id)
         print("aqui dentro porra")
-        # Renderiza o template HTML com as variáveis dinâmicas
-        email_html_message = render_to_string('send_work_email_to_advisor.html', {
-            'work_title': work.title,
-            'work_field': work.field,
-            'work_abstract': work.abstract,
-            'work_cross_cutting_themes': work.cross_cutting_theme,
-            'students_emails': students_emails,
-            'accept_work_link': accept_work_link,
-            'reject_work_link': reject_work_link
-        })
+        template_name = "src/templates/send_work_email_to_advisor.html"
 
-        # Opcional: texto plano do email, caso o email client não suporte HTML
+# Renderiza o template HTML com as variáveis dinâmicas
+        convert_to_html_content = render_to_string(
+            template_name,
+            {
+                'work_title': work.title,
+                'work_field': work.field,
+                'work_abstract': work.abstract,
+                'work_cross_cutting_themes': work.cross_cutting_theme,
+                'students_emails': students_emails,
+                'accept_work_link': accept_work_link,
+                'reject_work_link': reject_work_link
+            }
+        )
+
         email_message = f"""
         Título do Trabalho submetido: {work.title}
         Campo do Trabalho submetido: {work.field}
@@ -36,7 +40,7 @@ def send_work_email_to_advisor(work_id, email_subject, from_email, email_recipie
             email_message,
             from_email,
             email_recipient_list,
-            html_message=email_html_message,
+            html_message=convert_to_html_content,
             fail_silently=False,
         )
 
