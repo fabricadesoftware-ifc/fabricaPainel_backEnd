@@ -55,7 +55,7 @@ MIDDLEWARE = [
 ROOT_URLCONF = "django_project.urls"
 
 REST_FRAMEWORK = {
-    # "DEFAULT_PERMISSION_CLASSES": [
+    # "DEFAULT_PERMISSION_CLASSES": [96baf3bc
     #     "rest_framework.permissions.DjangoModelPermissions",
     # ],
     'DEFAULT_THROTTLE_CLASSES': [
@@ -72,11 +72,19 @@ REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
+SIMPLE_JWT = {
+    'AUTH_HEADER_TYPES': ('Bearer',),
+}
+
 SPECTACULAR_SETTINGS = {
     "TITLE": "Fabrica Painel API",
     "DESCRIPTION": "API para gerenciamento do Fabrica Painel, incluindo endpoints e documentação.",
     "VERSION": "1.0.0",
 }
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+]
 
 
 TEMPLATES = [

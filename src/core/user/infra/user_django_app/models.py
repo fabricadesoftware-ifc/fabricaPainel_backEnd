@@ -31,7 +31,7 @@ class User(AbstractUser):
     is_confirmed = models.BooleanField(default=False)
 
     USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = []
+    REQUIRED_FIELDS = ['name']
     EMAIL_FIELD = "email"
 
     objects = CustomUserManager()
