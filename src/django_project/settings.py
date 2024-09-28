@@ -78,12 +78,11 @@ SPECTACULAR_SETTINGS = {
     "VERSION": "1.0.0",
 }
 
-import os
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'src/core/__seedwork/domain/templates')],
+        'DIRS': [os.path.join(BASE_DIR, 'src/templates')],  # Esse caminho já está correto
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -95,6 +94,8 @@ TEMPLATES = [
         },
     },
 ]
+
+
 
 
 WSGI_APPLICATION = "django_project.wsgi.application"
@@ -202,7 +203,7 @@ CELERY_RESULT_BACKEND = 'rpc://'
 CELERY_BEAT_SCHEDULE = {
     'check_final_submission_date_and_assign_advisors': {
         'task': 'core.assign_work_to_advisor', 
-        'schedule': crontab(hour=21, minute=26),  # horario dessa bomba
+        'schedule': crontab(hour=23, minute=21),  # horario dessa bomba
         'args': (),
     },
 }

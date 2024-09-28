@@ -12,7 +12,8 @@ def populate_cross_cutting_themes():
     for cross_cutting_theme_data in cross_cutting_themes:
         try:
             # Cria o tema transversal
-            cross_cutting_theme = CrossCuttingTheme.objects.create(name=cross_cutting_theme_data["name"])
+            cross_cutting_theme = CrossCuttingTheme.objects.create(name=cross_cutting_theme_data["name"],
+            description=cross_cutting_theme_data["description"])
 
             # Verifica se os advisors existem e os associa ao tema transversal
             advisor_ids = cross_cutting_theme_data.get("advisor", [])
