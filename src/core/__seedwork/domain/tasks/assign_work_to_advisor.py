@@ -5,6 +5,8 @@ from core.user.infra.user_django_app.models import User
 from core.edition.infra.edition_django_app.models import Edition
 from datetime import datetime
 from core.work.domain.tasks.send_email_advisor.send_work_email_to_advisor import send_work_email_to_advisor
+from ..actions.work_path import work_path
+from django_project.settings import EMAIL_HOST_USER
 
 @shared_task(name="core.assign_work_to_advisor")
 def assign_work_to_advisor():
@@ -37,16 +39,19 @@ def assign_work_to_advisor():
                             work.save()
 
                             try:
-                                # Preparar os argumentos necessários para o envio do e-mail
+                                
                                 work_id = work.id
                                 email_subject = "Trabalho associado a um Advisor"
-                                from_email = "no-reply@seusistema.com"  # Email de origem
+                                from_email = EMAIL_HOST_USER  # Email de origem
                                 email_recipient_list = [advisor.email]  # Email do advisor
-                                accept_work_link = f"http://seusistema.com/accept_work/{work.id}"  # Link para aceitar o trabalho
-                                reject_work_link = f"http://seusistema.com/reject_work/{work.id}"  # Link para rejeitar o trabalho
-                                students_emails = [member.email for member in work.team.team_members.all()]  # Emails dos membros 
 
-                                
+                                # Chama a função work_path para obter os links
+                                accept_work_link, reject_work_link = work_path(work)
+
+                                print(accept_work_link, reject_work_link)
+
+                                students_emails = [member.email for member in work.team.team_members.all()]  # 
+
                                 send_work_email_to_advisor.delay(
                                     work_id,
                                     email_subject,

@@ -35,7 +35,7 @@ urlpatterns = [
         SpectacularRedocView.as_view(url_name="schema"),
         name="redoc",
     ),
-    path("accept-work/<str:verification_token>/", approve_work, name="approve-work"),
+    path("accept-work/<str:verification_token>/", approve_work, name="accept-work"),
     path("reject-work/<str:pk>/", reject_work, name="reject-work"),
     path("canceled-work/<str:pk>/", CanceledWork.as_view(), name="canceled-work"),
 ]

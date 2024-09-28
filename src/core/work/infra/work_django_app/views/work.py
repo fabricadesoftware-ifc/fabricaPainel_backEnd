@@ -51,3 +51,15 @@ class WorkViewSet(ModelViewSet):
         return response
 
         
+
+class WorkThemeFilterViewSet(ModelViewSet):
+    queryset = Work.objects.filter(cross_cutting_theme = CrossCuttingTheme.objects.get(id=1))
+    serializer_class = WorkDetailSerializer
+    throttle_classes = [UserRateThrottle]
+    http_method_names = ["get"]
+    
+    def get_serializer_class(self):
+        if self.action in ["list", "retrieve"]:
+            return WorkDetailSerializer
+        return WorkWriteSerializer
+    

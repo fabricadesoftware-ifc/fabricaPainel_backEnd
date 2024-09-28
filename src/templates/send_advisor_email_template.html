@@ -43,6 +43,32 @@
         .students-emails span {
             margin-right: 10px; /* Espaçamento entre os emails */
         }
+        a.button {
+    display: inline-block; /* Comportamento de botão */
+    color: #ffffff;
+    background-color: #34a853; /* Verde forte */
+    padding: 10px 20px;
+    text-decoration: none;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+a.button:hover {
+    background-color: #2c8b47; /* Escurecer o verde */
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2); /* Sombra mais intensa no hover */
+}
+
+a.button.reject {
+    background-color: #d9534f; /* Vermelho */
+}
+
+a.button.reject:hover {
+    background-color: #c9302c; /* Escurecer o vermelho */
+}
+
     </style>
     <title>Work Submission</title>
 </head>
@@ -69,14 +95,14 @@
         </div>
 
         <p>
-            Para aceitar essa submissão, clique no link abaixo:
+            Para aceitar essa submissão, clique no botão abaixo:
         </p>
-        <a href="{{ accept_work_link }}">Aceitar Submissão</a>
-
+        <a href="{{ accept_work_link }}" class="button">Aceitar Submissão</a>
+        
         <p>
-            Caso deseje rejeitar, clique aqui:
+            Caso deseje rejeitar, clique no botão abaixo:
         </p>
-        <a href="{{ reject_work_link }}" class="reject">Rejeitar Submissão</a>
+        <a href="{{ reject_work_link }}" class="button reject">Rejeitar Submissão</a>
     </div>
     <div class="footer">
         <p>Este é um email automático. Por favor, não responda.</p>

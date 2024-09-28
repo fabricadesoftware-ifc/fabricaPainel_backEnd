@@ -1,4 +1,5 @@
 from django.utils import timezone
+from datetime import datetime
 from uuid import uuid4
 
 from rest_framework.decorators import api_view, throttle_classes
@@ -10,7 +11,7 @@ from core.work.domain.tasks import send_work_new_status_reject_email_to_student
 from core.work.domain.tasks import send_work_reject_email_to_student
 
 from core.edition.infra.edition_django_app.models import Edition
-from core.work.infra.work_django_app.models import Work
+from core.work.infra.work_django_app.models import Work, WorkStatusType
 
 
 @api_view(["GET"])
@@ -32,10 +33,10 @@ def reject_work(request, *args, **kwargs) -> Response:
     for s in student.all():
         students_ids.append(s.id)
 
-    if work.final_submission_work_date is not None and work.verification_token is None and edition.final_advisor_date > timezone.now():
+    if work.final_submission_work_date is not None and work.verification_token is None and edition.final_advisor_date > datetime.now().date():
         work.final_submission_work_date = None
         work.verification_token = token
-        work.status = Work.WorkStatus.REJECTED
+        work.status = WorkStatusType.Type.NEEDS_CHANGES.value
         work.reject_submission_work_date = timezone.now()
         work.save()
     
@@ -44,8 +45,8 @@ def reject_work(request, *args, **kwargs) -> Response:
             {"message": "O Trabalho que estava aceito foi rejeitado."},
             status=status.HTTP_200_OK,
         )
-    elif edition.final_advisor_date > timezone.now():
-        work.status = Work.WorkStatus.REJECTED
+    elif edition.final_advisor_date > datetime.now().date():
+        work.status = WorkStatusType.Type.NEEDS_CHANGES.value
         work.reject_submission_work_date = timezone.now()
         work.save()
         send_work_reject_email_to_student.delay(students_ids)

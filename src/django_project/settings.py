@@ -203,7 +203,7 @@ CELERY_RESULT_BACKEND = 'rpc://'
 CELERY_BEAT_SCHEDULE = {
     'check_final_submission_date_and_assign_advisors': {
         'task': 'core.assign_work_to_advisor', 
-        'schedule': crontab(hour=23, minute=21),  # horario dessa bomba
+        'schedule': crontab(hour=1, minute=40),  # horario dessa bomba
         'args': (),
     },
 }
