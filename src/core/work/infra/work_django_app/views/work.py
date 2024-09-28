@@ -3,7 +3,7 @@ from rest_framework.viewsets import ModelViewSet
 from drf_spectacular.utils import extend_schema
 from rest_framework.throttling import UserRateThrottle
 
-from core.work.infra.work_django_app.models import Work
+from core.work.infra.work_django_app.models import Work, WorkStatusType
 from core.work.infra.work_django_app.serializers import (
     WorkDetailSerializer,
     WorkWriteSerializer
@@ -37,7 +37,7 @@ class WorkViewSet(ModelViewSet):
             token = str(uuid4())
             work.verification_token = token
             work.final_submission_work_date = None
-            work.status = Work.WorkStatus.PENDING
+            work.status = WorkStatusType.Type.PENDING.value
             work.save()
 
             accept_work_link, reject_work_link = create_paths_and_links(instance, token=token)
@@ -51,15 +51,4 @@ class WorkViewSet(ModelViewSet):
         return response
 
         
-
-class WorkThemeFilterViewSet(ModelViewSet):
-    queryset = Work.objects.filter(cross_cutting_theme = CrossCuttingTheme.objects.get(id=1))
-    serializer_class = WorkDetailSerializer
-    throttle_classes = [UserRateThrottle]
-    http_method_names = ["get"]
-    
-    def get_serializer_class(self):
-        if self.action in ["list", "retrieve"]:
-            return WorkDetailSerializer
-        return WorkWriteSerializer
     
