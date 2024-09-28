@@ -8,6 +8,7 @@ class FieldRetriveSerializer(serializers.ModelSerializer):
             "id",
             "name",
         ]
+        depth = 1
 
 
 class FieldWriteSerializer(serializers.ModelSerializer):
@@ -16,3 +17,4 @@ class FieldWriteSerializer(serializers.ModelSerializer):
         fields: list[str] = [
             "name",
         ]
+    depth = 1

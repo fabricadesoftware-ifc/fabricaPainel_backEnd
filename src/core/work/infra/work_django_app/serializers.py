@@ -34,7 +34,8 @@ class WorkDetailSerializer(serializers.ModelSerializer):
             'ods',
             'reject_submission_work_date',
             'status'
-        ]    
+        ]   
+        depth = 1 
 
 class WorkWriteSerializer(serializers.ModelSerializer):
     class Meta:
