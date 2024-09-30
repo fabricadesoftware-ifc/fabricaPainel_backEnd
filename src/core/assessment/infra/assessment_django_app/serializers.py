@@ -7,7 +7,7 @@ class AssessmentsDetailSerializer(serializers.ModelSerializer):
         model = Assessments
         fields: list[str] = [
             "id",
-            "registration",
+            "evaluator",
             "work",
         ]
 
@@ -16,7 +16,7 @@ class AssessmentsWriteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Assessments
         fields: list[str] = [
-            "registration",
+            "evaluator",
             "work",
         ]
 
@@ -25,7 +25,7 @@ class AssessmentDetailSerializer(serializers.ModelSerializer):
         model = Assessment
         fields: list[str] = [
             "id",
-            "registration",
+            "evaluator",
             "work",
             "grade",
             "evaluator",
@@ -38,7 +38,7 @@ class AssessmentWriteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Assessment
         fields: list[str] = [
-            "registration",
+            "evaluator",
             "work",
             "grade",
             "evaluator",

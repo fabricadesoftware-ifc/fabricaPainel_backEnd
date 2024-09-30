@@ -31,7 +31,7 @@ class EvaluatorViewSet(ModelViewSet):
     queryset = Evaluator.objects.all()
     serializer_class = EvaluatorSerializer
     http_method_names: list[str] = ["get"]
-    filterset_class = UserFilter
+    
 
 @extend_schema(tags=["auth"])
 class CustomTokenObtainPairView(TokenObtainPairView):

@@ -1,5 +1,5 @@
 from django.db import models
-from core.user.infra.user_django_app.models import Evaluator, User
+from core.user.infra.user_django_app.models import Evaluator
 from core.work.infra.work_django_app.models import Work
 
 class Assessment(models.Model):
