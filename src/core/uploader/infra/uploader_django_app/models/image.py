@@ -7,10 +7,8 @@ from core.uploader.domain.utils.files import get_content_type
 
 
 def image_file_path(image, _):
-    extension = mimetypes.guess_extension(image.file.file.content_type)
-    if extension == ".jpe":
-        extension = ".jpg"
-    return "images/{}{}".format(image.public_id, extension or "")
+    extension = ".jpg"
+    return f"images/{image.public_id}{extension}"
 
 
 class Image(models.Model):
@@ -32,7 +30,7 @@ class Image(models.Model):
             "Should not be readable until the image is attached to another object."
         ),
     )
-    file = models.ImageField(upload_to=image_file_path)
+    file = models.ImageField(upload_to=image_file_path, null=True, blank=True)
     description = models.CharField(max_length=255, blank=True)
     uploaded_on = models.DateTimeField(auto_now_add=True)
 

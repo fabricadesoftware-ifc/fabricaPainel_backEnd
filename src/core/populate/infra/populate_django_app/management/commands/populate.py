@@ -3,7 +3,7 @@ from core.populate.infra.populate_django_app.management.commands._cross_cutting_
 from core.populate.infra.populate_django_app.management.commands._ods import populate_ods
 from core.populate.infra.populate_django_app.management.commands._basic import populate_users, populate_team
 from core.populate.infra.populate_django_app.management.commands._field import populate_fields
-from core.populate.infra.populate_django_app.management.commands._edition import populate_editions
+from core.populate.infra.populate_django_app.management.commands._edition import populate_editions, populate_images
 from core.populate.infra.populate_django_app.management.commands._work import populate_works
 
 
@@ -116,6 +116,7 @@ class Command(BaseCommand):
         populate_users()
         populate_team()
         populate_ods()
+        populate_images()
         populate_editions()
         populate_fields()
         populate_cross_cutting_themes()

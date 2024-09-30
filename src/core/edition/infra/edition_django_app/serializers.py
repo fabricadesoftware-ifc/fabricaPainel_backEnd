@@ -25,6 +25,7 @@ class EditionDetailSerializer(serializers.ModelSerializer):
             "workload",
             "is_open"
         ]
+        depth = 1
 
 
 class EditionWriteSerializer(serializers.ModelSerializer):
