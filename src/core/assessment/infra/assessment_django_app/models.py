@@ -11,8 +11,8 @@ class Assessment(models.Model):
         related_name="assessments_evaluator",
         )
     date_time = models.DateTimeField()
-    student_feedback = models.TextField()
-    committee_feedback = models.TextField()
+    student_feedback = models.TextField(blank=True, null=True)
+    committee_feedback = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return f"{self.evaluator} - {self.work.title} - {self.grade}"
