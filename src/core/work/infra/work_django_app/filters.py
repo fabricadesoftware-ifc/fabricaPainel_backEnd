@@ -1,30 +1,47 @@
-from django_filters.rest_framework import (
-    FilterSet,
-    CharFilter,
-    BaseInFilter
-)
-from core.work.infra.work_django_app.models import Work, Ods  # Import correto do modelo Ods
+from django_filters.rest_framework import FilterSet, CharFilter, BaseInFilter
+from django.db.models import Func
+from unidecode import unidecode
+from core.work.infra.work_django_app.models import (
+    Work,
+    Ods,
+)  # Import correto do modelo Ods
 
 
 class WorkFilter(FilterSet):
-    title = CharFilter(field_name='title', lookup_expr='icontains')
-    field = CharFilter(field_name='field__name', lookup_expr='icontains')
-    theme = CharFilter(field_name='cross_cutting_theme__name', lookup_expr='icontains')
-    status = BaseInFilter(field_name="status", lookup_expr='in')
-    
-    # Ajustando os campos de team_member
-    team_member_name = CharFilter(field_name='team__team_members__name', lookup_expr='icontains')
-    team_member_email = CharFilter(field_name='team__team_members__email', lookup_expr='icontains')
-    team_member_registration = CharFilter(field_name='team__team_members__registration', lookup_expr='icontains')
+    title = CharFilter(field_name="title", lookup_expr="icontains")
+    field = CharFilter(field_name="field__name", lookup_expr="icontains")
+    theme = CharFilter(method="filter_theme")
+    status = BaseInFilter(field_name="status", lookup_expr="in")
+
+    team_member_name = CharFilter(
+        field_name="team__team_members__name", lookup_expr="icontains"
+    )
+    team_member_email = CharFilter(
+        field_name="team__team_members__email", lookup_expr="icontains"
+    )
+    team_member_registration = CharFilter(
+        field_name="team__team_members__registration", lookup_expr="icontains"
+    )
+
+    def filter_theme(self, queryset, name, value):
+        normalized_value = unidecode(value).lower()
+
+        matching_ids = [
+            work.id
+            for work in queryset
+            if normalized_value in unidecode(work.cross_cutting_theme.name).lower()
+        ]
+
+        return queryset.filter(id__in=matching_ids)
 
     class Meta:
         model = Work
-        fields = ['title', 'field', 'theme', 'status']  
+        fields = ["title", "field", "theme", "status", "team"]
 
 
 class OdsFilter(FilterSet):
-    name = CharFilter(field_name='name', lookup_expr='icontains')
+    name = CharFilter(field_name="name", lookup_expr="icontains")
 
     class Meta:
-        model = Ods  
-        fields = ['name']
+        model = Ods
+        fields = ["name"]

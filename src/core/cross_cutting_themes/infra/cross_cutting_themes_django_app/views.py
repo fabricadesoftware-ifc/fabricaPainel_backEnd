@@ -9,5 +9,6 @@ from core.cross_cutting_themes.infra.cross_cutting_themes_django_app.filters imp
 class CrossCuttingThemeViewSet(viewsets.ModelViewSet):
     queryset = CrossCuttingTheme.objects.all()
     serializer_class = CrossCuttingThemeSerializer
+    filterset_class = CrossCuttingThemeFilter
     http_method_names: list[str] = ["get", "post", "patch", "delete"]
     # filterset_class = CrossCuttingThemeFilter

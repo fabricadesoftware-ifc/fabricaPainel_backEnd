@@ -10,6 +10,9 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = "__all__"
 
+    def Create(self, validated_data):
+        return User.objects.create_user(**validated_data)
+
 
 class EvaluatorSerializer(serializers.ModelSerializer):
     class Meta:

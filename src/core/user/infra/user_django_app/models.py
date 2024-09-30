@@ -39,6 +39,8 @@ class User(AbstractUser):
     def __str__(self):
         return self.email + " - " + (self.name or "No Name")
 
+    def get_user_type_display(self):
+        return dict(self.USER_TYPE_CHOICE).get(self.user_type, "Unknown")
 
     class Meta:
         verbose_name = "Usuário"

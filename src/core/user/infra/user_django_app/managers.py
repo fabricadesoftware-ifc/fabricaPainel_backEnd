@@ -1,5 +1,6 @@
 from django.contrib.auth.base_user import BaseUserManager
 from django.utils.translation import gettext_lazy as _
+from core.user.domain.value_objects import UserType
 
 
 class CustomUserManager(BaseUserManager):
@@ -17,6 +18,7 @@ class CustomUserManager(BaseUserManager):
         email = self.normalize_email(email)
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
+        user.user_type = UserType.Type.STUDENT.value
         user.save()
         return user
 

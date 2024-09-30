@@ -8,8 +8,14 @@ from .serializers import UserSerializer, EvaluatorSerializer
 from .filters import UserFilter
 
 @extend_schema(tags=["users"])
-class UserViewSet(ModelViewSet):
+class UserConfirmedViewSet(ModelViewSet):
     queryset = User.objects.filter(is_confirmed=True)
+    serializer_class = UserSerializer
+    filterset_class = UserFilter
+
+@extend_schema(tags=["users"])
+class UserViewSet(ModelViewSet):
+    queryset = User.objects.all()
     serializer_class = UserSerializer
     filterset_class = UserFilter
 
