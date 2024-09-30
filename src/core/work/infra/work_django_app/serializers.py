@@ -39,6 +39,7 @@ class WorkDetailSerializer(serializers.ModelSerializer):
             'needs_changes_submission_work_date',
             'status',
             'advisor',
+            'co_advisor',
         ]   
         depth = 1 
 
@@ -54,6 +55,7 @@ class WorkWriteSerializer(serializers.ModelSerializer):
             'cross_cutting_theme',
             'team',
             'ods',
+            'co_advisor',       
 
         ]
 
@@ -98,6 +100,9 @@ class TeamDetailSerializer(serializers.ModelSerializer):
         fields: list[str] = [
             'id',
             'team_members',
+            'tokens',
+            'accept_tokens',
+            'reject_tokens'
         ]
 
         
@@ -107,6 +112,9 @@ class TeamWriteSerializer(serializers.ModelSerializer):
         model = Team
         fields: list[str] = [
             'team_members',
+            'tokens',
+            'accept_tokens',
+            'reject_tokens'
         ]
     # def validate(self, attrs):
     #     # print("Entrou na validação")  # Para ver se o método validate está sendo chamado

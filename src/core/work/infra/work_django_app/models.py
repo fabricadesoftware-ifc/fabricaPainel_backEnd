@@ -1,6 +1,7 @@
 from django.db import models
 from uuid import uuid4
 
+
 from core.edition.infra.edition_django_app.models import Edition
 from core.user.infra.user_django_app.models import User, Evaluator
 from core.field.infra.field_django_app.models import Field
@@ -9,6 +10,16 @@ from core.work.domain.value_objects import WorkStatusType
     
 class Team(models.Model):
     team_members = models.ManyToManyField(User)
+    tokens = models.JSONField(default=dict)
+    accept_tokens = models.JSONField(default=dict)
+    reject_tokens = models.JSONField(default=dict)
+
+    def generate_token(self):
+        """
+        Gera um token único (UUID) que será utilizado para validação de membros.
+        """
+        return str(uuid4())
+
 
     def __str__(self) -> str:
         members = ", ".join([user.name if user.name else "Unknown" for user in self.team_members.all()])
@@ -48,7 +59,7 @@ class Work(models.Model):
     ods = models.ManyToManyField(Ods, related_name="SustainableGoals", default=None)
     status = models.PositiveSmallIntegerField(choices=WORK_TYPE_STATUS_CHOICE, default=PENDING)
     advisor = models.ForeignKey(User, on_delete=models.PROTECT, related_name="advisor", limit_choices_to={"is_advisor": True}, default=None, blank=True, null=True)
-
+    co_advisor = models.ForeignKey(User, on_delete=models.PROTECT, related_name="co_advisor", limit_choices_to={"type": 'TEACHER'}, default=None, blank=True, null=True)
     def __str__(self) -> str:
         return f"{self.title} - {self.team} - {self.get_status_display()}"
 

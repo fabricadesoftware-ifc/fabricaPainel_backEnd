@@ -1,12 +1,13 @@
 from rest_framework.viewsets import ModelViewSet
 from drf_spectacular.utils import extend_schema
 
-from core.assessment.infra.assessment_django_app.models import Assessment, Assessments
+from core.assessment.infra.assessment_django_app.models import Assessment, Assessments, StudentAssessments
 from core.assessment.infra.assessment_django_app.serializers import (
     AssessmentDetailSerializer,
     AssessmentWriteSerializer,
     AssessmentsDetailSerializer,
     AssessmentsWriteSerializer,
+    StudentAssessmentsSerializer
     
 )
 from core.assessment.infra.assessment_django_app.filters import AssessmentFilterSet
@@ -34,4 +35,10 @@ class AssessmentsViewSet(ModelViewSet):
             return AssessmentsDetailSerializer
         return AssessmentsWriteSerializer
     http_method_names = ["get", "post", "patch", "delete"]
+    
+
+class StudentAssessmentsViewSet(ModelViewSet):
+    queryset = StudentAssessments.objects.all()
+    serializer_class = StudentAssessmentsSerializer
+
     

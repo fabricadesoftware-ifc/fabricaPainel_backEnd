@@ -5,7 +5,7 @@ from celery import shared_task
 
 
 @shared_task
-def send_work_email_to_advisor(work_id, email_subject, from_email, email_recipient_list, accept_work_link, reject_work_link, students_emails):
+def send_work_email_to_advisor(work_id, email_subject, from_email, email_recipient_list, accept_work_link, students_emails):
     try:
         # Obtém o objeto Work
         work = Work.objects.get(id=work_id)
@@ -30,10 +30,9 @@ def send_work_email_to_advisor(work_id, email_subject, from_email, email_recipie
             cross_theme_name = "Nenhum tema transversal"
         html = html.replace("{{ work_cross_cutting_themes }}", cross_theme_name)
         html = html.replace("{{ accept_work_link }}", accept_work_link)
-        html = html.replace("{{ reject_work_link }}", reject_work_link)
 
         print(work.team.team_members.all())
-        students_emails = work.team.team_members.all().values_list('email', flat=True)
+        students_emails = work.team.team_members.all().values_list('name', flat=True)
         students_emails_list = (students_emails)
         html = html.replace("{{ students_emails }}", ', '.join(students_emails_list)) 
        

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from core.assessment.infra.assessment_django_app.models import Assessments, Assessment
+from core.assessment.infra.assessment_django_app.models import Assessments, Assessment, StudentAssessments
 
 
 class AssessmentsDetailSerializer(serializers.ModelSerializer):
@@ -47,4 +47,13 @@ class AssessmentWriteSerializer(serializers.ModelSerializer):
             "student_feedback",
         ]
 
-
+class StudentAssessmentsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StudentAssessments
+        fields: list[str] = [
+            "id",
+            "grade",
+            "work",
+            "date_time",
+            "student",
+        ]

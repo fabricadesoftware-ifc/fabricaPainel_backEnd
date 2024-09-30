@@ -14,6 +14,7 @@ from rest_framework_simplejwt.views import (
 from core.user.infra.user_django_app.views import CustomTokenObtainPairView
 from core.work.infra.work_django_app.views import approve_work, needs_changes_work, CanceledWork
 from core.user.infra.user_django_app.utils import reset_password, forget_password, validate_token
+
 from .router import router
 
 

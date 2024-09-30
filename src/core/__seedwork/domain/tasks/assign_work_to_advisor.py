@@ -10,7 +10,6 @@ from django_project.settings import EMAIL_HOST_USER
 
 @shared_task(name="core.assign_work_to_advisor")
 def assign_work_to_advisor():
-    # Obtém as edições cuja data de submissão final foi ultrapassada
     print("Iniciando a associação de advisors aos trabalhos.")
     now = datetime.now().date()
     editions = Edition.objects.all()
@@ -39,13 +38,11 @@ def assign_work_to_advisor():
                             work.save()
 
                             try:
-                                
                                 work_id = work.id
                                 email_subject = "Trabalho associado a um Advisor"
-                                from_email = EMAIL_HOST_USER  # Email de origem
-                                email_recipient_list = [advisor.email]  # Email do advisor
-
-                                # Chama a função work_path para obter os links
+                                from_email = EMAIL_HOST_USER 
+                                email_recipient_list = [advisor.email]
+                          
                                 accept_work_link, reject_work_link = work_path(work)
 
                                 print(accept_work_link, reject_work_link)
@@ -58,7 +55,6 @@ def assign_work_to_advisor():
                                     from_email,
                                     email_recipient_list,
                                     accept_work_link,
-                                    reject_work_link,
                                     students_emails
                                 )
                                 print("Enviou o email")

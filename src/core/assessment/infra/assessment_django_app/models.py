@@ -1,5 +1,5 @@
 from django.db import models
-from core.user.infra.user_django_app.models import Evaluator
+from core.user.infra.user_django_app.models import Evaluator, User
 from core.work.infra.work_django_app.models import Work
 
 class Assessment(models.Model):
@@ -25,3 +25,17 @@ class Assessments(models.Model):
 
     def __str__(self):
         return f"{self.evaluator} - {self.work.title}"
+    
+
+class StudentAssessments(models.Model):
+    grade = models.FloatField()
+    work = models.ForeignKey(Work, on_delete=models.PROTECT)
+    date_time = models.DateTimeField()
+    student = models.ForeignKey(
+        User,
+        on_delete=models.PROTECT,
+        limit_choices_to={'type': 'STUDENT'}
+    )
+
+    def __str__(self):
+        return f"{self.student} - {self.work.title} - {self.grade}"
