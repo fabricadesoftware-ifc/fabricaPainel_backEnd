@@ -7,8 +7,8 @@ from rest_framework.throttling import UserRateThrottle
 from rest_framework.response import Response
 from rest_framework import status
 
-from core.work.domain.tasks import send_work_new_status_reject_email_to_student
-from core.work.domain.tasks import send_work_reject_email_to_student
+from core.work.domain.tasks import send_work_new_status_needs_changes_email_to_student
+from core.work.domain.tasks import send_work_needs_changes_email_to_student
 
 from core.edition.infra.edition_django_app.models import Edition
 from core.work.infra.work_django_app.models import Work, WorkStatusType
@@ -16,7 +16,9 @@ from core.work.infra.work_django_app.models import Work, WorkStatusType
 
 @api_view(["GET"])
 @throttle_classes([UserRateThrottle])
-def reject_work(request, *args, **kwargs) -> Response:
+def needs_changes_work(request, *args, **kwargs) -> Response:
+    message = request.query_params.get("message", None)
+    
     try:
         work = Work.objects.get(pk=kwargs["pk"])
         
@@ -37,21 +39,22 @@ def reject_work(request, *args, **kwargs) -> Response:
         work.final_submission_work_date = None
         work.verification_token = token
         work.status = WorkStatusType.Type.NEEDS_CHANGES.value
-        work.reject_submission_work_date = timezone.now()
+        work.needs_changes_submission_work_date = timezone.now()
         work.save()
-    
-        send_work_new_status_reject_email_to_student.delay(students_ids)
+        
+        send_work_new_status_needs_changes_email_to_student.delay(students_ids, message, work.title)
         return Response(
-            {"message": "O Trabalho que estava aceito foi rejeitado."},
+            {"message": "O Trabalho que estava aceito precisa de madanças."},
             status=status.HTTP_200_OK,
         )
     elif edition.final_advisor_date > datetime.now().date():
         work.status = WorkStatusType.Type.NEEDS_CHANGES.value
-        work.reject_submission_work_date = timezone.now()
+        work.needs_changes_submission_work_date = timezone.now()
         work.save()
-        send_work_reject_email_to_student.delay(students_ids)
+        
+        send_work_needs_changes_email_to_student.delay(students_ids, message, work.title)
         return Response(
-            {"message": "O Trabalho foi rejeitado."},
+            {"message": "O Trabalho precisa de mudanças."},
             status=status.HTTP_200_OK,
         )
 

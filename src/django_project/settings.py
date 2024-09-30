@@ -55,17 +55,17 @@ MIDDLEWARE = [
 ROOT_URLCONF = "django_project.urls"
 
 REST_FRAMEWORK = {
-    "DEFAULT_PERMISSION_CLASSES": [
-        "rest_framework.permissions.DjangoModelPermissions",
-    ],
-    'DEFAULT_THROTTLE_CLASSES': [
-        'rest_framework.throttling.AnonRateThrottle',
-        'rest_framework.throttling.UserRateThrottle'
-    ],
-    'DEFAULT_THROTTLE_RATES': {
-        'anon': '10/min',
-        'user': '25/min'
-    },
+    # "DEFAULT_PERMISSION_CLASSES": [96baf3bc
+    #     "rest_framework.permissions.DjangoModelPermissions",
+    # ],
+    # 'DEFAULT_THROTTLE_CLASSES': [
+    #     'rest_framework.throttling.AnonRateThrottle',
+    #     'rest_framework.throttling.UserRateThrottle'
+    # ],
+    # 'DEFAULT_THROTTLE_RATES': {
+    #     'anon': '5/min',
+    #     'user': '50/day'
+    # },
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
@@ -182,6 +182,7 @@ CORS_ALLOWED_ORIGINS: list[str] = [
     "http://127.0.0.1:5174",
     "http://127.0.0.1:5173",
     "http://127.0.0.1:3000",
+    "http://localhost:3000",
 ]
 
 CORS_ALLOW_METHODS = (

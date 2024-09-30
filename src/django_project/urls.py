@@ -12,7 +12,7 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
 from core.user.infra.user_django_app.views import CustomTokenObtainPairView
-from core.work.infra.work_django_app.views import approve_work, reject_work, CanceledWork
+from core.work.infra.work_django_app.views import approve_work, needs_changes_work, CanceledWork
 from core.user.infra.user_django_app.utils import reset_password, forget_password, validate_token
 from .router import router
 
@@ -36,9 +36,9 @@ urlpatterns = [
         SpectacularRedocView.as_view(url_name="schema"),
         name="redoc",
     ),
-    path("accept-work/<str:verification_token>/", approve_work, name="accept-work"),
-    path("reject-work/<str:pk>/", reject_work, name="reject-work"),
-    path("canceled-work/<str:pk>/", CanceledWork.as_view(), name="canceled-work"),
+    path("api/accept-work/<str:verification_token>/", approve_work, name="accept-work"),
+    path("api/needs-changes-work/<str:pk>/", needs_changes_work, name="needs-changes-work"),
+    path("api/canceled-work/<str:pk>/", CanceledWork.as_view(), name="canceled-work"),
 ]
 
 urlpatterns += static(settings.MEDIA_ENDPOINT, document_root=settings.MEDIA_ROOT)

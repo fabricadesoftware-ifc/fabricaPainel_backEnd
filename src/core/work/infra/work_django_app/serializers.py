@@ -36,7 +36,7 @@ class WorkDetailSerializer(serializers.ModelSerializer):
             'verification_token',
             'team',
             'ods',
-            'reject_submission_work_date',
+            'needs_changes_submission_work_date',
             'status',
             'advisor',
         ]   

@@ -43,7 +43,7 @@ class Work(models.Model):
     initial_submission_work_date = models.DateTimeField(blank=True, null=True)
     final_submission_work_date = models.DateTimeField(blank=True, null=True)
     verification_token = models.CharField(max_length=100, blank=True, null=True)
-    reject_submission_work_date = models.DateTimeField(blank=True, null=True)
+    needs_changes_submission_work_date = models.DateTimeField(blank=True, null=True)
     team = models.ForeignKey(Team, on_delete=models.PROTECT)
     ods = models.ManyToManyField(Ods, related_name="SustainableGoals", default=None)
     status = models.PositiveSmallIntegerField(choices=WORK_TYPE_STATUS_CHOICE, default=PENDING)
