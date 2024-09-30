@@ -17,6 +17,10 @@ class OdsSerializer(serializers.ModelSerializer):
         ]
 
 class WorkDetailSerializer(serializers.ModelSerializer):
+    evaluator = serializers.StringRelatedField(many=True)
+    team = serializers.StringRelatedField()
+
+
     class Meta:
         model = Work
         fields: list[str] = [
@@ -33,7 +37,8 @@ class WorkDetailSerializer(serializers.ModelSerializer):
             'team',
             'ods',
             'reject_submission_work_date',
-            'status'
+            'status',
+            'advisor',
         ]   
         depth = 1 
 
@@ -48,7 +53,8 @@ class WorkWriteSerializer(serializers.ModelSerializer):
             'evaluator',
             'cross_cutting_theme',
             'team',
-            'ods'
+            'ods',
+
         ]
 
     def validate(self, attrs):

@@ -9,7 +9,7 @@ from core.work.infra.work_django_app.serializers import (
     WorkWriteSerializer
 )
 from core.cross_cutting_themes.infra.cross_cutting_themes_django_app.models import CrossCuttingTheme
-from core.work.domain.actions.work_paths import create_paths_and_links
+from core.__seedwork.domain.actions.work_path import work_path
 from core.work.infra.work_django_app.filters import WorkFilter
 
 from core.work.domain.tasks import notify_advisor_on_data_update
@@ -40,8 +40,8 @@ class WorkViewSet(ModelViewSet):
             work.status = WorkStatusType.Type.PENDING.value
             work.save()
 
-            accept_work_link, reject_work_link = create_paths_and_links(instance, token=token)
-
+            accept_work_link, reject_work_link = work_path(work)
+            print("caralho")
             notify_advisor_on_data_update.delay(
              instance.id, 
              accept_work_link=accept_work_link, 

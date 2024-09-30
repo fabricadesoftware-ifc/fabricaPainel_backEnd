@@ -10,4 +10,4 @@ class CrossCuttingThemeViewSet(viewsets.ModelViewSet):
     queryset = CrossCuttingTheme.objects.all()
     serializer_class = CrossCuttingThemeSerializer
     http_method_names: list[str] = ["get", "post", "patch", "delete"]
-    filterset_class = CrossCuttingThemeFilter
+    # filterset_class = CrossCuttingThemeFilter

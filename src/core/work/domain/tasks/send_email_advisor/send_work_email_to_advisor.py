@@ -23,13 +23,18 @@ def send_work_email_to_advisor(work_id, email_subject, from_email, email_recipie
         fields_string = ', '.join(fields_list)  # Converte para uma string separada por vírgulas
         html = html.replace("{{ work_field }}", fields_string)
         html = html.replace("{{ work_abstract }}", work.abstract)
-        html = html.replace("{{ work_cross_cutting_themes }}", str(work.cross_cutting_theme))
+
+        if work.cross_cutting_theme:
+            cross_theme_name = work.cross_cutting_theme.name
+        else:
+            cross_theme_name = "Nenhum tema transversal"
+        html = html.replace("{{ work_cross_cutting_themes }}", cross_theme_name)
         html = html.replace("{{ accept_work_link }}", accept_work_link)
         html = html.replace("{{ reject_work_link }}", reject_work_link)
 
         print(work.team.team_members.all())
         students_emails = work.team.team_members.all().values_list('email', flat=True)
-        students_emails_list = list(students_emails)
+        students_emails_list = (students_emails)
         html = html.replace("{{ students_emails }}", ', '.join(students_emails_list)) 
        
         plain_message = strip_tags(html)

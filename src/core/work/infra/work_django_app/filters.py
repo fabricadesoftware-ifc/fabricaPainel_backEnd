@@ -8,9 +8,9 @@ from core.work.infra.work_django_app.models import Work, Ods  # Import correto d
 
 class WorkFilter(FilterSet):
     title = CharFilter(field_name='title', lookup_expr='icontains')
-    field = CharFilter(field_name='field', lookup_expr='icontains')
+    field = CharFilter(field_name='field__name', lookup_expr='icontains')
     theme = CharFilter(field_name='cross_cutting_theme__name', lookup_expr='icontains')
-    status = BaseInFilter(field_name="status__id", lookup_expr='in')
+    status = BaseInFilter(field_name="status", lookup_expr='in')
     
     # Ajustando os campos de team_member
     team_member_name = CharFilter(field_name='team__team_members__name', lookup_expr='icontains')

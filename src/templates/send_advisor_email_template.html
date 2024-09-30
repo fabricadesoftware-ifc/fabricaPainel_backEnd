@@ -39,9 +39,11 @@
         .students-emails {
             margin: 10px 0;
             color: #000000; /* Preto */
+            background-color: white;
         }
         .students-emails span {
             margin-right: 10px; /* Espaçamento entre os emails */
+            background-color: white;
         }
         a.button {
     display: inline-block; /* Comportamento de botão */
@@ -87,11 +89,11 @@ a.button.reject:hover {
         <h3>{{ work_abstract }}</h3>
 
         <h2>Tema Transversal:</h2>
-        <h3>{{ work_cross_cutting_theme }}</h3>
+        <h3>{{ work_cross_cutting_themes }}</h3>
 
         <h2>Estudantes envolvidos:</h2>
         <div class="students-emails">
-            {{ students_emails|join:", " }} <!-- Exibindo emails em uma linha -->
+            {{ students_emails }} <!-- Exibindo emails em uma linha -->
         </div>
 
         <p>

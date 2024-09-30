@@ -50,11 +50,17 @@ def approve_work(request, verification_token) -> Response:
         print(edition.final_advisor_date, "adsad")
         work.final_submission_work_date = timezone.now()
         work.verification_token = None
+        
         work.status = WorkStatusType.Type.APPROVED.value
         work.save()
 
-        if work.final_submission_work_date is not None:
-            send_work_approve_email_to_student.delay(from_email, students_ids)
+        advisor_id = work.advisor.id
+
+        print(work.verification_token)
+
+        if work.final_submission_work_date is not None and work.verification_token is None:
+            send_work_approve_email_to_student.delay(from_email, students_ids, advisor_id)
+            
         return Response(
         {"message": "Trabalho aceito."},
         status=status.HTTP_200_OK,
