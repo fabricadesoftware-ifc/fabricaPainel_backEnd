@@ -2,8 +2,6 @@ from .send_email_advisor.send_work_update_to_advisor import notify_advisor_on_da
 
 from .send_email_advisor.send_work_email_to_advisor import send_work_email_to_advisor
 
-from .send_email_advisor.send_work_cancel_email_to_advisor import send_work_cancel_email_to_advisor
-
 from .send_email_student.reject.send_work_reject_email_to_student import send_work_reject_email_to_student
 from .send_email_student.reject.send_work_new_status_reject_email_to_student import send_work_new_status_reject_email_to_student
 
