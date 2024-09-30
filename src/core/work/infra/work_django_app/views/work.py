@@ -29,24 +29,22 @@ class WorkViewSet(ModelViewSet):
     http_method_names = ["get", "post", "patch", "delete"]
 
     def update(self, request, *args, **kwargs):
-        work = Work.objects.get(pk=self.kwargs["pk"])
         response = super().update(request, *args, **kwargs)
-        instance = self.get_object()
+        work = self.get_object()
 
         if work.verification_token is None and work.final_submission_work_date is not None:
             token = str(uuid4())
             work.verification_token = token
             work.final_submission_work_date = None
             work.status = WorkStatusType.Type.PENDING.value
-            work.save()
 
+            work.save()
             accept_work_link, reject_work_link = work_path(work)
-            print("caralho")
             notify_advisor_on_data_update.delay(
-             instance.id, 
-             accept_work_link=accept_work_link, 
-             reject_work_link=reject_work_link
-             )
+                work.id, 
+                accept_work_link=accept_work_link, 
+                reject_work_link=reject_work_link
+            )
 
         return response
 

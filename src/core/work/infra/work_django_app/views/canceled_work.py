@@ -2,9 +2,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
 
-
 from django_project.settings import EMAIL_HOST_USER
-from core.work.domain.tasks import send_work_cancel_email_to_advisor
 from core.work.domain.tasks import send_work_cancel_email_to_student
 from core.work.infra.work_django_app.models import Work
 
@@ -22,7 +20,6 @@ class CanceledWork(APIView):
 
         from_email = EMAIL_HOST_USER
         try:
-            send_work_cancel_email_to_advisor.delay(work_id, from_email)
             send_work_cancel_email_to_student.delay(work_id, from_email)
         except:
             return Response(
