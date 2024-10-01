@@ -19,6 +19,10 @@ class WorkFilter(FilterSet):
     field = CharFilter(field_name="field__name", lookup_expr="icontains")
     theme = CharFilter(method="filter_theme")
     status = BaseInFilter(field_name="status", lookup_expr="in")
+    advisor_id = CharFilter(field_name="advisor__id", lookup_expr="icontains")
+    team_member_id = CharFilter(
+        field_name="team__team_members__id", lookup_expr="icontains"
+    )
 
     team_member_name = CharFilter(
         field_name="team__team_members__name", lookup_expr="icontains"
