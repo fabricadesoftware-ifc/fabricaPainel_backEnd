@@ -9,7 +9,7 @@ from core.cross_cutting_themes.infra.cross_cutting_themes_django_app.models impo
 from core.work.domain.value_objects import WorkStatusType
     
 class Team(models.Model):
-    team_members = models.ManyToManyField(User, related_name="team", blank=True, null=True)
+    team_members = models.ManyToManyField(User, related_name="team", blank=True)
     tokens = models.JSONField(default=dict)
     accept_tokens = models.JSONField(default=dict)
     reject_tokens = models.JSONField(default=dict)
@@ -60,6 +60,7 @@ class Work(models.Model):
     status = models.PositiveSmallIntegerField(choices=WORK_TYPE_STATUS_CHOICE, default=PENDING)
     advisor = models.ForeignKey(User, on_delete=models.PROTECT, related_name="advisor", limit_choices_to={"is_advisor": True}, default=None, blank=True, null=True)
     co_advisor = models.ForeignKey(User, on_delete=models.PROTECT, related_name="co_advisor", limit_choices_to={"type": 'TEACHER'}, default=None, blank=True, null=True)
+    feedback = models.TextField(blank=True, null=True)
     def __str__(self) -> str:
         return f"{self.title} - {self.team} - {self.get_status_display()}"
 
