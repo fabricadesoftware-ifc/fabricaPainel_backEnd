@@ -5,8 +5,6 @@ from core.assessment.infra.assessment_django_app.models import Assessment, Asses
 from core.assessment.infra.assessment_django_app.serializers import (
     AssessmentDetailSerializer,
     AssessmentWriteSerializer,
-    AssessmentsDetailSerializer,
-    AssessmentsWriteSerializer,
     StudentAssessmentsSerializer
     
 )
@@ -24,18 +22,6 @@ class AssessmentViewSet(ModelViewSet):
         return AssessmentWriteSerializer
     http_method_names = ["get", "post", "patch", "delete"]
 
-
-@extend_schema(tags=["assessments"])
-class AssessmentsViewSet(ModelViewSet):
-    queryset = Assessments.objects.all()
-    serializer_class = AssessmentsDetailSerializer
-
-    def get_serializer_class(self):
-        if self.action in ["list", "retrieve"]:
-            return AssessmentsDetailSerializer
-        return AssessmentsWriteSerializer
-    http_method_names = ["get", "post", "patch", "delete"]
-    
 
 class StudentAssessmentsViewSet(ModelViewSet):
     queryset = StudentAssessments.objects.all()

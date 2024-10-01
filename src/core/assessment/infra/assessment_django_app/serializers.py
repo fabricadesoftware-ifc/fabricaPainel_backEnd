@@ -1,25 +1,6 @@
 from rest_framework import serializers
 from core.assessment.infra.assessment_django_app.models import Assessments, Assessment, StudentAssessments
 
-
-class AssessmentsDetailSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Assessments
-        fields: list[str] = [
-            "id",
-            "evaluator",
-            "work",
-        ]
-
-
-class AssessmentsWriteSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Assessments
-        fields: list[str] = [
-            "evaluator",
-            "work",
-        ]
-
 class AssessmentDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Assessment
