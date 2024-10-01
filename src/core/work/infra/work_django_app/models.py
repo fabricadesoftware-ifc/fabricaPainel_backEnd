@@ -9,7 +9,7 @@ from core.cross_cutting_themes.infra.cross_cutting_themes_django_app.models impo
 from core.work.domain.value_objects import WorkStatusType
     
 class Team(models.Model):
-    team_members = models.ManyToManyField(User)
+    team_members = models.ManyToManyField(User, related_name="team", blank=True, null=True)
     tokens = models.JSONField(default=dict)
     accept_tokens = models.JSONField(default=dict)
     reject_tokens = models.JSONField(default=dict)

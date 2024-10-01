@@ -3,12 +3,19 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.contrib.auth import authenticate
 
 from .models import User, Evaluator
-
+from core.work.infra.work_django_app.models import Team
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = "__all__"
+        fields = [
+            "id",
+            "email",
+            "name",
+            "user_type",
+            "is_confirmed",
+            "team"
+        ]
 
     def Create(self, validated_data):
         return User.objects.create_user(**validated_data)

@@ -9,15 +9,18 @@ from core.work.infra.work_django_app.serializers import TeamDetailSerializer, Te
 from core.user.infra.user_django_app.models import User
 from core.work.domain.tasks.send_email_student.send_email_to_member import send_email_to_member
 
+from rest_framework.throttling import UserRateThrottle
+from core.work.infra.work_django_app.filters import TeamFilter
 
 @extend_schema(tags=['team'])
 class TeamViewSet(ModelViewSet):
     queryset = Team.objects.all()
     serializer_class = TeamDetailSerializer
     throttle_classes = [UserRateThrottle]
+    filterset_class = TeamFilter
 
     def get_serializer_class(self):
-        if self.action in ['list', 'retrive']:
+        if self.action in ['list', 'retrieve']:
             return TeamDetailSerializer
         return TeamWriteSerializer
     http_method_names = ['get', 'post', 'patch', 'delete']

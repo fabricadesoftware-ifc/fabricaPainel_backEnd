@@ -1,11 +1,18 @@
-from django_filters.rest_framework import FilterSet, CharFilter, BaseInFilter
+from django_filters.rest_framework import FilterSet, CharFilter, BaseInFilter, ModelChoiceFilter
 from django.db.models import Func
 from unidecode import unidecode
 from core.work.infra.work_django_app.models import (
     Work,
     Ods,
-)  # Import correto do modelo Ods
+    Team
+)
 
+class TeamFilter(FilterSet):
+    team_members = BaseInFilter(field_name="team_members", lookup_expr="in")
+    
+    class Meta:
+        model = Team
+        fields = ["team_members"]
 
 class WorkFilter(FilterSet):
     title = CharFilter(field_name="title", lookup_expr="icontains")

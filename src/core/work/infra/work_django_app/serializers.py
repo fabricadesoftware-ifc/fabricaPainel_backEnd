@@ -7,6 +7,7 @@ from core.work.infra.work_django_app.models import Team
 from core.work.infra.work_django_app.models import Ods
 from core.work.domain.validations import (validate_work_date_submission_is_valid, validate_work_team_members, 
                                           validate_work_max_and_min_members, validate_work_team_member_is_student)
+from core.user.infra.user_django_app.serializers import UserSerializer
 
 class OdsSerializer(serializers.ModelSerializer):
     class Meta:
@@ -95,6 +96,7 @@ class OdsSerializer(serializers.ModelSerializer):
         ]
 
 class TeamDetailSerializer(serializers.ModelSerializer):
+    team_members = UserSerializer(many=True)
     class Meta:
         model = Team
         fields: list[str] = [
