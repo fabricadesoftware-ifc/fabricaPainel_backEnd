@@ -77,7 +77,7 @@ class TeamViewSet(ModelViewSet):
                 continue
             
         for token in tokens:
-            send_email_to_member(token.user, token.token, team.id)
+            send_email_to_member.delay(token.user.id, token.token, team.id)
             
         team.tokens.set(tokens)
         team.save()
@@ -103,8 +103,9 @@ class TeamViewSet(ModelViewSet):
                 team.save()
                 members_token.append(new_token)
                 
-            for token in members_token:
-                send_email_to_member(token.user, token.token, team.id)
+            for t in members_token:
+                print(t.user)
+                send_email_to_member.delay(t.user.id, t.token, team.id)
                 
             return Response({"message": "Usuário adicionado ao time."}, status=status.HTTP_200_OK)
         

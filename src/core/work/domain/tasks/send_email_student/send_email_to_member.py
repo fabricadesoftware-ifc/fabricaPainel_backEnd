@@ -6,8 +6,9 @@ from django.utils.html import strip_tags
 
 
 @shared_task
-def send_email_to_member(member, token, team):
-
+def send_email_to_member(member_id, token, team):
+    member = User.objects.get(id=member_id)
+    
     with open('src/templates/send_email_to_member.template.html', 'r') as file:
         html = file.read()
 
@@ -16,12 +17,11 @@ def send_email_to_member(member, token, team):
     html = html.replace("{{ member.name }}", member.name)
     html = html.replace("{{ link }}", link)
     plain_message = strip_tags(html)
-
+    
     send_mail(
+        'Você foi convidado para um time!',
         plain_message,
-        EMAIL_HOST_USER,
-        message=plain_message, 
-        from_email=EMAIL_HOST_USER, 
-        recipient_list=recipient_list , 
-        html_message=html,  
+        from_email=EMAIL_HOST_USER,
+        recipient_list=recipient_list,
+        html_message=html
     )
