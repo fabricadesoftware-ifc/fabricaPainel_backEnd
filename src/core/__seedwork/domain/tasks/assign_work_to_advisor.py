@@ -1,12 +1,13 @@
 from celery import shared_task
 from django.db.models import Count
+from django_project.settings import EMAIL_HOST_USER
+from datetime import datetime
+
 from core.work.infra.work_django_app.models import Work
 from core.user.infra.user_django_app.models import User
 from core.edition.infra.edition_django_app.models import Edition
-from datetime import datetime
 from core.work.domain.tasks.send_email_advisor.send_work_email_to_advisor import send_work_email_to_advisor
 from ..actions.work_path import work_path
-from django_project.settings import EMAIL_HOST_USER
 
 @shared_task(name="core.assign_work_to_advisor")
 def assign_work_to_advisor():
