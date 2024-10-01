@@ -4,10 +4,10 @@ from celery import shared_task
 from core.user.infra.user_django_app.models import User
 
 @shared_task
-def send_email_to_member(member, token):
+def send_email_to_member(member, token, team):
     send_mail(
         'Convite para participar de um time',
-        f'Olá {member.name}, você foi convidado para participar de um time. Para aceitar o convite, acesse o link: http://localhost:3000/accept-invite/{token}',
+        f'Olá {member.name}, você foi convidado para participar de um time. Para aceitar o convite, acesse o link: http://localhost:3000/auth/accept-invite-team/{team}/{token}',
         EMAIL_HOST_USER,
         [member.email],
         fail_silently=False,

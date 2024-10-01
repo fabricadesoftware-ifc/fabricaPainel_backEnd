@@ -7,12 +7,17 @@ from core.user.infra.user_django_app.models import User, Evaluator
 from core.field.infra.field_django_app.models import Field
 from core.cross_cutting_themes.infra.cross_cutting_themes_django_app.models import CrossCuttingTheme
 from core.work.domain.value_objects import WorkStatusType
+
+class Token(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    token = models.CharField(max_length=100)
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name="sender", blank=True, null=True)
     
 class Team(models.Model):
     team_members = models.ManyToManyField(User, related_name="team", blank=True)
-    tokens = models.JSONField(default=dict)
-    accept_tokens = models.JSONField(default=dict)
-    reject_tokens = models.JSONField(default=dict)
+    tokens = models.ManyToManyField(Token, related_name="tokens", blank=True)
+    accept_tokens = models.ManyToManyField(Token, related_name="accept_tokens", blank=True)
+    reject_tokens = models.ManyToManyField(Token, related_name="reject_tokens", blank=True)
 
     def generate_token(self):
         """

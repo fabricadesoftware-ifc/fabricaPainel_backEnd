@@ -5,3 +5,4 @@ from .canceled_work import CanceledWork
 from .keyword import KeywordViewSet
 from .team import TeamViewSet
 from .ods import OdsViewSet
+from .resend_invite_team import resend_invite_team

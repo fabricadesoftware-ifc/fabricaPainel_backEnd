@@ -5,7 +5,7 @@ from celery import Celery
 # Set the default Django settings module for the 'celery' program.
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'django_project.settings')
 
-app = Celery('django_project', broker='amqp://lucas:240600@localhost/fabricapainel')
+app = Celery('django_project', broker='amqp://rafaelbochi:2012@localhost/fabricapainel')
 
 
 app.conf.update(

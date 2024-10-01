@@ -3,7 +3,7 @@ from rest_framework import serializers
 
 from core.work.infra.work_django_app.models import Work
 from core.work.infra.work_django_app.models import Keyword
-from core.work.infra.work_django_app.models import Team
+from core.work.infra.work_django_app.models import Team, Token
 from core.work.infra.work_django_app.models import Ods
 from core.work.domain.validations import (validate_work_date_submission_is_valid, validate_work_team_members, 
                                           validate_work_max_and_min_members, validate_work_team_member_is_student)
@@ -96,9 +96,24 @@ class OdsSerializer(serializers.ModelSerializer):
             "id",
             "name",
         ]
+    
+class TokenSerializer(serializers.ModelSerializer):
+    user = UserSerializer()
+    sender = UserSerializer()
+    class Meta:
+        model = Token
+        fields: list[str] = [
+            'id',
+            'user',
+            'sender',
+            'token'
+        ]
 
 class TeamDetailSerializer(serializers.ModelSerializer):
     team_members = UserSerializer(many=True)
+    tokens = TokenSerializer(many=True)
+    accept_tokens = TokenSerializer(many=True)
+    reject_tokens = TokenSerializer(many=True)
     class Meta:
         model = Team
         fields: list[str] = [
@@ -108,6 +123,7 @@ class TeamDetailSerializer(serializers.ModelSerializer):
             'accept_tokens',
             'reject_tokens'
         ]
+        depth = 1
 
         
 

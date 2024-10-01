@@ -189,6 +189,7 @@ CORS_ALLOW_METHODS = (
     "GET",
     "PATCH",
     "POST",
+    "PUT"
 )
 AUTH_USER_MODEL = "user_django_app.User"
 
