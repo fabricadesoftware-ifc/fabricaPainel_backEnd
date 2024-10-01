@@ -1,20 +1,53 @@
 fields = [
     {
-        "name": "Informatica",
+        "name": "Informática",
     },
     {
-        "name": "Engenharia",
+        "name": "Agropecuária",
     },
     {
-        "name": "Medicina",
-    },
-    {
-        "name": "Direito",
+        "name": "Matematica",
     },
     {
         "name": "Biologia",
     },
     {
-        "name": "Fisica",
+        "name": "Física",
+    },
+    {
+        "name": "Química",
+    },
+    {
+        "name": "Educação Física",	
+    },
+    {
+        "name": "Geografia",
+    },
+    {
+        "name": "História",
+    },
+    {
+        "name": "Filosofia",
+    },
+    {
+        "name": "Sociologia",
+    },
+    {
+        "name": "Artes",
+    },
+    {
+        "name": "Língua Portuguesa",
+    },
+    {
+        "name": "Língua Inglesa",
+    },
+    {
+        "name": "Língua Espanhola",
+    },
+    {
+        "name": "Língua Brasileira de Sinais",
+    },
+    {
+        "name": "Administração",
     }
 ]
