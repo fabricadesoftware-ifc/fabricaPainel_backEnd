@@ -34,7 +34,7 @@ class StudentAssessments(models.Model):
     student = models.ForeignKey(
         User,
         on_delete=models.PROTECT,
-        limit_choices_to={'type': 'STUDENT'}
+        limit_choices_to={'user_type': 'STUDENT'}
     )
 
     def __str__(self):
