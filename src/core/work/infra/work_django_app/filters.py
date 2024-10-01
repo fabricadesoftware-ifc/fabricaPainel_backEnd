@@ -8,7 +8,12 @@ from core.work.infra.work_django_app.models import (
 )
 
 class TeamFilter(FilterSet):
-    team_members = BaseInFilter(field_name="team_members", lookup_expr="in")
+    team_member_name = CharFilter(
+        field_name="team_members__name", lookup_expr="icontains"
+    )
+    team_member_id = CharFilter(
+        field_name="team_members__id", lookup_expr="exact"
+    )
     
     class Meta:
         model = Team
@@ -21,7 +26,7 @@ class WorkFilter(FilterSet):
     status = BaseInFilter(field_name="status", lookup_expr="in")
     advisor_id = CharFilter(field_name="advisor__id", lookup_expr="icontains")
     team_member_id = CharFilter(
-        field_name="team__team_members__id", lookup_expr="icontains"
+        field_name="team__team_members__id", lookup_expr="exact"
     )
 
     team_member_name = CharFilter(

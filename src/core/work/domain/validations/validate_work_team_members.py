@@ -10,5 +10,6 @@ def validate_work_team_members(data):
         for member in team_members:
             if Work.objects.filter(team__team_members=member).exists():
                 raise ValidationError(f"O membro {member.name} já está associado a outro trabalho.")
-
-        return data
+    else:
+        raise ValidationError("O campo 'team' é obrigatório.")
+    return False
