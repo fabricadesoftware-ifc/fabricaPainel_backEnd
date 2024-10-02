@@ -16,15 +16,12 @@ def assign_work_to_advisor():
     editions = Edition.objects.all()
 
     for edition in editions:
-        print(edition, edition.is_open)
         if edition.is_open == True:
             if edition.final_submission_date < now:
-                print(f"Edição {edition} com data de submissão final ultrapassada.")
                 works = Work.objects.filter(edition__id=edition.id)
-                print(f"Works para a edição {edition.id}: {works}")
                 for work in works:
                     theme = work.cross_cutting_theme
-                    print(f"Associando advisor ao trabalho: {work.title}")
+                   
 
                     if theme:
                         advisors = User.objects.filter(
@@ -45,8 +42,6 @@ def assign_work_to_advisor():
                                 email_recipient_list = [advisor.email]
                           
                                 accept_work_link = work_path(work)
-
-                                print(accept_work_link)
 
                                 students_emails = [member.email for member in work.team.team_members.all()]  # 
 

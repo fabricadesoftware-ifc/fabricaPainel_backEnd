@@ -113,7 +113,6 @@ class TeamViewSet(ModelViewSet):
                 members_token.append(new_token)
                 
             for t in members_token:
-                print(t.user)
                 send_email_to_member.delay(t.user.id, t.token, team.id)
                 
             return Response({"message": "Usuário adicionado ao time."}, status=status.HTTP_200_OK)
@@ -157,7 +156,6 @@ class TeamViewSet(ModelViewSet):
             edition: Edition = Edition.objects.get(is_open=True)
             
             if timezone.now().date() > edition.final_submission_date:
-                print("Token expirado.")
                 return Response({"error": "Data de cadastro expirada."}, status=status.HTTP_400_BAD_REQUEST)
             
             

@@ -12,7 +12,6 @@ def notify_advisor_on_data_update(work_id, accept_work_link, reject_work_link):
     from_email = EMAIL_HOST_USER
     recipient_list = [work.advisor.email]
 
-    print('DENTRO DESSA PORRA DE EMAIL')
     with open('src/templates/send_work_update_email_to_advisor_template.html', 'r') as file:
         html = file.read()
 
@@ -36,9 +35,6 @@ def notify_advisor_on_data_update(work_id, accept_work_link, reject_work_link):
     html = html.replace("{{ students_emails }}", ', '.join(students_emails_list))
 
     plain_message = strip_tags(html)
-
-    print(plain_message)
-    print(from_email)
 
     subject = "Atualização do Trabalho: " + work.title
 

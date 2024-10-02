@@ -6,19 +6,13 @@ from celery import shared_task
 @shared_task
 def send_work_email_to_advisor(work_id, email_subject, from_email, email_recipient_list, accept_work_link, students_emails):
     try:
-        # Obtém o objeto Work
         work = Work.objects.get(id=work_id)
-        print("Dentro da tarefa de envio de email")
 
-        # Lê o conteúdo do template HTML
         with open('src/templates/send_advisor_email_template.html', 'r') as file:
             html = file.read()
 
-        # Substitui os placeholders no HTML
         html = html.replace("{{ work_title }}", work.title)
-
-        # Obtém os campos relacionados
-        fields_list = work.field.all().values_list('name', flat=True)
+        fields_list = [field.name for field in work.field.all()]
         fields_string = ', '.join(fields_list)
         html = html.replace("{{ work_field }}", fields_string)
         html = html.replace("{{ work_abstract }}", work.abstract)
@@ -28,28 +22,17 @@ def send_work_email_to_advisor(work_id, email_subject, from_email, email_recipie
         else:
             cross_theme_name = "Nenhum tema transversal"
         html = html.replace("{{ work_cross_cutting_themes }}", cross_theme_name)
-        html = html.replace("{{ accept_work_link }}", accept_work_link)
-
-        # Obtém os nomes dos membros da equipe
-        students_emails = work.team.team_members.all().values_list('name', flat=True)
+        html = html.replace("{{ accept_work_link }}", accept_work_link)       
+        students_emails = [member.email for member in work.team.team_members.all()]
         if students_emails:
             students_emails_list = ', '.join(students_emails)
         else:
             students_emails_list = "Nenhum estudante na equipe"
 
-
-        
-
-        print(students_emails_list)
-        # Garante que estamos substituindo com uma string
         html = html.replace("{{ students_emails }}", str(students_emails_list))
 
         plain_message = strip_tags(html)
 
-        print(plain_message)
-        print(from_email)
-
-        # Envia o email
         send_mail(
             email_subject,
             plain_message,

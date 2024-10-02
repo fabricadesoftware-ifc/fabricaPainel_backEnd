@@ -3,7 +3,8 @@ from core.work.infra.work_django_app.models import Team
 from core.populate.infra.resources.data_student import students
 from core.populate.infra.resources.data_advisor import advisors
 from core.populate.infra.resources.data_teams import student_team
-
+from core.populate.infra.resources.data_teachers import teachers
+from collections import Counter
 
 def __get_or_create_super_user() -> None:
     super_user = User.objects.filter(is_superuser=True)
@@ -28,39 +29,20 @@ def populate_users():
     __get_or_create_super_user()
 
     students_to_create = []
-    advisors_to_create = []
-
     for student_data in students:
-        print(student_data, "populando estudantes")
+
+        student_data["email"] = student_data["email"].strip()
+
         user = User(
-            email=student_data["email"],
-            name=student_data["name"],
-            registration=student_data["registration"],
+            **student_data,
             is_advisor=False,
             user_type=User.STUDENT,
-            password='student123',
             # password=User.set_password(student_data["password"])
         )
 
         students_to_create.append(user)
 
     User.objects.bulk_create(students_to_create)
-
-    for advisor_data in advisors:
-        print(advisor_data, "populando professores")
-        user = User(
-            email=advisor_data["email"],
-            name=advisor_data["name"],
-            registration=advisor_data["registration"],
-            is_advisor=True,
-            user_type=User.TEACHER,
-            password='advisor123',
-            # password=User.set_password(advisor_data["password"]
-        )
-
-        advisors_to_create.append(user)
-
-    User.objects.bulk_create(advisors_to_create)
 
 
 def populate_team():
@@ -83,3 +65,36 @@ def populate_team():
         team.save()
 
     print("Teams populados com sucesso.")
+
+
+
+def populate_teacher():
+    if User.objects.filter(is_advisor=True).exists():
+        return
+    
+    teachers_to_create = []
+
+    emails = [usuario["email"].strip() for usuario in teachers] 
+    email_count = Counter(emails)
+
+    usuarios_com_emails_repetidos = [usuario for usuario in teachers if email_count[usuario["email"].strip()] > 1]
+
+    print(usuarios_com_emails_repetidos)
+
+    for teacher_data in teachers:
+        print(teacher_data, "populando professores")
+        user = User(
+            email=teacher_data["email"].strip(),
+            name=teacher_data["name"],
+            registration=teacher_data["registration"],
+            is_advisor=True,
+            user_type=User.TEACHER,
+            password='teacher123',
+            # password=User.set_password(teacher_data["password"])
+        )
+
+        teachers_to_create.append(user)
+
+    User.objects.bulk_create(teachers_to_create)
+
+    print("Professores populados com sucesso.")

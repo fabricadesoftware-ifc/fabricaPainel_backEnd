@@ -12,4 +12,4 @@ def work_path(instance, **kwargs):
                                    kwargs={"verification_token": token})
     accept_work_link = f"http://localhost:8000/{accept_work_path}"
 
-    return accept_work_link, 
+    return accept_work_link

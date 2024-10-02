@@ -1,10 +1,11 @@
 from django.core.management.base import BaseCommand, CommandError, CommandParser
 from core.populate.infra.populate_django_app.management.commands._cross_cutting_themes import populate_cross_cutting_themes
 from core.populate.infra.populate_django_app.management.commands._ods import populate_ods
-from core.populate.infra.populate_django_app.management.commands._basic import populate_users, populate_team
+from core.populate.infra.populate_django_app.management.commands._basic import populate_users, populate_team, populate_teacher
 from core.populate.infra.populate_django_app.management.commands._field import populate_fields
 from core.populate.infra.populate_django_app.management.commands._edition import populate_editions, populate_images
 from core.populate.infra.populate_django_app.management.commands._work import populate_works
+
 
 
 
@@ -49,6 +50,16 @@ class Command(BaseCommand):
             help="insert work in database"
         )
         parser.add_argument(
+            "--teachers",
+            action="store_true",
+            help="insert work in database"
+        )
+        parser.add_argument(
+            "--prod",
+            action="store_true",
+            help="insert work in database"
+        )
+        parser.add_argument(
             "--all",
             action="store_true",
             help="insert all in database"
@@ -66,6 +77,10 @@ class Command(BaseCommand):
                 self.__handle_cross_cutting_themes()
             if options.get("works"):
                 self.__handle_work()
+            if options.get("teachers"):
+                self.__handle_teacher()
+            if options.get("prod"):
+                self.__handle_prod()
             if options.get("all"):
                 self.__handle_all()
 
@@ -110,6 +125,19 @@ class Command(BaseCommand):
         populate_works()
         self.stdout.write(self.style.SUCCESS("OK"))
 
+    def __handle_teacher(self) -> None:
+        self.stdout.write("Populating teacher data in the database...", ending=" ")
+        populate_teacher()
+        self.stdout.write(self.style.SUCCESS("OK"))
+
+    def __handle_prod(self) -> None:
+        self.stdout.write("Populating for prod data in the database...", ending=" ")
+        populate_ods()
+        populate_cross_cutting_themes()
+        populate_fields()
+        populate_users()
+        populate_teacher()
+        self.stdout.write(self.style.SUCCESS("OK"))
 
     def __handle_all(self) -> None:
         self.stdout.write("Populating all data in the database...", ending=" ")

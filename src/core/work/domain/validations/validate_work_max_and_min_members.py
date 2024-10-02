@@ -9,7 +9,6 @@ def validate_work_max_and_min_members(attrs):
     else:
         num_members = team_members.count()  
     
-    print(f"Quantidade de membros no time: {num_members}")
     
     if num_members > 7 or num_members < 4:
         raise ValidationError("O time não pode ter mais do que 7 membros e menos que 4")

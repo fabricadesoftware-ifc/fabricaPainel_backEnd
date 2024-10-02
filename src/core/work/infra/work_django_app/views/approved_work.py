@@ -31,7 +31,6 @@ def approve_work(request, verification_token) -> Response:
     edition = Edition.objects.get(id=work.edition.id)
 
     if work.status == WorkStatusType.Type.NEEDS_CHANGES.value and edition.final_advisor_date > datetime.now().date():
-        print(edition.final_advisor_date)
         work.final_submission_work_date = timezone.now()
         work.verification_token = None
         work.status = Work.status.APPROVED
@@ -47,7 +46,6 @@ def approve_work(request, verification_token) -> Response:
         )
 
     elif edition.final_advisor_date > datetime.now().date():
-        print(edition.final_advisor_date, "adsad")
         work.final_submission_work_date = timezone.now()
         work.verification_token = None
         
@@ -55,8 +53,6 @@ def approve_work(request, verification_token) -> Response:
         work.save()
 
         advisor_id = work.advisor.id
-
-        print(work.verification_token)
 
         if work.final_submission_work_date is not None and work.verification_token is None:
             send_work_approve_email_to_student.delay(from_email, students_ids, advisor_id)

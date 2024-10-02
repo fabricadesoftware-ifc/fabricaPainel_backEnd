@@ -7,8 +7,8 @@ from core.work.domain.exceptions import InvalidType
 
 @dataclass(frozen=True, slots=True)
 class WorkStatusType(ValueObject):
-    value: "Type" = field(init=False)  # O valor imutável representando o status
-    init_value: InitVar[Union["Type", str]]  # Aceita um tipo Type ou uma string na inicialização
+    value: "Type" = field(init=False) 
+    init_value: InitVar[Union["Type", str]] 
 
     class Type(Enum):
         PENDING = (1, "Pendente")
