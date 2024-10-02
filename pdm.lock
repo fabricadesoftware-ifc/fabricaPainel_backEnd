@@ -5,7 +5,7 @@
 groups = ["default"]
 strategy = ["cross_platform", "inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:16a8b4b9a944fff8dd3a20139b0a28b4338eb03be6ef2c26c4e1c662811ee6a7"
+content_hash = "sha256:ba89e6b42ef5d19060599238705cdad6a98b5404d63d18b67d702731882e8603"
 
 [[metadata.targets]]
 requires_python = "==3.11.*"
@@ -875,16 +875,6 @@ dependencies = [
 files = [
     {file = "pyexcel-ods3-0.6.1.tar.gz", hash = "sha256:53740fc9bc6e91e43cdc0ee4f557bb3b252d8493d34f2c11d26a93c53cfebc2e"},
     {file = "pyexcel_ods3-0.6.1-py3-none-any.whl", hash = "sha256:ca61d139879349a5d4b0a241add6504474c59fa280d1804b76f56ee4ba30eb8b"},
-]
-
-[[package]]
-name = "pygraphviz"
-version = "1.13"
-requires_python = ">=3.10"
-summary = "Python interface to Graphviz"
-groups = ["default"]
-files = [
-    {file = "pygraphviz-1.13.tar.gz", hash = "sha256:6ad8aa2f26768830a5a1cfc8a14f022d13df170a8f6fdfd68fd1aa1267000964"},
 ]
 
 [[package]]

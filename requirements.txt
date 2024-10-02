@@ -51,7 +51,6 @@ pydot==2.0.0
 pyexcel-ezodf==0.3.4
 pyexcel-io==0.6.6
 pyexcel-ods3==0.6.1
-pygraphviz==1.13
 pyjwt==2.8.0
 pyparsing==3.1.2
 pypdfium2==4.30.0
