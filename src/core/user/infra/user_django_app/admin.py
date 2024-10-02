@@ -48,7 +48,7 @@ class CustomUserAdmin(UserAdmin):
         ),
         (
             _("Personal info"),
-            {"fields": (['user_type','is_advisor','is_confirmed'])},
+            {"fields": (['user_type','is_advisor'])},
         ),
         (
             _("Permissions"),
@@ -71,7 +71,6 @@ class CustomUserAdmin(UserAdmin):
                     "user_type",
                     "is_staff",
                     "is_active",
-                    "is_confirmed",
                     "groups",
                     "user_permissions",
                 ),
