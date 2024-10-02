@@ -202,7 +202,7 @@ EMAIL_BACKEND = os.getenv("EMAIL_BACKEND")
 EMAIL_HOST = os.getenv("EMAIL_HOST")
 EMAIL_PORT = os.getenv("EMAIL_PORT")
 EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS")
-EMAIL_HOST_USER = 'fabrica.painel.integracao@gmail.com'
+EMAIL_HOST_USER = 'fabricadesoftware.araquari@ifc.edu.br'
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 
 CELERY_TIMEZONE = "America/Sao_Paulo"
@@ -214,7 +214,7 @@ CELERY_RESULT_BACKEND = 'rpc://'
 CELERY_BEAT_SCHEDULE = {
     'check_final_submission_date_and_assign_advisors': {
         'task': 'core.assign_work_to_advisor', 
-        'schedule': crontab(hour=22, minute=42),  # horario dessa bomba
+        'schedule': crontab(hour=9, minute=37),  # horario dessa bomba
         'args': (),
     },
 }
