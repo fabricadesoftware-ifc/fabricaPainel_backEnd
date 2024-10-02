@@ -28,7 +28,6 @@ INSTALLED_APPS = [
     "corsheaders",
     "rest_framework",
     "rest_framework_simplejwt",
-    "django_extensions",
     "django_filters",
     "drf_spectacular",
     "core.populate.infra.populate_django_app",
