@@ -2,19 +2,19 @@ import os
 from pathlib import Path
 from celery.schedules import crontab
 from dotenv import load_dotenv
+import dj_database_url
 
 load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# SECURITY WARNING: keep the secret key used in production secret!
+MODE = os.getenv("MODE")
+
 SECRET_KEY = os.getenv("SECRET_KEY")
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = []
+DEBUG = os.getenv("DEBUG", "False")
+ALLOWED_HOSTS = ["*"]
+CSRF_TRUSTED_ORIGINS = ["https://*fabricadesoftware.ifc.edu.br"]
 
 
 INSTALLED_APPS = [
@@ -113,12 +113,12 @@ WSGI_APPLICATION = "django_project.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    }
-}
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.sqlite3",
+#         "NAME": BASE_DIR / "db.sqlite3",
+#     }
+# }
 
 # DATABASES = {
 #   'default': {
@@ -131,6 +131,11 @@ DATABASES = {
 # }
 # }
 
+DATABASES = {
+    'default': dj_database_url.config(
+        default=os.getenv('DATABASE_URL', 'postgres://user:password@localhost:5432/mydatabase')
+    )
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
@@ -163,8 +168,13 @@ USE_I18N = True
 USE_TZ = True
 
 # App Uploader settings
-MEDIA_URL = "http://localhost:8000/media/"
-MEDIA_ENDPOINT = "/media/"
+
+if MODE in ["PRODUCTION", "MIGRATE"]:
+    MEDIA_ENDPOINT = '/media/'
+else:
+    MY_IP = os.getenv("MY_IP", "127.0.0.1")
+    MEDIA_ENDPOINT = f"http://{MY_IP}:19003/media/"
+
 MEDIA_ROOT = os.path.join(BASE_DIR, "media/")
 FILE_UPLOAD_PERMISSIONS = 0o640
 
@@ -178,12 +188,7 @@ STATIC_URL = "static/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-CORS_ALLOWED_ORIGINS: list[str] = [
-    "http://127.0.0.1:5174",
-    "http://127.0.0.1:5173",
-    "http://127.0.0.1:3000",
-    "http://localhost:3000",
-]
+CORS_ALLOW_ALL_ORIGINS = True
 
 CORS_ALLOW_METHODS = (
     "GET",
@@ -191,6 +196,7 @@ CORS_ALLOW_METHODS = (
     "POST",
     "PUT"
 )
+
 AUTH_USER_MODEL = "user_django_app.User"
 
 GRAPH_MODELS = {
@@ -214,7 +220,7 @@ CELERY_RESULT_BACKEND = 'rpc://'
 CELERY_BEAT_SCHEDULE = {
     'check_final_submission_date_and_assign_advisors': {
         'task': 'core.assign_work_to_advisor', 
-        'schedule': crontab(hour=9, minute=37),  # horario dessa bomba
+        'schedule': crontab(hour=0, minute=0),  # horario dessa bomba
         'args': (),
     },
 }
