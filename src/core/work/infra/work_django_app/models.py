@@ -12,6 +12,7 @@ class Token(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     token = models.CharField(max_length=100)
     sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name="sender", blank=True, null=True)
+    created = models.DateTimeField(auto_now_add=True, blank=True, null=True)
     
 class Team(models.Model):
     team_members = models.ManyToManyField(User, related_name="team", blank=True)

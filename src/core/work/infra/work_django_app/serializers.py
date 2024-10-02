@@ -128,14 +128,17 @@ class TeamDetailSerializer(serializers.ModelSerializer):
         
 
 class TeamWriteSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(read_only=True)
     class Meta:
         model = Team
         fields: list[str] = [
+            'id',
             'team_members',
             'tokens',
             'accept_tokens',
             'reject_tokens'
         ]
+        
     # def validate(self, attrs):
     #     # print("Entrou na validação")  # Para ver se o método validate está sendo chamado
     #     # if validate_work_max_and_min_members(attrs):

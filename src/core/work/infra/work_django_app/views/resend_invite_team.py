@@ -16,17 +16,14 @@ def resend_invite_team(request, *args, **kwargs):
     print(user_id, token, team_id)
     
     try:
-        user: User = User.objects.get(id=user_id)
         team: Team = Team.objects.get(id=team_id)
         token: Token = Token.objects.get(token=token)
-        
-        print(user, team, token)
-        
+                
         team.reject_tokens.remove(token)
         team.tokens.add(token)
         team.save()
         
-        send_email_to_member(user, token.token, team_id)
+        send_email_to_member.delay(user_id, token.token, team_id)
         return Response(
             {"message": "Convite reenviado com sucesso."},
             status=status.HTTP_200_OK,
@@ -34,6 +31,6 @@ def resend_invite_team(request, *args, **kwargs):
     except Exception as e:
         print(e)
         return Response(
-            {"error": "Erro ao reenviar convite. aaaaaaaaa"},
+            {"error": "Erro ao reenviar convite."},
             status=status.HTTP_400_BAD_REQUEST,
         )
