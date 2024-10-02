@@ -22,9 +22,7 @@ class AssessmentViewSet(ModelViewSet):
         return AssessmentWriteSerializer
     http_method_names = ["get", "post", "patch", "delete"]
 
-
 class StudentAssessmentsViewSet(ModelViewSet):
     queryset = StudentAssessments.objects.all()
     serializer_class = StudentAssessmentsSerializer
 
-    

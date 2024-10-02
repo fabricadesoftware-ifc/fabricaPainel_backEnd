@@ -44,9 +44,9 @@ def assign_work_to_advisor():
                                 from_email = EMAIL_HOST_USER 
                                 email_recipient_list = [advisor.email]
                           
-                                accept_work_link, reject_work_link = work_path(work)
+                                accept_work_link = work_path(work)
 
-                                print(accept_work_link, reject_work_link)
+                                print(accept_work_link)
 
                                 students_emails = [member.email for member in work.team.team_members.all()]  # 
 

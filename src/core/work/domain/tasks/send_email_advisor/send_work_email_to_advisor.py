@@ -3,7 +3,6 @@ from django.utils.html import strip_tags
 from core.work.infra.work_django_app.models import Work
 from celery import shared_task
 
-
 @shared_task
 def send_work_email_to_advisor(work_id, email_subject, from_email, email_recipient_list, accept_work_link, students_emails):
     try:
@@ -19,8 +18,8 @@ def send_work_email_to_advisor(work_id, email_subject, from_email, email_recipie
         html = html.replace("{{ work_title }}", work.title)
 
         # Obtém os campos relacionados
-        fields_list = work.field.all().values_list('name', flat=True)  # Supondo que 'name' é o campo que você deseja mostrar
-        fields_string = ', '.join(fields_list)  # Converte para uma string separada por vírgulas
+        fields_list = work.field.all().values_list('name', flat=True)
+        fields_string = ', '.join(fields_list)
         html = html.replace("{{ work_field }}", fields_string)
         html = html.replace("{{ work_abstract }}", work.abstract)
 
@@ -31,11 +30,20 @@ def send_work_email_to_advisor(work_id, email_subject, from_email, email_recipie
         html = html.replace("{{ work_cross_cutting_themes }}", cross_theme_name)
         html = html.replace("{{ accept_work_link }}", accept_work_link)
 
-        print(work.team.team_members.all())
+        # Obtém os nomes dos membros da equipe
         students_emails = work.team.team_members.all().values_list('name', flat=True)
-        students_emails_list = (students_emails)
-        html = html.replace("{{ students_emails }}", ', '.join(students_emails_list)) 
-       
+        if students_emails:
+            students_emails_list = ', '.join(students_emails)
+        else:
+            students_emails_list = "Nenhum estudante na equipe"
+
+
+        
+
+        print(students_emails_list)
+        # Garante que estamos substituindo com uma string
+        html = html.replace("{{ students_emails }}", str(students_emails_list))
+
         plain_message = strip_tags(html)
 
         print(plain_message)

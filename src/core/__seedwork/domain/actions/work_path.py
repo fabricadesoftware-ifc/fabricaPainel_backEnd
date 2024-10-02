@@ -12,8 +12,4 @@ def work_path(instance, **kwargs):
                                    kwargs={"verification_token": token})
     accept_work_link = f"http://localhost:8000/{accept_work_path}"
 
-    reject_work_path = reverse("reject-work",
-                                      kwargs={"pk": instance.pk})
-    reject_work_link = f"http://localhost:8000/{reject_work_path}"
-
-    return accept_work_link, reject_work_link
+    return accept_work_link, 
