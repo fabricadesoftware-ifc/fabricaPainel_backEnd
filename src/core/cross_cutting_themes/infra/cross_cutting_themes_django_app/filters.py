@@ -7,7 +7,8 @@ from core.cross_cutting_themes.infra.cross_cutting_themes_django_app.models impo
 
 class CrossCuttingThemeFilter(FilterSet):
     name = CharFilter(field_name='name', lookup_expr='icontains')
+    advisor_id = CharFilter(field_name='advisor', lookup_expr='exact')
 
     class Meta:
         model = CrossCuttingTheme
-        fields = ['name']
+        fields = ['name', 'advisor']
