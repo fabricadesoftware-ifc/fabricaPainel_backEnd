@@ -1,1 +1,1 @@
-web: gunicorn src.django_project.wsgi:application
+web: gunicorn --pythonpath src django_project.wsgi:application
