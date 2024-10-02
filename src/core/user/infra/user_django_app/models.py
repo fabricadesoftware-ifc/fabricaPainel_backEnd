@@ -28,7 +28,6 @@ class User(AbstractUser):
     )  
     field = models.ForeignKey(Field, on_delete=models.SET_NULL, null=True)
     user_type = models.CharField(max_length=10,choices=USER_TYPE_CHOICE, default=STUDENT)
-    is_confirmed = models.BooleanField(default=False)
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ['name']

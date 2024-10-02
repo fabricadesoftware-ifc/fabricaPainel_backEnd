@@ -13,7 +13,6 @@ class UserSerializer(serializers.ModelSerializer):
             "email",
             "name",
             "user_type",
-            "is_confirmed",
             "team"
         ]
 
