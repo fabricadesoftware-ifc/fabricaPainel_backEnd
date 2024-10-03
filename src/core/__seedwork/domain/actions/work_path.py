@@ -1,6 +1,8 @@
 from uuid import uuid4
 from django.urls import reverse
 
+from src.django_project.settings import API_URL
+
 
 def work_path(instance, **kwargs):
   
@@ -10,6 +12,6 @@ def work_path(instance, **kwargs):
 
     accept_work_path = reverse("accept-work",
                                    kwargs={"verification_token": token})
-    accept_work_link = f"http://localhost:8000/{accept_work_path}"
+    accept_work_link = f"{API_URL}/{accept_work_path}"
 
     return accept_work_link

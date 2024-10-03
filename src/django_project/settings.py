@@ -16,6 +16,7 @@ DEBUG = os.getenv("DEBUG", "False")
 ALLOWED_HOSTS = ["*"]
 CSRF_TRUSTED_ORIGINS = ["https://*fabricadesoftware.ifc.edu.br"]
 
+API_URL = os.getenv("API_URL", "http://localhost:8000")
 
 INSTALLED_APPS = [
     "django.contrib.admin",
