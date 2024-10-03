@@ -1,11 +1,12 @@
 import os
 
 from celery import Celery
+from django_project.settings import BROKER_URL
 
 # Set the default Django settings module for the 'celery' program.
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'django_project.settings')
 
-app = Celery('django_project', broker='amqp://rafaelbochi:2012@localhost/fabricapainel')
+app = Celery('django_project', broker=BROKER_URL)
 
 
 app.conf.update(
