@@ -4,7 +4,12 @@ from django.utils.translation import gettext_lazy as _
 from core.field.infra.field_django_app.models import Field
 from core.user.domain.value_objects import UserType
 from .managers import CustomUserManager
+import unicodedata
 
+def remove_accent(text):
+    text_normal = unicodedata.normalize('NFKD', text)
+    text_without_accent = ''.join(c for c in text_normal if not unicodedata.combining(c))
+    return text_without_accent
 
 class User(AbstractUser):
     STUDENT = UserType.Type.STUDENT.value
@@ -19,6 +24,7 @@ class User(AbstractUser):
     email = models.EmailField(_("e-mail address"), unique=True)
     registration = models.IntegerField(null=True, unique=True)
     name = models.CharField(max_length=255, null=True)
+    name_search = models.CharField(max_length=255, null=True)
     is_advisor = models.BooleanField(default=False, null=True, blank=True)
     password_reset_token = models.CharField(
         _("Password Reset Token"), max_length=255, blank=True, null=True

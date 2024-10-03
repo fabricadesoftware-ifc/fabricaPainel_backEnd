@@ -1,8 +1,8 @@
+import os
 from django.core.mail import send_mail
 from django.utils.html import strip_tags
 from celery import shared_task
-
-from django_project.settings import EMAIL_HOST_USER
+from django_project.settings import EMAIL_HOST_USER, BASE_DIR
 from core.work.infra.work_django_app.models import Work
 
 @shared_task
@@ -12,7 +12,7 @@ def notify_advisor_on_data_update(work_id, accept_work_link, reject_work_link):
     from_email = EMAIL_HOST_USER
     recipient_list = [work.advisor.email]
 
-    with open('src/templates/send_work_update_email_to_advisor_template.html', 'r') as file:
+    with open(os.path.join(BASE_DIR, 'templates/send_work_update_email_to_advisor_template.html'), 'r') as file:
         html = file.read()
 
     html = html.replace("{{ work_title }}", work.title)

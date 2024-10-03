@@ -123,7 +123,11 @@ WSGI_APPLICATION = "django_project.wsgi.application"
 # }
 
 # DATABASES = {
-#   'default': {
+#   'default': {DATABASES = {
+#     'default': dj_database_url.config(
+#         default=os.getenv('DATABASE_URL', 'postgres://user:password@localhost:5432/mydatabase')
+#     )
+# }
 #   'ENGINE': "django.db.backends.postgresql",
 #   'NAME': os.getenv("POSTGRES_NAME"),
 #   'USER': os.getenv("POSTGRES_USER"),

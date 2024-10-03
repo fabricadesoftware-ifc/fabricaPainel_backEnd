@@ -13,7 +13,9 @@ class UserSerializer(serializers.ModelSerializer):
             "email",
             "name",
             "user_type",
-            "team"
+            "team",
+            "name_search",
+            "registration"
         ]
 
     def Create(self, validated_data):

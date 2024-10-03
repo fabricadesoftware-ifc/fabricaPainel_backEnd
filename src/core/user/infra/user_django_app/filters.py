@@ -17,7 +17,7 @@ class UserFilter(FilterSet):
     search = CharFilter(method='search_filter')
     def search_filter(self, queryset, name, value):
         return queryset.filter(
-            Q(name__icontains=value) | Q(email__icontains=value) | Q(registration__icontains=value)
+            Q(name_search__icontains=value) | Q(email__icontains=value) | Q(registration__icontains=value) | Q(name__icontains=value)
         )
 
     class Meta:

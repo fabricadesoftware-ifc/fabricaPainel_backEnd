@@ -5,6 +5,7 @@ from core.populate.infra.resources.data_advisor import advisors
 from core.populate.infra.resources.data_teams import student_team
 from core.populate.infra.resources.data_teachers import teachers
 from collections import Counter
+import unicodedata
 
 def __get_or_create_super_user() -> None:
     super_user = User.objects.filter(is_superuser=True)
@@ -21,6 +22,12 @@ def get_user_by_email(email) -> User:
     return user
 
 
+def remove_accent(text):
+    text_normal = unicodedata.normalize('NFKD', text)
+    text_without_accent = ''.join(c for c in text_normal if not unicodedata.combining(c))
+    return text_without_accent
+
+
 def populate_users():
     if User.objects.exists():
         print("student")
@@ -32,11 +39,14 @@ def populate_users():
     for student_data in students:
 
         student_data["email"] = student_data["email"].strip()
+        
+        name_search = remove_accent(student_data["name"].lower())
 
         user = User(
             **student_data,
             is_advisor=False,
             user_type=User.STUDENT,
+            name_search=name_search,
             # password=User.set_password(student_data["password"])
         )
 
@@ -72,16 +82,10 @@ def populate_teacher():
     if User.objects.filter(is_advisor=True).exists():
         return
     
-    teachers_to_create = []
-
-    emails = [usuario["email"].strip() for usuario in teachers] 
-    email_count = Counter(emails)
-
-    usuarios_com_emails_repetidos = [usuario for usuario in teachers if email_count[usuario["email"].strip()] > 1]
-
-    print(usuarios_com_emails_repetidos)
+    teachers_to_create = []    
 
     for teacher_data in teachers:
+        name_search = remove_accent(teacher_data["name"].lower())
         print(teacher_data, "populando professores")
         user = User(
             email=teacher_data["email"].strip(),
@@ -90,6 +94,7 @@ def populate_teacher():
             is_advisor=True,
             user_type=User.TEACHER,
             password='teacher123',
+            name_search=name_search,
             # password=User.set_password(teacher_data["password"])
         )
 

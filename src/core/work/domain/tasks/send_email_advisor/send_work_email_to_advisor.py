@@ -1,14 +1,16 @@
+import os
 from django.core.mail import send_mail
 from django.utils.html import strip_tags
 from core.work.infra.work_django_app.models import Work
 from celery import shared_task
+from django_project.settings import BASE_DIR
 
 @shared_task
 def send_work_email_to_advisor(work_id, email_subject, from_email, email_recipient_list, accept_work_link, students_emails):
     try:
         work = Work.objects.get(id=work_id)
 
-        with open('src/templates/send_advisor_email_template.html', 'r') as file:
+        with open(os.path.join(BASE_DIR, 'templates/send_advisor_email_template.html'), 'r') as file:
             html = file.read()
 
         html = html.replace("{{ work_title }}", work.title)

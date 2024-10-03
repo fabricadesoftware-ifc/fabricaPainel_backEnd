@@ -1,8 +1,8 @@
-from django_project.settings import EMAIL_HOST_USER
+import os
+from django_project.settings import EMAIL_HOST_USER, BASE_DIR
 from django.core.mail import send_mail
 from celery import shared_task
 from django.utils.html import strip_tags
-
 from core.user.infra.user_django_app.models import User
 
 @shared_task
@@ -12,7 +12,7 @@ def send_work_new_status_needs_changes_email_to_student(students_ids, message: s
     if not students_emails:
         raise ValueError("Nenhum e-mail de estudante encontrado.")
  
-    with open('src/templates/send_needs_changes_to_work_template.html', 'r') as file:
+    with open(os.path.join(BASE_DIR, 'templates/send_needs_changes_to_work_template.html'), 'r') as file:
             html = file.read()
             
     html = html.replace("{{ title }}", 'Seu trabalho que tinha sido aceito pelo seu orientador, mas agora precisa de mudanças solicitadas pelo Orientador.!')

@@ -1,13 +1,14 @@
+import os
 from celery import shared_task
 from django.utils.html import strip_tags
 from django.core.mail import send_mail
-
 from core.user.infra.user_django_app.models import User
+from django_project.settings import BASE_DIR
 
 @shared_task
 def send_work_approve_email_to_student(from_email, students_ids, advisor_id):
     # Lê o template HTML do email
-    with open('src/templates/send_work_aaprove_to_student_template.html', 'r') as file:
+    with open(os.path.join(BASE_DIR, 'templates/send_work_aaprove_to_student_template.html'), 'r') as file:
         html = file.read()
     
     # Obtém os emails dos estudantes
