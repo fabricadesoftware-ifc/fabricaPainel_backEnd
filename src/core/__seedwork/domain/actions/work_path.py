@@ -1,7 +1,7 @@
 from uuid import uuid4
 from django.urls import reverse
 
-from src.django_project.settings import API_URL
+from django_project.settings import API_URL
 
 
 def work_path(instance, **kwargs):

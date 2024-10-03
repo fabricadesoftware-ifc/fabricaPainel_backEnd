@@ -17,6 +17,8 @@ ALLOWED_HOSTS = ["*"]
 CSRF_TRUSTED_ORIGINS = ["https://*fabricadesoftware.ifc.edu.br"]
 
 API_URL = os.getenv("API_URL", "http://localhost:8000")
+PAINEL_URL = os.getenv("PAINEL_URL", "http://localhost:3000")
+BROKER_URL = os.getenv("BROKER_URL", "amqp://rafaelbochi:2012@localhost/fabricapainel")
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -133,7 +135,7 @@ WSGI_APPLICATION = "django_project.wsgi.application"
 
 DATABASES = {
     'default': dj_database_url.config(
-        default=os.getenv('DATABASE_URL', 'postgres://user:password@localhost:5432/mydatabase')
+        default=os.getenv('DATABASE_URL', 'sqlite:///db.sqlite3')
     )
 }
 
@@ -209,7 +211,7 @@ EMAIL_BACKEND = os.getenv("EMAIL_BACKEND")
 EMAIL_HOST = os.getenv("EMAIL_HOST")
 EMAIL_PORT = os.getenv("EMAIL_PORT")
 EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS")
-EMAIL_HOST_USER = 'fabricadesoftware.araquari@ifc.edu.br'
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", 'fabricadesoftware.araquari@ifc.edu.br')
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 
 CELERY_TIMEZONE = "America/Sao_Paulo"

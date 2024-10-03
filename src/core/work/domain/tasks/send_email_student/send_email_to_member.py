@@ -1,9 +1,9 @@
-from django.core.mail import send_mail
-from django_project.settings import EMAIL_HOST_USER
 from celery import shared_task
-from core.user.infra.user_django_app.models import User
+from django.core.mail import send_mail
 from django.utils.html import strip_tags
 
+from core.user.infra.user_django_app.models import User
+from django_project.settings import EMAIL_HOST_USER, PAINEL_URL
 
 @shared_task
 def send_email_to_member(member_id, token, team):
@@ -12,7 +12,7 @@ def send_email_to_member(member_id, token, team):
     with open('src/templates/send_email_to_member.template.html', 'r') as file:
         html = file.read()
 
-    link = f"http://localhost:3000/auth/accept-invite-team/{team}/{token}"
+    link = f"{PAINEL_URL}/auth/accept-invite-team/{team}/{token}"
     recipient_list = [member.email]
     html = html.replace("{{ member.name }}", member.name)
     html = html.replace("{{ link }}", link)
