@@ -1,7 +1,9 @@
 import os
-
 from celery import Celery
-from django_project.settings import BROKER_URL
+from dotenv import load_dotenv
+
+load_dotenv()
+BROKER_URL = os.getenv("BROKER_URL", "amqp://rafaelbochi:2012@localhost/fabricapainel")
 
 # Set the default Django settings module for the 'celery' program.
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'django_project.settings')
