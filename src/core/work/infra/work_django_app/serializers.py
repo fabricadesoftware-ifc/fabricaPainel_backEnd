@@ -8,6 +8,7 @@ from core.work.infra.work_django_app.models import Ods
 from core.work.domain.validations import (validate_work_date_submission_is_valid, validate_work_team_members, 
                                           validate_work_max_and_min_members, validate_work_team_member_is_student)
 from core.user.infra.user_django_app.serializers import UserSerializer
+from core.user.infra.user_django_app.models import User
 
 class OdsSerializer(serializers.ModelSerializer):
     class Meta:
@@ -46,6 +47,7 @@ class WorkDetailSerializer(serializers.ModelSerializer):
         depth = 1 
 
 class WorkWriteSerializer(serializers.ModelSerializer):
+    advisor = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), required=False, allow_null=True)
     class Meta:
         model = Work
         fields: list[str] = [
@@ -58,8 +60,8 @@ class WorkWriteSerializer(serializers.ModelSerializer):
             'team',
             'ods',
             'co_advisor',    
-            'feedback'   
-
+            'feedback',
+            'advisor',  
         ]
 
     def validate(self, attrs):
