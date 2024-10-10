@@ -7,18 +7,21 @@ from django.db.models.aggregates import Count
 from .forms import CustomUserChangeForm, CustomUserCreationForm
 from .models import User, Evaluator
 
-# class WithCrossCuttingTheme(admin.SimpleListFilter):
-#     def lookups(self, request, model_admin):
-#         return [
-#             True, "Sim",
-#             False, "Não",
-#         ]
 
-#     def queryset(self, request, queryset):
-#         if self.value:
-#             return queryset.filter(len(crosscuttingtheme_set.all())>0)
-#         else:
-#             return queryset
+class WithCrossCuttingTheme(admin.SimpleListFilter):
+    def lookups(self, request, model_admin):
+        return [
+            True,
+            "Sim",
+            False,
+            "Não",
+        ]
+
+    def queryset(self, request, queryset):
+        if self.value:
+            return queryset.filter(len(crosscuttingtheme_set.all()) > 0)
+        else:
+            return queryset
 
 
 @admin.register(Evaluator)
@@ -42,21 +45,21 @@ class CustomUserAdmin(UserAdmin):
         "is_active",
         "is_advisor",
         "crosscuttingtheme_count",
-        "count_crosscuttingtheme",
     )
 
     def get_queryset(self, request):
-        queryset = super().get_queryset(request)
-        queryset = queryset.annotate(
-            _crosscuttingtheme_count=Count("crosscuttingtheme_set")
-        )
-        return queryset
+        qs = super().get_queryset(request)
+        return qs.annotate(
+            crosscuttingtheme_count=Count("crosscuttingtheme")
+        )  # Anota a contagem de usuários
 
     def crosscuttingtheme_count(self, obj):
-        return obj._crosscuttingtheme_count
+        return obj.crosscuttingtheme_count  # Usa o campo anotado para a contagem
 
-    def count_crosscuttingtheme(self, obj):
-        return obj.crosscuttingtheme_set.count()
+    crosscuttingtheme_count.short_description = "Qtd. de Temas"  # Nome da coluna no admin
+    crosscuttingtheme_count.admin_order_field = (
+        "crosscuttingtheme_count"  # Define a ordenação pela contagem
+    )
 
     list_filter = (
         "email",
@@ -111,4 +114,3 @@ class CustomUserAdmin(UserAdmin):
     search_fields = ("email",)
     ordering = "email"
     readonly_fields = ["date_joined", "last_login"]
-    crosscuttingtheme_count.admin_order_field = "_crosscuttingtheme_count"
