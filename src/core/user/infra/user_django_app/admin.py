@@ -8,22 +8,6 @@ from .forms import CustomUserChangeForm, CustomUserCreationForm
 from .models import User, Evaluator
 
 
-class WithCrossCuttingTheme(admin.SimpleListFilter):
-    def lookups(self, request, model_admin):
-        return [
-            True,
-            "Sim",
-            False,
-            "Não",
-        ]
-
-    def queryset(self, request, queryset):
-        if self.value:
-            return queryset.filter(len(crosscuttingtheme_set.all()) > 0)
-        else:
-            return queryset
-
-
 @admin.register(Evaluator)
 class EvaluatorAdmin(admin.ModelAdmin):
     list_display = ("user",)
