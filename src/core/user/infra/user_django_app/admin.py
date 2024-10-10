@@ -95,5 +95,5 @@ class CustomUserAdmin(UserAdmin):
         ),
     )
     search_fields = ("email",)
-    ordering = ("email",)
+    ordering = ("email", "count_crosscuttingtheme")
     readonly_fields = ["date_joined", "last_login"]
