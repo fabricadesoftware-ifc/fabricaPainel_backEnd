@@ -5,11 +5,26 @@ from django.utils.translation import gettext_lazy as _
 from .forms import CustomUserChangeForm, CustomUserCreationForm
 from .models import User, Evaluator
 
+# class WithCrossCuttingTheme(admin.SimpleListFilter):
+#     def lookups(self, request, model_admin):
+#         return [
+#             True, "Sim",
+#             False, "Não",
+#         ]
+
+#     def queryset(self, request, queryset):
+#         if self.value:
+#             return queryset.filter(len(crosscuttingtheme_set.all())>0)
+#         else:
+#             return queryset
+
+
 @admin.register(Evaluator)
 class EvaluatorAdmin(admin.ModelAdmin):
     list_display = ("user",)
     search_fields = ("user",)
     ordering = ("user",)
+
 
 @admin.register(User)
 class CustomUserAdmin(UserAdmin):
@@ -23,8 +38,12 @@ class CustomUserAdmin(UserAdmin):
         "is_staff",
         "is_active",
         "is_advisor",
-       
+        "count_crosscuttingtheme",
     )
+
+    def count_crosscuttingtheme(self, obj):
+        return obj.crosscuttingtheme_set.count()
+
     list_filter = (
         "email",
         "name",
@@ -32,8 +51,6 @@ class CustomUserAdmin(UserAdmin):
         "is_staff",
         "is_active",
         "is_advisor",
-
-
     )
     fieldsets = (
         (None, {"fields": ("email", "password")}),
@@ -48,7 +65,7 @@ class CustomUserAdmin(UserAdmin):
         ),
         (
             _("Personal info"),
-            {"fields": (['user_type','is_advisor'])},
+            {"fields": (["user_type", "is_advisor"])},
         ),
         (
             _("Permissions"),
