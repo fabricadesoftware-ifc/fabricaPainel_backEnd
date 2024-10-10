@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.utils.translation import gettext_lazy as _
 
-from django.db.models.aggregates import Count
+from django.db.models import Count
 
 from .forms import CustomUserChangeForm, CustomUserCreationForm
 from .models import User, Evaluator
@@ -56,7 +56,9 @@ class CustomUserAdmin(UserAdmin):
     def crosscuttingtheme_count(self, obj):
         return obj.crosscuttingtheme_count  # Usa o campo anotado para a contagem
 
-    crosscuttingtheme_count.short_description = "Qtd. de Temas"  # Nome da coluna no admin
+    crosscuttingtheme_count.short_description = (
+        "Qtd. de Temas"  # Nome da coluna no admin
+    )
     crosscuttingtheme_count.admin_order_field = (
         "crosscuttingtheme_count"  # Define a ordenação pela contagem
     )
