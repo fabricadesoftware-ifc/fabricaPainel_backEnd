@@ -2,6 +2,8 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.utils.translation import gettext_lazy as _
 
+from django.db.models.aggregates import Count
+
 from .forms import CustomUserChangeForm, CustomUserCreationForm
 from .models import User, Evaluator
 
@@ -31,6 +33,7 @@ class CustomUserAdmin(UserAdmin):
     add_form = CustomUserCreationForm
     form = CustomUserChangeForm
     model = User
+
     list_display = (
         "email",
         "name",
@@ -38,8 +41,19 @@ class CustomUserAdmin(UserAdmin):
         "is_staff",
         "is_active",
         "is_advisor",
+        "crosscuttingtheme_count",
         "count_crosscuttingtheme",
     )
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        queryset = queryset.annotate(
+            _crosscuttingtheme_count=Count("crosscuttingtheme_set")
+        )
+        return queryset
+
+    def crosscuttingtheme_count(self, obj):
+        return obj._crosscuttingtheme_count
 
     def count_crosscuttingtheme(self, obj):
         return obj.crosscuttingtheme_set.count()
@@ -95,5 +109,6 @@ class CustomUserAdmin(UserAdmin):
         ),
     )
     search_fields = ("email",)
-    ordering = ("email", "count_crosscuttingtheme")
+    ordering = "email"
     readonly_fields = ["date_joined", "last_login"]
+    crosscuttingtheme_count.admin_order_field = "_crosscuttingtheme_count"
