@@ -28,24 +28,24 @@ class CustomUserAdmin(UserAdmin):
         "is_staff",
         "is_active",
         "is_advisor",
-        "crosscuttingtheme_count",
+        # "crosscuttingtheme_count",
     )
 
-    def get_queryset(self, request):
-        qs = super().get_queryset(request)
-        return qs.annotate(
-            crosscuttingtheme_count=Count("crosscuttingtheme")
-        )  # Anota a contagem de usuários
+    # def get_queryset(self, request):
+    #     qs = super().get_queryset(request)
+    #     return qs.annotate(
+    #         crosscuttingtheme_count=Count("crosscuttingtheme")
+    #     )  # Anota a contagem de usuários
 
-    def crosscuttingtheme_count(self, obj):
-        return obj.crosscuttingtheme_count  # Usa o campo anotado para a contagem
+    # def crosscuttingtheme_count(self, obj):
+    #     return obj.crosscuttingtheme_count  # Usa o campo anotado para a contagem
 
-    crosscuttingtheme_count.short_description = (
-        "Qtd. de Temas"  # Nome da coluna no admin
-    )
-    crosscuttingtheme_count.admin_order_field = (
-        "crosscuttingtheme_count"  # Define a ordenação pela contagem
-    )
+    # crosscuttingtheme_count.short_description = (
+    #     "Qtd. de Temas"  # Nome da coluna no admin
+    # )
+    # crosscuttingtheme_count.admin_order_field = (
+    #     "crosscuttingtheme_count"  # Define a ordenação pela contagem
+    # )
 
     list_filter = (
         "email",

@@ -27,7 +27,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    'django_celery_results',
+    "django_celery_results",
     "corsheaders",
     "rest_framework",
     "rest_framework_simplejwt",
@@ -57,9 +57,6 @@ MIDDLEWARE = [
 ROOT_URLCONF = "django_project.urls"
 
 REST_FRAMEWORK = {
-    # "DEFAULT_PERMISSION_CLASSES": [96baf3bc
-    #     "rest_framework.permissions.DjangoModelPermissions",
-    # ],
     # 'DEFAULT_THROTTLE_CLASSES': [
     #     'rest_framework.throttling.AnonRateThrottle',
     #     'rest_framework.throttling.UserRateThrottle'
@@ -71,12 +68,15 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.DjangoModelPermissions",
+    ],
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
-    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
+    "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
 }
 
 SIMPLE_JWT = {
-    'AUTH_HEADER_TYPES': ('Bearer',),
+    "AUTH_HEADER_TYPES": ("Bearer",),
 }
 
 SPECTACULAR_SETTINGS = {
@@ -86,27 +86,27 @@ SPECTACULAR_SETTINGS = {
 }
 
 AUTHENTICATION_BACKENDS = [
-    'django.contrib.auth.backends.ModelBackend',
+    "django.contrib.auth.backends.ModelBackend",
 ]
 
 
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'src/templates')],  # Esse caminho já está correto
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [
+            os.path.join(BASE_DIR, "src/templates")
+        ],  # Esse caminho já está correto
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.debug",
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
             ],
         },
     },
 ]
-
-
 
 
 WSGI_APPLICATION = "django_project.wsgi.application"
@@ -138,8 +138,8 @@ WSGI_APPLICATION = "django_project.wsgi.application"
 # }
 
 DATABASES = {
-    'default': dj_database_url.config(
-        default=os.getenv('DATABASE_URL', 'sqlite:///db.sqlite3')
+    "default": dj_database_url.config(
+        default=os.getenv("DATABASE_URL", "sqlite:///db.sqlite3")
     )
 }
 
@@ -176,7 +176,7 @@ USE_TZ = True
 # App Uploader settings
 
 if MODE in ["PRODUCTION", "MIGRATE"]:
-    MEDIA_ENDPOINT = '/media/'
+    MEDIA_ENDPOINT = "/media/"
 else:
     MY_IP = os.getenv("MY_IP", "127.0.0.1")
     MEDIA_ENDPOINT = f"http://{MY_IP}:19003/media/"
@@ -187,7 +187,7 @@ FILE_UPLOAD_PERMISSIONS = 0o640
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-STATIC_ROOT = os.path.join(BASE_DIR, 'static_media')
+STATIC_ROOT = os.path.join(BASE_DIR, "static_media")
 STATIC_URL = "static/"
 
 # Default primary key field type
@@ -197,40 +197,35 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 CORS_ALLOW_ALL_ORIGINS = True
 
-CORS_ALLOW_METHODS = (
-    "GET",
-    "PATCH",
-    "POST",
-    "PUT"
-)
+CORS_ALLOW_METHODS = ("GET", "PATCH", "POST", "PUT")
 
 AUTH_USER_MODEL = "user_django_app.User"
 
 GRAPH_MODELS = {
     "all_applications": True,
     "group_models": True,
- }
+}
 
 EMAIL_BACKEND = os.getenv("EMAIL_BACKEND")
 EMAIL_HOST = os.getenv("EMAIL_HOST")
 EMAIL_PORT = os.getenv("EMAIL_PORT")
 EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS")
-EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", 'fabricadesoftware.araquari@ifc.edu.br')
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "fabricadesoftware.araquari@ifc.edu.br")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 
 CELERY_TIMEZONE = "America/Sao_Paulo"
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60
-CELERY_RESULT_BACKEND = 'rpc://'
+CELERY_RESULT_BACKEND = "rpc://"
 
 
 CELERY_BEAT_SCHEDULE = {
-    'check_final_submission_date_and_assign_advisors': {
-        'task': 'core.assign_work_to_advisor', 
-        'schedule': crontab(hour=0, minute=0),  # horario dessa bomba
-        'args': (),
+    "check_final_submission_date_and_assign_advisors": {
+        "task": "core.assign_work_to_advisor",
+        "schedule": crontab(hour=0, minute=0),  # horario dessa bomba
+        "args": (),
     },
 }
 
 
-TOKEN_EXPIRATION_SECONDS = 1200 
+TOKEN_EXPIRATION_SECONDS = 1200
