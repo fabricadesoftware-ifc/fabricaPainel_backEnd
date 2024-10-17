@@ -22,8 +22,27 @@ def assign_work_to_advisor():
                 for work in works:
                     theme = work.cross_cutting_theme
                    
+                    if work.advisor is not None:
+                        if theme:
+                            work_id = work.id
+                            print(f"Trabalho {work.title} já possui um advisor associado.")
+                            email_subject = "Trabalho associado a um orientador"
+                            from_email = EMAIL_HOST_USER 
+                            email_recipient_list = [work.advisor.email]
+                            
+                            accept_work_link = work_path(work)
+                            students_emails = [member.email for member in work.team.team_members.all()]
+                            send_work_email_to_advisor.delay(
+                                work_id,
+                                email_subject,
+                                from_email,
+                                email_recipient_list,
+                                accept_work_link,
+                                students_emails
+                            )
+                            print("Enviou o email")                                
 
-                    if theme:
+                    elif theme:
                         advisors = User.objects.filter(
                             is_advisor=True,
                             crosscuttingtheme__id=theme.id
@@ -37,7 +56,7 @@ def assign_work_to_advisor():
 
                             try:
                                 work_id = work.id
-                                email_subject = "Trabalho associado a um Advisor"
+                                email_subject = "Trabalho associado a um orientador"
                                 from_email = EMAIL_HOST_USER 
                                 email_recipient_list = [advisor.email]
                           
