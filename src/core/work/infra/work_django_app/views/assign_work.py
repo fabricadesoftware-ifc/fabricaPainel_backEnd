@@ -6,8 +6,8 @@ from rest_framework.decorators import permission_classes, authentication_classes
 from rest_framework.permissions import AllowAny
 
 @api_view(['GET'])
-@permission_classes([AllowAny])
-@authentication_classes([])
+# @permission_classes([AllowAny])
+# @authentication_classes([])
 def assign_work(request, *args, **kwargs):
     try:
         assign_work_to_advisor.delay()
