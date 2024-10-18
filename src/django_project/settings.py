@@ -221,13 +221,13 @@ CELERY_TASK_TIME_LIMIT = 30 * 60
 CELERY_RESULT_BACKEND = "rpc://"
 
 
-CELERY_BEAT_SCHEDULE = {
-    "check_final_submission_date_and_assign_advisors": {
-        "task": "core.assign_work_to_advisor",
-        "schedule": crontab(hour=0, minute=0),  # horario dessa bomba
-        "args": (),
-    },
-}
+# CELERY_BEAT_SCHEDULE = {
+#     "check_final_submission_date_and_assign_advisors": {
+#         "task": "core.assign_work_to_advisor",
+#         "schedule": crontab(hour=0, minute=0),  # horario dessa bomba
+#         "args": (),
+#     },
+# }
 
 
 TOKEN_EXPIRATION_SECONDS = 1200

@@ -17,6 +17,7 @@ from core.work.infra.work_django_app.views import (
     needs_changes_work,
     CanceledWork,
     resend_invite_team,
+    assign_work
 )
 from core.user.infra.user_django_app.utils import (
     reset_password,
@@ -56,6 +57,7 @@ urlpatterns = [
     ),
     path("api/canceled-work/<str:pk>/", CanceledWork.as_view(), name="canceled-work"),
     path("api/resend-invite-team/", resend_invite_team, name="resend-invite-team"),
+    path("api/assign-work-to-advisors/", assign_work, name="assing-work-to-advisor")
 ]
 
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
