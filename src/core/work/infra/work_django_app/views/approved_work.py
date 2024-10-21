@@ -37,7 +37,7 @@ def approve_work(request, verification_token) -> Response:
     if work.status == WorkStatusType.Type.NEEDS_CHANGES.value and edition.final_advisor_date > datetime.now().date():
         work.final_submission_work_date = timezone.now()
         work.verification_token = None
-        work.status = Work.status.APPROVED
+        work.status = WorkStatusType.Type.APPROVED.value
         work.reject_submission_work_date = None
         work.save()
 
