@@ -2,10 +2,10 @@ from django_filters.rest_framework import (
     FilterSet,
     CharFilter,
     BaseInFilter,
-    
+    NumberFilter
 
 )
-from core.user.infra.user_django_app.models import User
+from core.user.infra.user_django_app.models import User, Evaluator
 from django.db.models import Q
 
 class UserFilter(FilterSet):
@@ -23,3 +23,10 @@ class UserFilter(FilterSet):
     class Meta:
         model = User
         fields = ['name', 'field', 'registration', 'user_type']
+
+class EvaluatorFilter(FilterSet):
+    user_id = NumberFilter(field_name='user__id', lookup_expr='exact')
+
+    class Meta:
+        model = Evaluator
+        fields = ['user']

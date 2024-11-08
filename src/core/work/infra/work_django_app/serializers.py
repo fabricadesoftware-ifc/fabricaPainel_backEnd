@@ -10,7 +10,7 @@ from core.work.domain.validations import (
     validate_work_max_and_min_members,
     validate_work_team_member_is_student,
 )
-from core.user.infra.user_django_app.serializers import UserSerializer
+from core.user.infra.user_django_app.serializers import UserSerializer, EvaluatorSerializer
 from core.user.infra.user_django_app.models import User
 
 
@@ -24,8 +24,12 @@ class OdsSerializer(serializers.ModelSerializer):
 
 
 class WorkDetailSerializer(serializers.ModelSerializer):
-    evaluator = serializers.StringRelatedField(many=True)
     # team = serializers.StringRelatedField()
+    evaluator = serializers.ListSerializer(
+        required = False,
+        allow_null = True,
+        child=EvaluatorSerializer()
+    )
 
     class Meta:
         model = Work
@@ -48,7 +52,7 @@ class WorkDetailSerializer(serializers.ModelSerializer):
             "co_advisor",
             "feedback",
         ]
-        depth = 1
+        depth = 2
 
 
 class WorkWriteSerializer(serializers.ModelSerializer):

@@ -21,11 +21,22 @@ class UserSerializer(serializers.ModelSerializer):
     def Create(self, validated_data):
         return User.objects.create_user(**validated_data)
 
+class EvaluatorUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = [
+            "id",
+            "name",
+            "user_type",
+        ]
+
 
 class EvaluatorSerializer(serializers.ModelSerializer):
+    user = EvaluatorUserSerializer()
     class Meta:
         model = Evaluator
         fields = "__all__"
+        depth = 1
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):

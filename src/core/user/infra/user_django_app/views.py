@@ -5,7 +5,7 @@ from .serializers import CustomTokenObtainPairSerializer
 
 from .models import User, Evaluator
 from .serializers import UserSerializer, EvaluatorSerializer
-from .filters import UserFilter
+from .filters import UserFilter, EvaluatorFilter
 
 @extend_schema(tags=["users"])
 class UserViewSet(ModelViewSet):
@@ -23,9 +23,10 @@ class AdvisorViewSet(ModelViewSet):
 @extend_schema(tags=["evaluators"])
 class EvaluatorViewSet(ModelViewSet):
     queryset = Evaluator.objects.all()
+    filterset_class = EvaluatorFilter
     serializer_class = EvaluatorSerializer
     http_method_names: list[str] = ["get"]
-    
+
 
 @extend_schema(tags=["auth"])
 class CustomTokenObtainPairView(TokenObtainPairView):
