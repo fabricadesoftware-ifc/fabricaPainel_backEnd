@@ -1,0 +1,6 @@
+{
+    "python.analysis.extraPaths": [
+        "./__pypackages__/3.11/lib",
+        "./src"
+    ]
+}

@@ -1,0 +1,52 @@
+from uuid import uuid4
+from rest_framework.viewsets import ModelViewSet
+from drf_spectacular.utils import extend_schema
+from rest_framework.throttling import UserRateThrottle
+
+from core.work.infra.work_django_app.models import Work, WorkStatusType
+from core.work.infra.work_django_app.serializers import (
+    WorkDetailSerializer,
+    WorkWriteSerializer
+)
+from core.cross_cutting_themes.infra.cross_cutting_themes_django_app.models import CrossCuttingTheme
+from core.__seedwork.domain.actions.work_path import work_path
+from core.work.infra.work_django_app.filters import WorkFilter
+
+from core.work.domain.tasks import notify_advisor_on_data_update
+
+
+@extend_schema(tags=["work"])
+class WorkViewSet(ModelViewSet):
+    queryset = Work.objects.all()
+    serializer_class = WorkDetailSerializer
+    throttle_classes = [UserRateThrottle]
+    filterset_class = WorkFilter
+
+    def get_serializer_class(self):
+        if self.action in ["list", "retrieve"]:
+            return WorkDetailSerializer
+        return WorkWriteSerializer
+    http_method_names = ["get", "post", "patch", "delete"]
+
+    def update(self, request, *args, **kwargs):
+        response = super().update(request, *args, **kwargs)
+        work = self.get_object()
+
+        if work.verification_token is None and work.final_submission_work_date is not None:
+            token = str(uuid4())
+            work.verification_token = token
+            work.final_submission_work_date = None
+            work.status = WorkStatusType.Type.PENDING.value
+
+            work.save()
+            accept_work_link, reject_work_link = work_path(work)
+            notify_advisor_on_data_update.delay(
+                work.id, 
+                accept_work_link=accept_work_link, 
+                reject_work_link=reject_work_link
+            )
+
+        return response
+
+        
+    

@@ -1,0 +1,28 @@
+from rest_framework.viewsets import ModelViewSet
+from drf_spectacular.utils import extend_schema
+
+from core.edition.infra.edition_django_app.models import Edition
+from core.edition.infra.edition_django_app.serializers import (
+    EditionDetailSerializer,
+    EditionWriteSerializer
+)
+from core.edition.infra.edition_django_app.filters import EditionFilter
+
+@extend_schema(tags=["edition"])
+class EditionViewSet(ModelViewSet):
+    queryset = Edition.objects.all()
+    serializer_class = EditionDetailSerializer
+    filterset_class = EditionFilter
+
+    def get_serializer_class(self):
+        if self.action in ["list", "retrieve"]:
+            return EditionDetailSerializer
+        return EditionWriteSerializer
+    http_method_names = ["get", "post", "patch", "delete"]
+    
+@extend_schema(tags=["edition"])
+class EditionOpenViewSet(ModelViewSet):
+    queryset = Edition.objects.filter(is_open=True)
+    serializer_class = EditionDetailSerializer
+    http_method_names = ["get"]
+

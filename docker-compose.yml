@@ -1,0 +1,16 @@
+name: fabricapainel
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: fabricapainel
+    restart: always
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./db_data:/var/lib/postgresql/data
+  
+volumes:
+  db_data:
