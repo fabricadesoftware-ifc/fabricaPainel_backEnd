@@ -7,6 +7,7 @@ from core.populate.infra.resources.data_teachers import teachers
 from collections import Counter
 import unicodedata
 
+
 def __get_or_create_super_user() -> None:
     super_user = User.objects.filter(is_superuser=True)
 
@@ -23,15 +24,17 @@ def get_user_by_email(email) -> User:
 
 
 def remove_accent(text):
-    text_normal = unicodedata.normalize('NFKD', text)
-    text_without_accent = ''.join(c for c in text_normal if not unicodedata.combining(c))
+    text_normal = unicodedata.normalize("NFKD", text)
+    text_without_accent = "".join(
+        c for c in text_normal if not unicodedata.combining(c)
+    )
     return text_without_accent
 
 
 def populate_users():
     if User.objects.exists():
         print("student")
-        return
+        # return
 
     __get_or_create_super_user()
 
@@ -39,7 +42,7 @@ def populate_users():
     for student_data in students:
 
         student_data["email"] = student_data["email"].strip()
-        
+
         name_search = remove_accent(student_data["name"].lower())
 
         user = User(
@@ -77,12 +80,11 @@ def populate_team():
     print("Teams populados com sucesso.")
 
 
-
 def populate_teacher():
     if User.objects.filter(is_advisor=True).exists():
         return
-    
-    teachers_to_create = []    
+
+    teachers_to_create = []
 
     for teacher_data in teachers:
         name_search = remove_accent(teacher_data["name"].lower())
@@ -93,7 +95,7 @@ def populate_teacher():
             registration=teacher_data["registration"],
             is_advisor=True,
             user_type=User.TEACHER,
-            password='teacher123',
+            password="teacher123",
             name_search=name_search,
             # password=User.set_password(teacher_data["password"])
         )

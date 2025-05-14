@@ -52,3 +52,8 @@ celery_beat = "celery -A src.django_project beat --loglevel=info"
 [tool.pdm]
 distribution = false
 
+
+[dependency-groups]
+dev = [
+    "django-extensions>=4.1",
+]

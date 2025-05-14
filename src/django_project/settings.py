@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt",
     "django_filters",
     "drf_spectacular",
+    "django_extensions",
     "core.populate.infra.populate_django_app",
     "core.user.infra.user_django_app",
     "core.uploader.infra.uploader_django_app",
