@@ -15,10 +15,13 @@ class User(AbstractUser):
     STUDENT = UserType.Type.STUDENT.value
     TEACHER = UserType.Type.TEACHER.value
     ADMIN = UserType.Type.ADMIN.value
+    TAE = UserType.Type.TAE.value
+    
     USER_TYPE_CHOICE = (
         (STUDENT, UserType.Type.STUDENT),
         (TEACHER, UserType.Type.TEACHER),
         (ADMIN, UserType.Type.ADMIN),
+        (TAE, UserType.Type.TAE),
     )
     username = None
     email = models.EmailField(_("e-mail address"), unique=True)

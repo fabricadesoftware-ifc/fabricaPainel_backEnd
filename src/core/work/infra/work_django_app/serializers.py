@@ -152,10 +152,10 @@ class TeamWriteSerializer(serializers.ModelSerializer):
             "reject_tokens",
         ]
 
-    # def validate(self, attrs):
-    #     # print("Entrou na validação")  # Para ver se o método validate está sendo chamado
-    #     # if validate_work_max_and_min_members(attrs):
-    #     #     raise serializers.ValidationError("O time não pode ter mais do que 7 membros e menos que 4")
-    #     # if validate_work_team_member_is_student(attrs):
-    #     #     raise serializers.ValidationError("Um membro do time não é estudante")
-    #     # return super().validate(attrs)
+    def validate(self, attrs):
+        print("Entrou na validação")
+        if validate_work_max_and_min_members(attrs):
+            raise serializers.ValidationError("O time não pode ter mais do que 7 membros e menos que 4")
+        if validate_work_team_member_is_student(attrs):
+            raise serializers.ValidationError("Um membro do time não é estudante")
+        return super().validate(attrs)
