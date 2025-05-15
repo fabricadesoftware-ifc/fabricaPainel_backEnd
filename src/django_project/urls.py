@@ -59,7 +59,6 @@ urlpatterns = [
     path("api/canceled-work/<str:pk>/", CanceledWork.as_view(), name="canceled-work"),
     path("api/resend-invite-team/", resend_invite_team, name="resend-invite-team"),
     path("api/assign-work-to-advisors/", assign_work, name="assing-work-to-advisor"),
-    #manda para /
     path('', lambda request: redirect('api/', permanent=True)),
 ]
 
