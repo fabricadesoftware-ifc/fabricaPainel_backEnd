@@ -9,6 +9,7 @@ from core.work.domain.validations import (
     validate_work_team_members,
     validate_work_max_and_min_members,
     validate_work_team_member_is_student,
+    validate_work_advisor,
 )
 from core.user.infra.user_django_app.serializers import UserSerializer, EvaluatorSerializer
 from core.user.infra.user_django_app.models import User
@@ -79,12 +80,9 @@ class WorkWriteSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         request = self.context.get("request")
         if request and request.method == "POST":
-            if validate_work_date_submission_is_valid(attrs):
-                raise serializers.ValidationError("Fora da data de submissão")
-            if validate_work_team_members(attrs):
-                raise serializers.ValidationError(
-                    "Membro já associado a outro trabalho"
-                )
+            validate_work_date_submission_is_valid(attrs)
+            validate_work_team_members(attrs)
+            validate_work_advisor(attrs)
         return super().validate(attrs)
 
 
@@ -153,9 +151,6 @@ class TeamWriteSerializer(serializers.ModelSerializer):
         ]
 
     def validate(self, attrs):
-        print("Entrou na validação")
-        if validate_work_max_and_min_members(attrs):
-            raise serializers.ValidationError("O time não pode ter mais do que 7 membros e menos que 4")
-        if validate_work_team_member_is_student(attrs):
-            raise serializers.ValidationError("Um membro do time não é estudante")
+        validate_work_max_and_min_members(attrs)
+        validate_work_team_member_is_student(attrs)
         return super().validate(attrs)
