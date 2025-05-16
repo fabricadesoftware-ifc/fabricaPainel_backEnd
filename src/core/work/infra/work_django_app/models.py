@@ -66,7 +66,7 @@ class Work(models.Model):
     status = models.PositiveSmallIntegerField(choices=WORK_TYPE_STATUS_CHOICE, default=PENDING)
     advisor = models.ForeignKey(User, on_delete=models.PROTECT, related_name="advisor", limit_choices_to={"is_advisor": True}, default=None, blank=True, null=True)
     feedback = models.TextField(blank=True, null=True)
-    co_advisor = models.ForeignKey(User, on_delete=models.PROTECT, related_name="co_advisor", limit_choices_to={"user_type": 'TEACHER'}, default=None, blank=True, null=True)
+    integrated_project = models.BooleanField(default=False)
     def __str__(self) -> str:
         return f"{self.title} - {self.team} - {self.get_status_display()}"
 

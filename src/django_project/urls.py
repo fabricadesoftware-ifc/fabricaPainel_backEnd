@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.conf.urls.static import static
+from django.shortcuts import redirect
 from django.contrib import admin
 from django.urls import include, path
 from drf_spectacular.views import (
@@ -57,7 +58,8 @@ urlpatterns = [
     ),
     path("api/canceled-work/<str:pk>/", CanceledWork.as_view(), name="canceled-work"),
     path("api/resend-invite-team/", resend_invite_team, name="resend-invite-team"),
-    path("api/assign-work-to-advisors/", assign_work, name="assing-work-to-advisor")
+    path("api/assign-work-to-advisors/", assign_work, name="assing-work-to-advisor"),
+    path('', lambda request: redirect('api/', permanent=True)),
 ]
 
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

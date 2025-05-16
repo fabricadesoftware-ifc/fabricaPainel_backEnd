@@ -49,7 +49,7 @@ class WorkDetailSerializer(serializers.ModelSerializer):
             "needs_changes_submission_work_date",
             "status",
             "advisor",
-            "co_advisor",
+            "integrated_project",
             "feedback",
         ]
         depth = 2
@@ -71,7 +71,7 @@ class WorkWriteSerializer(serializers.ModelSerializer):
             "cross_cutting_theme",
             "team",
             "ods",
-            "co_advisor",
+            "integrated_project",
             "feedback",
             "advisor",
         ]
