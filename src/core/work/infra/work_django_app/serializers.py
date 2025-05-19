@@ -43,8 +43,6 @@ class WorkDetailSerializer(serializers.ModelSerializer):
             "field",
             "evaluator",
             "cross_cutting_theme",
-            "initial_submission_work_date",
-            "final_submission_work_date",
             "verification_token",
             "team",
             "ods",
@@ -136,6 +134,7 @@ class TeamDetailSerializer(serializers.ModelSerializer):
         fields: list[str] = [
             "id",
             "team_members",
+            "edition"
             #"tokens",
             #"accept_tokens",
             #"reject_tokens",
@@ -151,6 +150,7 @@ class TeamWriteSerializer(serializers.ModelSerializer):
         fields: list[str] = [
             "id",
             "team_members",
+            "edition",
             #"tokens",
             #"accept_tokens",
             #"reject_tokens",

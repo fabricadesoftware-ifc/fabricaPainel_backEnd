@@ -1,11 +1,13 @@
 from django.db import models
 from core.uploader.infra.uploader_django_app.models import Image
+from datetime import datetime, timedelta, date
 
 class Edition(models.Model):
     year = models.IntegerField("Ano da Edição")
     theme = models.CharField("Tema da Edição", max_length=255)
     edition_name = models.CharField("Nome da Edição", max_length=255)
     event_date = models.DateField("Data do evento", default=None, null=True, blank=True)
+    final_event_date = models.DateField("Data final do evento", default=None, null=True, blank=True)
 
     initial_submission_date = models.DateField("Data de início de submissão", default=None, null=True, blank=True)
     final_submission_date = models.DateField("Data de fim de submissão", default=None, null=True, blank=True)
@@ -32,7 +34,6 @@ class Edition(models.Model):
     works_per_advisor_max = models.IntegerField("Número máximo de trabalhos por orientador", default=3)
 
     workload = models.IntegerField("Carga horária")
-    is_open = models.BooleanField("Está aberto", default=False)
     banner = models.ForeignKey(
         Image,
         related_name="+",
@@ -50,6 +51,13 @@ class Edition(models.Model):
         default=None,
     )
 
+    @property
+    def is_open(self):
+        today = datetime.now().date()
+        print(today)
+        if not self.initial_submission_date or not self.final_event_date:
+            return False
+        return self.initial_submission_date <= today <= (self.final_event_date + timedelta(days=1))
 
     def __str__(self):
         return f"{self.edition_name} - {self.year}"

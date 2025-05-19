@@ -2,15 +2,19 @@ from rest_framework import serializers
 
 from core.edition.infra.edition_django_app.models import Edition
 from core.edition.domain.validations import validate_dates, validate_year
+
 class EditionDetailSerializer(serializers.ModelSerializer):
+    is_open = serializers.BooleanField(read_only=True)
+    
     class Meta:
-        model = Edition
+        model = Edition     
         fields: list[str] = [
             "id",
             "year",
             "theme",
             "edition_name",
             "event_date",
+            "final_event_date",
             "initial_submission_date",
             "final_submission_date",
             "initial_second_submission_date",
@@ -32,9 +36,9 @@ class EditionDetailSerializer(serializers.ModelSerializer):
             "works_per_collaborator_max",
             "works_per_advisor_max",
             "workload",
-            "is_open",
             "banner",
             "logo",
+            "is_open",
         ]
         depth = 1
 
@@ -47,6 +51,7 @@ class EditionWriteSerializer(serializers.ModelSerializer):
             "theme",
             "edition_name",
             "event_date",
+            "final_event_date",
             "initial_submission_date",
             "final_submission_date",
             "initial_second_submission_date",
@@ -68,7 +73,6 @@ class EditionWriteSerializer(serializers.ModelSerializer):
             "works_per_collaborator_max",
             "works_per_advisor_max",
             "workload",
-            "is_open",
             "banner",
             "logo",
         ]

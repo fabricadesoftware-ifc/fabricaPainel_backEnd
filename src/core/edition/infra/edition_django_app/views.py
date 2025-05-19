@@ -1,5 +1,6 @@
 from rest_framework.viewsets import ModelViewSet
 from drf_spectacular.utils import extend_schema
+from datetime import datetime, timedelta
 
 from core.edition.infra.edition_django_app.models import Edition
 from core.edition.infra.edition_django_app.serializers import (
@@ -22,7 +23,13 @@ class EditionViewSet(ModelViewSet):
     
 @extend_schema(tags=["edition"])
 class EditionOpenViewSet(ModelViewSet):
-    queryset = Edition.objects.filter(is_open=True)
     serializer_class = EditionDetailSerializer
     http_method_names = ["get"]
+
+    def get_queryset(self):
+        now = datetime.now()
+        return Edition.objects.filter(
+            initial_submission_date__lte=now,
+            final_event_date__gte=now - timedelta(days=1)
+        )
 

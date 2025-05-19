@@ -16,20 +16,23 @@ class Token(models.Model):
     
 class Team(models.Model):
     team_members = models.ManyToManyField(User, related_name="team", blank=True)
+    edition = models.ForeignKey(Edition, on_delete=models.PROTECT, related_name="team", blank=True)
     #tokens = models.ManyToManyField(Token, related_name="tokens", blank=True)
     #accept_tokens = models.ManyToManyField(Token, related_name="accept_tokens", blank=True)
     #reject_tokens = models.ManyToManyField(Token, related_name="reject_tokens", blank=True)
 
-    def generate_token(self):
-        """
-        Gera um token único (UUID) que será utilizado para validação de membros.
-        """
-        return str(uuid4())
+    # def generate_token(self):
+    #     """
+    #     Gera um token único (UUID) que será utilizado para validação de membros.
+    #     """
+    #     return str(uuid4())
 
 
     def __str__(self) -> str:
         members = ", ".join([user.name if user.name else "Unknown" for user in self.team_members.all()])
         return f"Team Members: {members}"
+    
+
 
 class Ods(models.Model):
     name = models.CharField(max_length=255, verbose_name="Sustainable Goal", unique=True)
