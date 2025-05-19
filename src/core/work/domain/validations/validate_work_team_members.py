@@ -2,9 +2,7 @@ from core.work.infra.work_django_app.models import Work
 from rest_framework.exceptions import ValidationError
 
 def validate_work_team_members(attr) -> str | bool:
-    print(attr)
     team = attr.get('team')
-    print(team)
     if team:
         team_members = team.team_members.all()
         for member in team_members:
