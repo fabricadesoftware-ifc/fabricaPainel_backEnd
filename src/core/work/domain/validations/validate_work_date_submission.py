@@ -1,6 +1,6 @@
 from core.edition.infra.edition_django_app.models import Edition
 
-def validate_work_date_submission_is_valid(attrs):
+def validate_work_date_submission_is_valid(attrs) -> str | bool:
     if 'edition' not in attrs:
         raise ValueError("A chave 'edition' não está presente em attrs")
 

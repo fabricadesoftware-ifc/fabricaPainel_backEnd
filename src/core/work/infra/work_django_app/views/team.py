@@ -47,43 +47,56 @@ class TeamViewSet(ModelViewSet):
             if get_sender_team:
                 team.delete()
                 return Response({"error": "Voce já está em um time."}, status=status.HTTP_400_BAD_REQUEST)
+            
+            #validação para verificar se alguns dos usuarios já está em algum time
+            for member_id in team_members:
+                try:
+                    member = User.objects.get(id=member_id)
+                    get_member_team = Team.objects.filter(team_members__id=member_id).filter(~Q(id=team.id))
+                    
+                    if get_member_team:
+                        team.delete()
+                        return Response({"error": f"{member.name.upper()} já está em um time."}, status=status.HTTP_400_BAD_REQUEST)
+                except User.DoesNotExist:
+                    continue
+            
             sender_user = User.objects.get(id=sender_id)
             team.team_members.set([sender_user])
             team.save()
 
         # Gera tokens para cada membro do time
-        tokens = []
-        for member_id in team_members:
-            try:
-                member = User.objects.get(id=member_id)
-                token = team.generate_token()
-                sender = User.objects.get(id=sender_id)
-                new_token = Token.objects.create(user=member, token=token, sender=sender)
+        # tokens = []
+        # for member_id in team_members:
+        #     try:
+        #         member = User.objects.get(id=member_id)
+        #         token = team.generate_token()
+        #         sender = User.objects.get(id=sender_id)
+        #         new_token = Token.objects.create(user=member, token=token, sender=sender)
                 
-                if member.id == sender_id:
-                    team.accept_tokens.add(new_token)
-                    continue;
+        #         if member.id == sender_id:
+        #             team.accept_tokens.add(new_token)
+        #             continue;
                 
-                get_member_team = Team.objects.filter(team_members__id=member_id)
+        #         get_member_team = Team.objects.filter(team_members__id=member_id)
                 
-                if get_member_team:
-                    new_token.delete()
-                    team.delete()
-                    return Response({"error": f"{member.name.upper()} já está em um time."}, status=status.HTTP_400_BAD_REQUEST)
+        #         if get_member_team:
+        #             new_token.delete()
+        #             team.delete()
+        #             return Response({"error": f"{member.name.upper()} já está em um time."}, status=status.HTTP_400_BAD_REQUEST)
                 
-                tokens.append(new_token)
+        #         tokens.append(new_token)
 
-                # if member:
-                #     send_email_to_member(member, token, team.id)
+        #         # if member:
+        #         #     send_email_to_member(member, token, team.id)
 
-            except User.DoesNotExist:
-                continue
+        #     except User.DoesNotExist:
+        #         continue
             
-        for token in tokens:
-            send_email_to_member.delay(token.user.id, token.token, team.id)
+        # for token in tokens:
+        #     send_email_to_member.delay(token.user.id, token.token, team.id)
             
-        team.tokens.set(tokens)
-        team.save()
+        # team.tokens.set(tokens)
+        # team.save()
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
@@ -96,26 +109,26 @@ class TeamViewSet(ModelViewSet):
         sender_id = request.data.get('sender_id', '')
         
         members_token = []
-        if action == 'add':
-            for id in new_members:
-                member = User.objects.get(id=id)
-                team_user = Team.objects.filter(team_members__id=id).filter(~Q(id=team.id))
-                if team_user:
-                    return Response({"error": f"{member.name} já está em um time."}, status=status.HTTP_400_BAD_REQUEST)
-                member_pending = Team.objects.filter(tokens__user__id=id).filter(Q(id=team.id))
-                if member_pending:
-                    return Response({"error": f"{member.name} já está pendente de aceitação."}, status=status.HTTP_400_BAD_REQUEST)
-                token = team.generate_token()
-                sender = User.objects.get(id=sender_id)
-                new_token = Token.objects.create(user=member, token=token, sender=sender)
-                team.tokens.add(new_token)
-                team.save()
-                members_token.append(new_token)
+        # if action == 'add':
+        #     for id in new_members:
+        #         member = User.objects.get(id=id)
+        #         team_user = Team.objects.filter(team_members__id=id).filter(~Q(id=team.id))
+        #         if team_user:
+        #             return Response({"error": f"{member.name} já está em um time."}, status=status.HTTP_400_BAD_REQUEST)
+        #         member_pending = Team.objects.filter(tokens__user__id=id).filter(Q(id=team.id))
+        #         if member_pending:
+        #             return Response({"error": f"{member.name} já está pendente de aceitação."}, status=status.HTTP_400_BAD_REQUEST)
+        #         token = team.generate_token()
+        #         sender = User.objects.get(id=sender_id)
+        #         new_token = Token.objects.create(user=member, token=token, sender=sender)
+        #         team.tokens.add(new_token)
+        #         team.save()
+        #         members_token.append(new_token)
                 
-            for t in members_token:
-                send_email_to_member.delay(t.user.id, t.token, team.id)
+        #     for t in members_token:
+        #         send_email_to_member.delay(t.user.id, t.token, team.id)
                 
-            return Response({"message": "Usuário adicionado ao time."}, status=status.HTTP_200_OK)
+        #     return Response({"message": "Usuário adicionado ao time."}, status=status.HTTP_200_OK)
         
         if action == 'remove':
             user = User.objects.get(id=user_id)
@@ -137,58 +150,58 @@ class TeamViewSet(ModelViewSet):
         if not action or not token_id:
             return Response({"error": "Ação e ID do usuário com token são obrigatórios."}, status=status.HTTP_400_BAD_REQUEST)
 
-        if action == 'accept':
-            token = Token.objects.get(id=token_id)
-            token_user = User.objects.get(id=token.user.id)
+        # if action == 'accept':
+        #     token = Token.objects.get(id=token_id)
+        #     token_user = User.objects.get(id=token.user.id)
             
-            user_teams = Team.objects.filter(team_members__id=token_user.id).filter(~Q(id=team.id))
-            if user_teams:
-                return Response({"error": "Usuário já está em um time."}, status=status.HTTP_400_BAD_REQUEST)
+        #     user_teams = Team.objects.filter(team_members__id=token_user.id).filter(~Q(id=team.id))
+        #     if user_teams:
+        #         return Response({"error": "Usuário já está em um time."}, status=status.HTTP_400_BAD_REQUEST)
             
-            user_tokens_pending = Team.objects.filter(tokens__user__id=token_user.id).filter(~Q(id=team.id))
-            if user_tokens_pending:
-                for t in user_tokens_pending:
-                    t_token = t.tokens.get(user=token_user)
-                    t.tokens.remove(t_token)
-                    t.reject_tokens.add(t_token)
-                    t.save()
+        #     user_tokens_pending = Team.objects.filter(tokens__user__id=token_user.id).filter(~Q(id=team.id))
+        #     if user_tokens_pending:
+        #         for t in user_tokens_pending:
+        #             t_token = t.tokens.get(user=token_user)
+        #             t.tokens.remove(t_token)
+        #             t.reject_tokens.add(t_token)
+        #             t.save()
             
-            edition: Edition = Edition.objects.get(is_open=True)
+        #     edition: Edition = Edition.objects.get(is_open=True)
             
-            if timezone.now().date() > edition.final_submission_date:
-                return Response({"error": "Data de cadastro expirada."}, status=status.HTTP_400_BAD_REQUEST)
+        #     if timezone.now().date() > edition.final_submission_date:
+        #         return Response({"error": "Data de cadastro expirada."}, status=status.HTTP_400_BAD_REQUEST)
             
             
-            if token in team.reject_tokens.all():
-                team.reject_tokens.remove(token)
+        #     if token in team.reject_tokens.all():
+        #         team.reject_tokens.remove(token)
                 
-            if token in team.accept_tokens.all():
-                return Response({"error": "Usuário já está no time."}, status=status.HTTP_400_BAD_REQUEST)
+        #     if token in team.accept_tokens.all():
+        #         return Response({"error": "Usuário já está no time."}, status=status.HTTP_400_BAD_REQUEST)
             
-            # user_tokens = Token.objects.filter(user=token_user).filter(~Q(id=token.id))
+        #     # user_tokens = Token.objects.filter(user=token_user).filter(~Q(id=token.id))
             
-            # for t in user_tokens:
-            #     t.
+        #     # for t in user_tokens:
+        #     #     t.
             
-            team.tokens.remove(token)
-            team.accept_tokens.add(token)
-            team.team_members.add(token_user)
+        #     team.tokens.remove(token)
+        #     team.accept_tokens.add(token)
+        #     team.team_members.add(token_user)
         
-        elif action == 'reject':
-            token = Token.objects.get(id=token_id)
+        # elif action == 'reject':
+        #     token = Token.objects.get(id=token_id)
             
-            if token in team.accept_tokens.all():
-                team.accept_tokens.remove(token)
+        #     if token in team.accept_tokens.all():
+        #         team.accept_tokens.remove(token)
                 
-            if token in team.reject_tokens.all():
-                return Response({"error": "Usuário nao está no time."}, status=status.HTTP_400_BAD_REQUEST)
+        #     if token in team.reject_tokens.all():
+        #         return Response({"error": "Usuário nao está no time."}, status=status.HTTP_400_BAD_REQUEST)
             
-            if token.user in team.team_members.all():
-                team.team_members.remove(token.user)
+        #     if token.user in team.team_members.all():
+        #         team.team_members.remove(token.user)
             
-            team.tokens.remove(token)
-            team.reject_tokens.add(token)
+        #     team.tokens.remove(token)
+        #     team.reject_tokens.add(token)
 
-        team.save()
+        # team.save()
 
-        return Response({"message": f"Usuário {action} com sucesso."}, status=status.HTTP_200_OK)
+        # return Response({"message": f"Usuário {action} com sucesso."}, status=status.HTTP_200_OK)

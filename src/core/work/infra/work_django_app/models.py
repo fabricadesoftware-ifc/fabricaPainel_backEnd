@@ -16,9 +16,9 @@ class Token(models.Model):
     
 class Team(models.Model):
     team_members = models.ManyToManyField(User, related_name="team", blank=True)
-    tokens = models.ManyToManyField(Token, related_name="tokens", blank=True)
-    accept_tokens = models.ManyToManyField(Token, related_name="accept_tokens", blank=True)
-    reject_tokens = models.ManyToManyField(Token, related_name="reject_tokens", blank=True)
+    #tokens = models.ManyToManyField(Token, related_name="tokens", blank=True)
+    #accept_tokens = models.ManyToManyField(Token, related_name="accept_tokens", blank=True)
+    #reject_tokens = models.ManyToManyField(Token, related_name="reject_tokens", blank=True)
 
     def generate_token(self):
         """

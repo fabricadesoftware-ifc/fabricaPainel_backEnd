@@ -11,8 +11,6 @@ dependencies = [
     "django-cors-headers>=4.3.1",
     "djangorestframework-simplejwt>=5.3.1",
     "setuptools>=70.0.0",
-    "python-magic>=0.4.27",
-    "Pillow>=10.3.0",
     "drf-spectacular>=0.27.2",
     "pyparsing>=3.1.2",
     "pydot>=2.0.0",
@@ -30,6 +28,9 @@ dependencies = [
     "psycopg2-binary>=2.9.9",
     "python-dotenv>=1.0.1",
     "gunicorn>=23.0.0",
+    "Pillow>=11.2.1",
+    "libmagic>=1.0",
+    "python-magic-bin>=0.4.14",
 ]
 requires-python = "==3.11.*"
 readme = "README.md"
@@ -43,7 +44,7 @@ migrate = "python src/manage.py migrate"
 makemigrations = "python src/manage.py makemigrations"
 shell = "python src/manage.py shell"
 populate = "python src/manage.py populate"
-celery = "celery -A django_project worker -l info"
+celery = "celery -A src.django_project worker -l info"
 celery_beat = "celery -A src.django_project beat --loglevel=info"
 
 
