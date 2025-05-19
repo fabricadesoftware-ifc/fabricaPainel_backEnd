@@ -81,9 +81,14 @@ class WorkWriteSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         request = self.context.get("request")
         if request and request.method == "POST":
-            validate_work_date_submission_is_valid(attrs)
-            validate_work_team_members(attrs)
-            validate_work_advisor(attrs)
+            try:
+                validate_work_date_submission_is_valid(attrs)
+            except Exception as e:
+                raise e
+            try:
+                validate_work_team_members(attrs)
+            except Exception as e:
+                raise e
         return super().validate(attrs)
 
 

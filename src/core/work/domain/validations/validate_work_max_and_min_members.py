@@ -2,7 +2,7 @@ from rest_framework.exceptions import ValidationError
 from core.edition.infra.edition_django_app.models import Edition
 
 def validate_work_max_and_min_members(attrs) -> str | bool:
-    team_members = attrs.get('team_members')
+    team_members = getattr(attrs, 'team')
 
     edition = Edition.objects.get(is_open=True)
     

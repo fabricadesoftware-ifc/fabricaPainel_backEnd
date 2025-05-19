@@ -4,7 +4,7 @@ from rest_framework.exceptions import ValidationError
 
 def validate_team_members(data) -> str | bool:
     team_members = data.get('team_members')
-    
+
     if team_members:
         for member in team_members:
             if Team.objects.filter(team_members=member).exists():
