@@ -3,8 +3,8 @@ from drf_spectacular.utils import extend_schema
 from rest_framework_simplejwt.views import TokenObtainPairView
 from .serializers import CustomTokenObtainPairSerializer
 
-from .models import User, Evaluator
-from .serializers import UserSerializer, EvaluatorSerializer
+from .models import User, Evaluator, Class, UserClass
+from .serializers import UserSerializer, EvaluatorSerializer, ClassSerializer, UserClassSerializer, UserViewSerializer
 from .filters import UserFilter, EvaluatorFilter
 
 @extend_schema(tags=["users"])
@@ -31,3 +31,15 @@ class EvaluatorViewSet(ModelViewSet):
 @extend_schema(tags=["auth"])
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
+    
+@extend_schema(tags=["classes"])
+class ClassViewSet(ModelViewSet):
+    queryset = Class.objects.all()
+    serializer_class = ClassSerializer
+
+@extend_schema(tags=["user_classes"])
+class UserClassViewSet(ModelViewSet):
+    queryset = UserClass.objects.all()
+    serializer_class = UserViewSerializer
+    http_method_names: list[str] = ["get", "post", "put", "delete"]
+

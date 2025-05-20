@@ -46,7 +46,7 @@ shell = "python src/manage.py shell"
 populate = "python src/manage.py populate"
 celery = "celery -A src.django_project worker -l info"
 celery_beat = "celery -A src.django_project beat --loglevel=info"
-
+test = "python pop.py"
 
 
 

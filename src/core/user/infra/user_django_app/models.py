@@ -11,6 +11,19 @@ def remove_accent(text):
     text_without_accent = ''.join(c for c in text_normal if not unicodedata.combining(c))
     return text_without_accent
 
+class Class(models.Model):
+    name = models.CharField(max_length=20, help_text="Exemplo: 1info1")
+
+    def __str__(self):
+        return self.name
+    
+    class Meta:
+        verbose_name = "Classe"
+        verbose_name_plural = "Classes"
+        ordering = ["name"]
+    
+
+
 class User(AbstractUser):
     STUDENT = UserType.Type.STUDENT.value
     TEACHER = UserType.Type.TEACHER.value
@@ -56,6 +69,18 @@ class User(AbstractUser):
         verbose_name_plural = "Usuários"
         ordering = ["-date_joined"]
 
+class UserClass(models.Model):
+    class_name = models.ForeignKey(Class, on_delete=models.CASCADE, related_name="user_classes", help_text="turma do aluno")
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="user_classes")
+    year = models.IntegerField("Ano da classe")
+    
+    def __str__(self):
+        return f"{self.class_name.name} - {self.year}"
+
+    class Meta:
+        verbose_name = "Classe do Usuário"
+        verbose_name_plural = "Classes dos Usuários"
+        ordering = ["-user__date_joined"]
 
 class Evaluator(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="evaluator")
@@ -68,3 +93,5 @@ class Evaluator(models.Model):
         verbose_name = "Avaliador"
         verbose_name_plural = "Avaliadores"
         ordering = ["-user__date_joined"]
+        
+
