@@ -16,8 +16,12 @@ class CrossCuttingThemeSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         request = self.context.get('request')
         if request and request.method == 'PATCH':
-            if validate_cross_cutting_themes_date_is_valid():
-                raise serializers.ValidationError("Fora da data de inscrição de temas transversais")
-            if validate_cross_cutting_themes_is_advisor(attrs['advisor']):
-                raise serializers.ValidationError("Apenas os orientadores podem se inscrever nos temas transversais")
+            try:
+                validate_cross_cutting_themes_date_is_valid()
+            except Exception as e:
+                raise e
+            try:
+                validate_cross_cutting_themes_is_advisor(attrs.get('advisor'))
+            except Exception as e:
+                raise e
         return super().validate(attrs)

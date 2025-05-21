@@ -43,5 +43,5 @@ def validate_dates(attrs):
     if attrs['initial_evaluators_date'] > attrs['final_evaluators_date']:
         raise ValueError("A data de início dos avaliadores não pode ser maior que a data final dos avaliadores")
     
-    return attrs
+    return False
 
