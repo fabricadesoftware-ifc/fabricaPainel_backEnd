@@ -8,6 +8,6 @@ def validate_work_date_submission_is_valid(attrs) -> str | bool:
 
     edition = Edition.objects.get(id=attrs['edition'].id)
     time_now = datetime.date.today()
-    #if time_now > edition.final_submission_date or time_now < edition.initial_submission_date:
-    #    raise ValidationError("Fora da data de submissão")
+    if time_now > edition.final_submission_date or time_now < edition.initial_submission_date:
+        raise ValidationError("Fora da data de submissão")
     return False

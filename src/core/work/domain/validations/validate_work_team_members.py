@@ -59,4 +59,4 @@ def validate_work_team_members(attrs):
                     }
                 )
 
-    return attrs
+    return False
