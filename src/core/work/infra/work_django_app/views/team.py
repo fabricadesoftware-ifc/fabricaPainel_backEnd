@@ -103,18 +103,17 @@ class TeamViewSet(ModelViewSet):
     def partial_update(self, request, *args, **kwargs):
         team: Team = self.get_object()
         action = request.data.get('action')
-        token_id = request.data.get('token_id')
+        # token_id = request.data.get('token_id')
         user_id = request.data.get('user_id', '')
         new_members = request.data.get('new_members', [])
-        sender_id = request.data.get('sender_id', '')
         
-        members_token = []
-        # if action == 'add':
-        #     for id in new_members:
-        #         member = User.objects.get(id=id)
-        #         team_user = Team.objects.filter(team_members__id=id).filter(~Q(id=team.id))
-        #         if team_user:
-        #             return Response({"error": f"{member.name} já está em um time."}, status=status.HTTP_400_BAD_REQUEST)
+        # members_token = []
+        if action == 'add':
+            for id in new_members:
+                member = User.objects.get(id=id)
+                team_user = Team.objects.filter(team_members__id=id).filter(~Q(id=team.id))
+                if team_user:
+                    return Response({"error": f"{member.name} já está em um time."}, status=status.HTTP_400_BAD_REQUEST)
         #         member_pending = Team.objects.filter(tokens__user__id=id).filter(Q(id=team.id))
         #         if member_pending:
         #             return Response({"error": f"{member.name} já está pendente de aceitação."}, status=status.HTTP_400_BAD_REQUEST)
@@ -122,33 +121,32 @@ class TeamViewSet(ModelViewSet):
         #         sender = User.objects.get(id=sender_id)
         #         new_token = Token.objects.create(user=member, token=token, sender=sender)
         #         team.tokens.add(new_token)
-        #         team.save()
+                team.team_members.add(member)
         #         members_token.append(new_token)
                 
         #     for t in members_token:
         #         send_email_to_member.delay(t.user.id, t.token, team.id)
                 
-        #     return Response({"message": "Usuário adicionado ao time."}, status=status.HTTP_200_OK)
+            return Response({"message": "Usuário adicionado ao time."}, status=status.HTTP_200_OK)
         
         if action == 'remove':
             user = User.objects.get(id=user_id)
-            token = team.reject_tokens.get(user=user)
-            team.reject_tokens.remove(token)
-            team.save()
+            # token = team.reject_tokens.get(user=user)
+            # team.reject_tokens.remove(token)
+            team.team_members.remove(user)
             return Response({"message": "Usuário removido do time."}, status=status.HTTP_200_OK)
         
         if action == 'leave':
             user = User.objects.get(id=user_id)
             team.team_members.remove(user)
-            token = team.accept_tokens.get(user=user)
-            team.accept_tokens.remove(token)
-            team.save()
+            # token = team.accept_tokens.get(user=user)
+            # token = team.accept_tokens.get(user=user)
             if team.team_members.count() == 0:
                 team.delete()
             return Response({"message": "Usuário saiu do time."}, status=status.HTTP_200_OK)
 
-        if not action or not token_id:
-            return Response({"error": "Ação e ID do usuário com token são obrigatórios."}, status=status.HTTP_400_BAD_REQUEST)
+        if not action:
+            return Response({"error": "Ação é obrigatória."}, status=status.HTTP_400_BAD_REQUEST)
 
         # if action == 'accept':
         #     token = Token.objects.get(id=token_id)
@@ -204,4 +202,4 @@ class TeamViewSet(ModelViewSet):
 
         # team.save()
 
-        # return Response({"message": f"Usuário {action} com sucesso."}, status=status.HTTP_200_OK)
+        return Response({"message": f"Usuário {action} com sucesso."}, status=status.HTTP_200_OK)
