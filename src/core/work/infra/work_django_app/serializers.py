@@ -1,15 +1,16 @@
 from rest_framework import serializers
-
+from rest_framework.exceptions import ValidationError
 from core.work.infra.work_django_app.models import Work
 from core.work.infra.work_django_app.models import Keyword
 from core.work.infra.work_django_app.models import Team, Token
 from core.work.infra.work_django_app.models import Ods
 from core.work.domain.validations import (
     validate_work_date_submission_is_valid,
-    validate_work_team_members,
+    validate_team_members,
     validate_work_max_and_min_members,
     validate_work_team_member_is_student,
     validate_work_advisor,
+    validate_work_team_members,
 )
 from core.user.infra.user_django_app.serializers import UserSerializer, EvaluatorSerializer
 from core.user.infra.user_django_app.models import User
@@ -42,8 +43,6 @@ class WorkDetailSerializer(serializers.ModelSerializer):
             "field",
             "evaluator",
             "cross_cutting_theme",
-            "initial_submission_work_date",
-            "final_submission_work_date",
             "verification_token",
             "team",
             "ods",
@@ -80,9 +79,14 @@ class WorkWriteSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         request = self.context.get("request")
         if request and request.method == "POST":
-            validate_work_date_submission_is_valid(attrs)
-            validate_work_team_members(attrs)
-            validate_work_advisor(attrs)
+            try:
+                validate_work_date_submission_is_valid(attrs)
+            except Exception as e:
+                raise e
+            try:
+                validate_work_team_members(attrs)
+            except Exception as e:
+                raise e
         return super().validate(attrs)
 
 
@@ -121,18 +125,19 @@ class TokenSerializer(serializers.ModelSerializer):
 
 class TeamDetailSerializer(serializers.ModelSerializer):
     team_members = UserSerializer(many=True)
-    tokens = TokenSerializer(many=True)
-    accept_tokens = TokenSerializer(many=True)
-    reject_tokens = TokenSerializer(many=True)
+    #tokens = TokenSerializer(many=True)
+    #accept_tokens = TokenSerializer(many=True)
+    #reject_tokens = TokenSerializer(many=True)
 
     class Meta:
         model = Team
         fields: list[str] = [
             "id",
             "team_members",
-            "tokens",
-            "accept_tokens",
-            "reject_tokens",
+            "edition"
+            #"tokens",
+            #"accept_tokens",
+            #"reject_tokens",
         ]
         depth = 1
 
@@ -145,12 +150,23 @@ class TeamWriteSerializer(serializers.ModelSerializer):
         fields: list[str] = [
             "id",
             "team_members",
-            "tokens",
-            "accept_tokens",
-            "reject_tokens",
+            "edition",
+            #"tokens",
+            #"accept_tokens",
+            #"reject_tokens",
         ]
 
     def validate(self, attrs):
-        validate_work_max_and_min_members(attrs)
-        validate_work_team_member_is_student(attrs)
+        try:
+            validate_work_max_and_min_members(attrs)
+        except Exception as e:
+            raise e
+        try:
+            validate_work_team_member_is_student(attrs)
+        except Exception as e:
+            raise e
+        try:
+            validate_team_members(attrs)
+        except Exception as e:
+            raise e
         return super().validate(attrs)

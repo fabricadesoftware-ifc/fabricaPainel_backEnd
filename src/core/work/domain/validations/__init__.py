@@ -1,5 +1,6 @@
 from .validate_work_date_submission import validate_work_date_submission_is_valid
-from .validate_work_team_members import validate_work_team_members
+from .validate_team_members import validate_team_members
 from .validate_work_max_and_min_members import validate_work_max_and_min_members
 from .validate_work_team_member_is_student import validate_work_team_member_is_student
 from .validate_work_advisor import validate_work_advisor
+from .validate_work_team_members import validate_work_team_members

@@ -2,10 +2,24 @@ from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.contrib.auth import authenticate
 
-from .models import User, Evaluator
-from core.work.infra.work_django_app.models import Team
+from .models import User, Evaluator, Class, UserClass
+
+
+class UserViewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserClass
+        fields = [
+            "id",
+            "class_name",
+            "user",
+            "year",
+        ]
+class UserClassSerializer(serializers.Serializer):
+    class_name = serializers.CharField(source='class_name.name')
+    year = serializers.IntegerField()
 
 class UserSerializer(serializers.ModelSerializer):
+    user_classes = UserClassSerializer(many=True, read_only=True)
     class Meta:
         model = User
         fields = [
@@ -13,11 +27,11 @@ class UserSerializer(serializers.ModelSerializer):
             "email",
             "name",
             "user_type",
+            "user_classes",
             "team",
             "name_search",
-            "registration"
+            "registration",
         ]
-
     def Create(self, validated_data):
         return User.objects.create_user(**validated_data)
 
@@ -54,3 +68,10 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             raise serializers.ValidationError('Must include "email" and "password"')
 
         return super().validate(attrs)
+    
+class ClassSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Class
+        fields = ["id", "name"]
+        depth = 1
+
