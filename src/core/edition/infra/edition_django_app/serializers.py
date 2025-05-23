@@ -3,11 +3,12 @@ from rest_framework import serializers
 from core.edition.infra.edition_django_app.models import Edition
 from core.edition.domain.validations import validate_dates, validate_year
 
+
 class EditionDetailSerializer(serializers.ModelSerializer):
     is_open = serializers.BooleanField(read_only=True)
-    
+
     class Meta:
-        model = Edition     
+        model = Edition
         fields: list[str] = [
             "id",
             "year",
@@ -35,6 +36,7 @@ class EditionDetailSerializer(serializers.ModelSerializer):
             "works_per_evaluator_max",
             "works_per_collaborator_max",
             "works_per_advisor_max",
+            "words_per_work_max",
             "workload",
             "banner",
             "logo",
@@ -72,14 +74,15 @@ class EditionWriteSerializer(serializers.ModelSerializer):
             "works_per_evaluator_max",
             "works_per_collaborator_max",
             "works_per_advisor_max",
+            "words_per_work_max",
             "workload",
             "banner",
             "logo",
         ]
 
     def validate(self, attrs):
-        request = self.context.get('request')   
-        if request and request.method == 'POST':
+        request = self.context.get("request")
+        if request and request.method == "POST":
             try:
                 validate_dates(attrs)
                 validate_year(attrs)
