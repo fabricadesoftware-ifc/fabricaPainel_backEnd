@@ -18,6 +18,7 @@ editions = [
         "workload": 20,
         "banner": None,
         "logo": None,
+        "words_per_work_max": 5000,
     },
     {
         "edition_name": "2ª Edição",
@@ -38,6 +39,7 @@ editions = [
         "workload": 20,
         "banner": None,
         "logo": None,
+        "words_per_work_max": 5000,
     },
     {
         "edition_name": "3ª Edição",
@@ -58,6 +60,7 @@ editions = [
         "workload": 20,
         "banner": None,
         "logo": None,
+        "words_per_work_max": 5000,
     },
     {
         "edition_name": "4ª Edição",
@@ -78,6 +81,7 @@ editions = [
         "workload": 20,
         "banner": None,
         "logo": None,
+        "words_per_work_max": 5000,
     },
     {
         "edition_name": "5ª Edição",
@@ -98,6 +102,7 @@ editions = [
         "workload": 20,
         "banner": None,
         "logo": None,
+        "words_per_work_max": 5000,
     },
     {
         "edition_name": "6ª Edição",
@@ -118,5 +123,6 @@ editions = [
         "workload": 20,
         "banner": None,
         "logo": None,
+        "words_per_work_max": 5000,
     },
 ]
