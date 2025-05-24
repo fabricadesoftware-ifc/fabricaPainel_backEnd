@@ -17,6 +17,6 @@ def send_forget_password_email(email, token):
     
     subject = 'Recuperação de Senha'
     plain_message = strip_tags(html)
-
     send_mail(subject, plain_message, from_email, recipient_list, html_message=html)
     
+    return "Email enviado com sucesso"
