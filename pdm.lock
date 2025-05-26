@@ -2,10 +2,10 @@
 # It is not intended for manual editing.
 
 [metadata]
-groups = ["default", "dev"]
+groups = ["default"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:929cdd46e790e8e7d42449fb32c8d3119cd22adfd46df16ad0e4315a2b92ca34"
+content_hash = "sha256:bbaa42535d55bfafab375b39081a2ae6a83ec3e7f4a8e33d8cb6029ed1469dc9"
 
 [[metadata.targets]]
 requires_python = "==3.12.*"
@@ -43,7 +43,7 @@ name = "asgiref"
 version = "3.8.1"
 requires_python = ">=3.8"
 summary = "ASGI specs, helper code, and adapters"
-groups = ["default", "dev"]
+groups = ["default"]
 dependencies = [
     "typing-extensions>=4; python_version < \"3.11\"",
 ]
@@ -280,7 +280,7 @@ name = "django"
 version = "5.2.1"
 requires_python = ">=3.10"
 summary = "A high-level Python web framework that encourages rapid development and clean, pragmatic design."
-groups = ["default", "dev"]
+groups = ["default"]
 dependencies = [
     "asgiref>=3.8.1",
     "sqlparse>=0.3.1",
@@ -325,7 +325,7 @@ name = "django-extensions"
 version = "4.1"
 requires_python = ">=3.9"
 summary = "Extensions for Django"
-groups = ["dev"]
+groups = ["default"]
 dependencies = [
     "django>=4.2",
 ]
@@ -1025,7 +1025,7 @@ name = "sqlparse"
 version = "0.5.3"
 requires_python = ">=3.8"
 summary = "A non-validating SQL parser."
-groups = ["default", "dev"]
+groups = ["default"]
 files = [
     {file = "sqlparse-0.5.3-py3-none-any.whl", hash = "sha256:cf2196ed3418f3ba5de6af7e82c694a9fbdbfecccdfc72e281548517081f16ca"},
     {file = "sqlparse-0.5.3.tar.gz", hash = "sha256:09f67787f56a0b16ecdbde1bfc7f5d9c3371ca683cfeaa8e6ff60b4807ec9272"},
@@ -1061,7 +1061,7 @@ name = "tzdata"
 version = "2025.2"
 requires_python = ">=2"
 summary = "Provider of IANA time zone data"
-groups = ["default", "dev"]
+groups = ["default"]
 files = [
     {file = "tzdata-2025.2-py2.py3-none-any.whl", hash = "sha256:1a403fada01ff9221ca8044d701868fa132215d84beb92242d9acd2147f667a8"},
     {file = "tzdata-2025.2.tar.gz", hash = "sha256:b60a638fcc0daffadf82fe0f57e53d06bdec2f36c4df66280ae79bce6bd6f2b9"},

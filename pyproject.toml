@@ -38,6 +38,10 @@ requires-python = "==3.12.*"
 readme = "README.md"
 license = {text = "MIT"}
 
+[[tool.pdm.autoexport]]
+filename = "requirements.txt"
+without-hashes = "true"
+
 [tool.pdm.scripts]
 dev = "python src/manage.py runserver localhost:8000"
 runserver = "python src/manage.py runserver"
