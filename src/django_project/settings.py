@@ -15,7 +15,7 @@ MODE = os.getenv("MODE", 'DEVELOPMENT')
 SECRET_KEY = os.getenv("SECRET_KEY")
 DEBUG = os.getenv("DEBUG", "False")
 ALLOWED_HOSTS = ["*"]
-CSRF_TRUSTED_ORIGINS = ["https://*fabricadesoftware.ifc.edu.br", "https://*fexcompany.me", "http://localhost:3000"]
+CSRF_TRUSTED_ORIGINS = ["https://*fabricadesoftware.ifc.edu.br", "https://*fexcompany.me", "http://localhost:3000", "*"]
 
 API_URL = os.getenv("API_URL", "http://localhost:8000")
 PAINEL_URL = os.getenv("PAINEL_URL", "http://localhost:3000")
