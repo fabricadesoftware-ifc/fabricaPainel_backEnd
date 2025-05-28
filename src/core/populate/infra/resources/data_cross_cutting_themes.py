@@ -12,7 +12,7 @@ cross_cutting_themes = [
     {
 "name" : "Meio Ambiente",
 "description": "Educação Ambiental e Educação para o Consumo",
-"advisor" : [3, 4],
+"advisor" : [1, 2],
     },
     {
 "name" : "Economia",
@@ -22,11 +22,11 @@ cross_cutting_themes = [
     {
 "name" : "Ciência e Tecnologia",
 "description": "Ciência e Tecnologia.",
-"advisor" : [5, 6],
+"advisor" : [3, 4],
     },
     {
 "name" : "Cidadania e civismo",
 "description": "Vida familiar e social, Educação para o Trânsito, Educação em Direitos Humanos, Direitos da Criança e do Adolescente e Processo de envelhecimento, respeito e valorização do Idoso",
-"advisor" : [5, 6],
+"advisor" : [3, 4],
     },
       ]
