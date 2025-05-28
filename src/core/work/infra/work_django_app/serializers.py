@@ -49,6 +49,7 @@ class WorkDetailSerializer(serializers.ModelSerializer):
             "needs_changes_submission_work_date",
             "status",
             "advisor",
+            "advisor_status",
             "integrated_project",
             "feedback",
         ]
@@ -74,6 +75,7 @@ class WorkWriteSerializer(serializers.ModelSerializer):
             "integrated_project",
             "feedback",
             "advisor",
+            "advisor_status",
         ]
 
     def validate(self, attrs):
