@@ -2,6 +2,13 @@
 __pycache__/
 *.py[cod]
 *$py.class
+/src/media/*
+
+*.bak
+
+*.dat
+
+*.dir
 
 # C extensions
 *.so

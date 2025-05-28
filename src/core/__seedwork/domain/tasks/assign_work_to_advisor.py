@@ -16,14 +16,23 @@ def assign_work_to_advisor():
     editions = Edition.objects.all()
 
     for edition in editions:
-        if edition.is_open == True:
+        print(f"Verificando a edição: {edition.year} - {edition.is_open}")
+        if edition.year == 2025:
+            print(f"Edição {edition.year} está aberta. Verificando a data de submissão final.")
+            print(f"Data de submissão final: {edition.final_submission_date} - {now} - {edition.final_submission_date < now}")
+
             if edition.final_submission_date < now:
+                print(f"Data de submissão final {edition.final_submission_date} é anterior a hoje ({now}).")
                 works = Work.objects.filter(edition__id=edition.id)
+                print(f"Encontrados {works.count()} trabalhos para a edição {edition.year}.")
                 for work in works:
+                    print(f"Processando trabalho: {work.title}")
                     theme = work.cross_cutting_theme
                    
                     if work.advisor is not None:
+                        print(f"Trabalho {work.title} já possui um advisor associado: {work.advisor.email}")
                         if theme:
+
                             work_id = work.id
                             print(f"Trabalho {work.title} já possui um advisor associado.")
                             email_subject = "Trabalho associado a um orientador"
