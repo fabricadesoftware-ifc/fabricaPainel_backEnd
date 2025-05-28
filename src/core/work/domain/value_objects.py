@@ -46,3 +46,43 @@ class WorkStatusType(ValueObject):
     def create(value: Union["Type", str]):
         """Método de fábrica que tenta criar uma instância de WorkStatusType de forma segura."""
         return Either.safe(lambda: WorkStatusType(value))
+
+class WorkAdvisorStatusType(ValueObject):
+    value: "Type" = field(init=False) 
+    init_value: InitVar[Union["Type", str]] 
+
+    class Type(Enum):
+        PENDING = (1, "Pendente")
+        APPROVED = (2, "Aprovado")
+        CANCELED = (3, "Cancelado")
+        
+        def __init__(self, value, label):
+            self._value_ = value
+            self.label = label
+
+        @property
+        def description(self):
+            """Retorna a descrição legível do status."""
+            return self.label
+        
+    TypeValues = Literal[1, 2, 3]
+
+    def __post_init__(self, init_value: Union["Type", str]) -> None:
+        """Valida e define o valor correto após a inicialização."""
+        value = self.__validate(init_value)  # Valida o valor fornecido
+        object.__setattr__(self, "value", value)  # Define o valor imutável
+
+    def __validate(self, value: Union["Type", str]) -> "Type":
+        """Valida se o valor é uma instância de Type ou uma string válida."""
+        if isinstance(value, WorkAdvisorStatusType.Type):
+            return value
+        try:
+            return WorkAdvisorStatusType.Type(value)
+        except ValueError as ex:
+            raise InvalidType(value) from ex
+        
+    @staticmethod
+    def create(value: Union["Type", str]):
+        """Método de fábrica que tenta criar uma instância de WorkAdvisorStatusType de forma segura."""
+        return Either.safe(lambda: WorkAdvisorStatusType(value))
+
