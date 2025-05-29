@@ -77,8 +77,8 @@ class Work(models.Model):
     team = models.ForeignKey(Team, on_delete=models.PROTECT)
     ods = models.ManyToManyField(Ods, related_name="SustainableGoals", default=None)
     status = models.PositiveSmallIntegerField(choices=WORK_TYPE_STATUS_CHOICE, default=PENDING)
-    advisor = models.ForeignKey(User, on_delete=models.PROTECT, related_name="advisor", limit_choices_to={"is_advisor": True}, default=None, blank=True, null=True)
-    advisor_status = models.PositiveSmallIntegerField(choices=WORK_ADVISOR_STATUS_CHOICE, null=True, blank=True)
+    advisor = models.ForeignKey(User, on_delete=models.PROTECT, related_name="advisor", limit_choices_to={"is_advisor": True}, default=None)
+    advisor_status = models.PositiveSmallIntegerField(choices=WORK_ADVISOR_STATUS_CHOICE, default=PENDING_ADVISOR)
     feedback = models.TextField(blank=True, null=True)
     integrated_project = models.BooleanField(default=False)
     def __str__(self) -> str:

@@ -46,31 +46,35 @@
             background-color: white;
         }
         a.button {
-    display: inline-block; /* Comportamento de botão */
-    color: #ffffff;
-    background-color: #34a853; /* Verde forte */
-    padding: 10px 20px;
-    text-decoration: none;
-    border-radius: 5px;
-    font-weight: bold;
-    cursor: pointer;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    transition: background-color 0.3s ease, box-shadow 0.3s ease;
-}
+            display: inline-block; /* Comportamento de botão */
+            color: #ffffff;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+            margin: 10px 5px;
+        }
 
-a.button:hover {
-    background-color: #2c8b47; /* Escurecer o verde */
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2); /* Sombra mais intensa no hover */
-}
+        a.button.accept {
+            background-color: #34a853; /* Verde forte */
+        }
 
-a.button.reject {
-    background-color: #d9534f; /* Vermelho */
-}
+        a.button.accept:hover {
+            background-color: #2c8b47; /* Escurecer o verde */
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
 
-a.button.reject:hover {
-    background-color: #c9302c; /* Escurecer o vermelho */
-}
+        a.button.reject {
+            background-color: #d9534f; /* Vermelho */
+        }
 
+        a.button.reject:hover {
+            background-color: #c9302c; /* Escurecer o vermelho */
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
     </style>
     <title>Work Submission</title>
 </head>
@@ -93,17 +97,18 @@ a.button.reject:hover {
 
         <h2>Estudantes envolvidos:</h2>
         <div class="students-emails">
-            {{ students_emails }} <!-- Exibindo emails em uma linha -->
+            {{ students_emails }}
         </div>
 
         <p>
-            Para aceitar essa submissão, clique no botão abaixo:
+            Para aceitar ser orientador deste trabalho, clique no botão abaixo:
         </p>
-        <a href="{{ accept_work_link }}" class="button">Aceitar Submissão</a>
+        <a href="{{ accept_work_link }}" class="button accept">Aceitar Orientação</a>
         
         <p>
-            No caso do desejo de pedir alguma alteração ao aluno, deverá ser feito via sistema.
+            Caso não deseje orientar este trabalho, clique no botão abaixo:
         </p>
+        <a href="{{ reject_work_link }}" class="button reject">Rejeitar Orientação</a>
     </div>
     <div class="footer">
         <p>Este é um email automático. Por favor, não responda.</p>

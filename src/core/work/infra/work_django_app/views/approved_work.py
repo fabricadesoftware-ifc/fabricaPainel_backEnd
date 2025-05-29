@@ -59,8 +59,7 @@ def approve_work(request, verification_token) -> Response:
         advisor_id = work.advisor.id
 
         if work.verification_token is None:
-            print("iria enviar email para o estudantes")
-            #send_work_approve_email_to_student.delay(from_email, students_ids, advisor_id)
+            send_work_approve_email_to_student.delay(from_email, students_ids, advisor_id)
             
         return Response(
         {"message": "Trabalho aceito."},

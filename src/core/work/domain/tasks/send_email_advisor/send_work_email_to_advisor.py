@@ -6,11 +6,11 @@ from celery import shared_task
 from django_project.settings import BASE_DIR
 
 @shared_task
-def send_work_email_to_advisor(work_id, email_subject, from_email, email_recipient_list, accept_work_link, students_emails):
+def send_work_email_to_advisor(work_id, email_subject, from_email, email_recipient_list, accept_work_link, reject_work_link, students_emails):
     try:
         work = Work.objects.get(id=work_id)
 
-        with open(os.path.join(BASE_DIR, 'templates/send_advisor_email_template.html'), 'r') as file:
+        with open(os.path.join(BASE_DIR, 'templates/send_advisor_email_template.html'), 'r', encoding='utf-8') as file:
             html = file.read()
 
         html = html.replace("{{ work_title }}", work.title)
@@ -24,7 +24,9 @@ def send_work_email_to_advisor(work_id, email_subject, from_email, email_recipie
         else:
             cross_theme_name = "Nenhum tema transversal"
         html = html.replace("{{ work_cross_cutting_themes }}", cross_theme_name)
-        html = html.replace("{{ accept_work_link }}", accept_work_link)       
+        html = html.replace("{{ accept_work_link }}", accept_work_link)
+        html = html.replace("{{ reject_work_link }}", reject_work_link)
+        
         students_emails = [member.email for member in work.team.team_members.all()]
         if students_emails:
             students_emails_list = ', '.join(students_emails)
