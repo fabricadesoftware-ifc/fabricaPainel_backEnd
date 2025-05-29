@@ -8,3 +8,4 @@ from .ods import OdsViewSet
 from .resend_invite_team import resend_invite_team
 from .accept_advisor_work import accept_advisor_work
 from .reject_advisor_work import reject_advisor_work
+from .submission_work import accept_submission, reject_submission

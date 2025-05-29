@@ -13,7 +13,7 @@ from core.work.infra.work_django_app.serializers import (
     WorkWriteSerializer
 )
 from core.cross_cutting_themes.infra.cross_cutting_themes_django_app.models import CrossCuttingTheme
-from core.__seedwork.domain.actions.work_path import work_path
+from core.__seedwork.domain.actions.work_path import work_path, work_path_submission
 from core.work.infra.work_django_app.filters import WorkFilter
 from core.work.domain.tasks import send_work_email_to_advisor
 
@@ -91,6 +91,22 @@ class WorkViewSet(ModelViewSet):
                 work.save()
 
             return response
+        
+    def partial_update(self, request, *args, **kwargs):
+        work = self.get_object()
+        action = request.data.get('action')
+        abstract = request.data.get('abstract')
+        work.abstract = abstract
+        work.save()
+        if action == 'submission':
+            print("submission" + abstract)
+            accept_work_link, reject_work_link = work_path_submission(work)
+            notify_advisor_on_data_update.delay(
+                str(work.id),
+                accept_work_link,
+                reject_work_link
+            )
+        return Response(status=status.HTTP_200_OK)
 
         
     
