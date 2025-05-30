@@ -20,6 +20,11 @@ class UserClassSerializer(serializers.Serializer):
 
 class UserSerializer(serializers.ModelSerializer):
     user_classes = UserClassSerializer(many=True, read_only=True)
+    is_evaluator = serializers.SerializerMethodField()
+
+    def get_is_evaluator(self, obj):
+        return hasattr(obj, 'evaluator')
+
     class Meta:
         model = User
         fields = [
@@ -31,6 +36,9 @@ class UserSerializer(serializers.ModelSerializer):
             "team",
             "name_search",
             "registration",
+            "is_evaluator",
+            "is_advisor",
+            "is_colaborator"
         ]
     def Create(self, validated_data):
         return User.objects.create_user(**validated_data)
