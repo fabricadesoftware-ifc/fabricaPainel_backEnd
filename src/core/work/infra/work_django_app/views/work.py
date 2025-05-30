@@ -106,7 +106,8 @@ class WorkViewSet(ModelViewSet):
                 accept_work_link,
                 reject_work_link
             )
-        return Response(status=status.HTTP_200_OK)
+            message = "Abstract enviado para o orientador"
+        return Response(data=message, status=status.HTTP_200_OK)
 
         
     
