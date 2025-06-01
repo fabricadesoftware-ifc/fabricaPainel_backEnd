@@ -1,16 +1,21 @@
 from uuid import uuid4
+from django.db import transaction
 from rest_framework.viewsets import ModelViewSet
 from drf_spectacular.utils import extend_schema
 from rest_framework.throttling import UserRateThrottle
+from django_project.settings import EMAIL_HOST_USER
+from rest_framework.response import Response
+from rest_framework import status
 
-from core.work.infra.work_django_app.models import Work, WorkStatusType
+from core.work.infra.work_django_app.models import Work, WorkStatusType, WorkAdvisorStatusType
 from core.work.infra.work_django_app.serializers import (
     WorkDetailSerializer,
     WorkWriteSerializer
 )
 from core.cross_cutting_themes.infra.cross_cutting_themes_django_app.models import CrossCuttingTheme
-from core.__seedwork.domain.actions.work_path import work_path
+from core.__seedwork.domain.actions.work_path import work_path, work_path_submission
 from core.work.infra.work_django_app.filters import WorkFilter
+from core.work.domain.tasks import send_work_email_to_advisor
 
 from core.work.domain.tasks import notify_advisor_on_data_update
 
@@ -28,25 +33,81 @@ class WorkViewSet(ModelViewSet):
         return WorkWriteSerializer
     http_method_names = ["get", "post", "patch", "delete"]
 
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        with transaction.atomic():
+            work = serializer.save()
+
+            if work.advisor:
+                accept_work_link, reject_work_link = work_path(work)
+                from_email = EMAIL_HOST_USER
+                email_recipient_list = [work.advisor.email]
+                email_subject = "Convite para orientação de trabalho"
+                students_emails = [member.email for member in work.team.team_members.all()]
+
+                send_work_email_to_advisor.delay(
+                    str(work.id),
+                    email_subject,
+                    from_email,
+                    email_recipient_list,
+                    accept_work_link,
+                    reject_work_link,
+                    students_emails
+                )
+
+                work.advisor_status = WorkAdvisorStatusType.Type.PENDING.value
+                work.save()
+
+            headers = self.get_success_headers(serializer.data)
+            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
     def update(self, request, *args, **kwargs):
-        response = super().update(request, *args, **kwargs)
+        with transaction.atomic():
+            old_work = self.get_object()
+            response = super().update(request, *args, **kwargs)
+            work = self.get_object()
+
+            # Se o orientador foi alterado, envia novo email
+            if work.advisor and (not old_work.advisor or old_work.advisor.id != work.advisor.id):
+                accept_work_link, reject_work_link = work_path(work)
+                from_email = EMAIL_HOST_USER
+                email_recipient_list = [work.advisor.email]
+                email_subject = "Convite para orientação de trabalho"
+                students_emails = [member.email for member in work.team.team_members.all()]
+
+                send_work_email_to_advisor.delay(
+                    str(work.id),
+                    email_subject,
+                    from_email,
+                    email_recipient_list,
+                    accept_work_link,
+                    reject_work_link,
+                    students_emails
+                )
+
+                work.advisor_status = WorkAdvisorStatusType.Type.PENDING.value
+                work.save()
+
+            return response
+        
+    def partial_update(self, request, *args, **kwargs):
         work = self.get_object()
-
-        if work.verification_token is None and work.final_submission_work_date is not None:
-            token = str(uuid4())
-            work.verification_token = token
-            work.final_submission_work_date = None
-            work.status = WorkStatusType.Type.PENDING.value
-
-            work.save()
-            accept_work_link, reject_work_link = work_path(work)
+        action = request.data.get('action')
+        abstract = request.data.get('abstract')
+        work.abstract = abstract
+        work.save()
+        if action == 'submission':
+            print("submission" + abstract)
+            accept_work_link, reject_work_link = work_path_submission(work)
             notify_advisor_on_data_update.delay(
-                work.id, 
-                accept_work_link=accept_work_link, 
-                reject_work_link=reject_work_link
+                str(work.id),
+                accept_work_link,
+                reject_work_link
             )
-
-        return response
+            message = "Abstract enviado para o orientador"
+        return Response(data=message, status=status.HTTP_200_OK)
 
         
     

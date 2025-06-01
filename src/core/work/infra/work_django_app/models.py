@@ -6,7 +6,7 @@ from core.edition.infra.edition_django_app.models import Edition
 from core.user.infra.user_django_app.models import User, Evaluator
 from core.field.infra.field_django_app.models import Field
 from core.cross_cutting_themes.infra.cross_cutting_themes_django_app.models import CrossCuttingTheme
-from core.work.domain.value_objects import WorkStatusType
+from core.work.domain.value_objects import WorkStatusType, WorkAdvisorStatusType
 
 class Token(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -46,11 +46,21 @@ class Work(models.Model):
     NEEDS_CHANGES = WorkStatusType.Type.NEEDS_CHANGES.value
     CANCELED = WorkStatusType.Type.CANCELED.value
     
+    PENDING_ADVISOR = WorkAdvisorStatusType.Type.PENDING.value
+    APPROVED_ADVISOR = WorkAdvisorStatusType.Type.APPROVED.value
+    CANCELED_ADVISOR = WorkAdvisorStatusType.Type.CANCELED.value
+    
     WORK_TYPE_STATUS_CHOICE = (
         (PENDING, WorkStatusType.Type.PENDING.label),
         (APPROVED, WorkStatusType.Type.APPROVED.label),
         (NEEDS_CHANGES, WorkStatusType.Type.NEEDS_CHANGES.label),
         (CANCELED, WorkStatusType.Type.CANCELED.label),
+    )
+    
+    WORK_ADVISOR_STATUS_CHOICE = (
+        (PENDING_ADVISOR, WorkAdvisorStatusType.Type.PENDING.label),
+        (APPROVED_ADVISOR, WorkAdvisorStatusType.Type.APPROVED.label),
+        (CANCELED_ADVISOR, WorkAdvisorStatusType.Type.CANCELED.label),
     )
     
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
@@ -67,7 +77,8 @@ class Work(models.Model):
     team = models.ForeignKey(Team, on_delete=models.PROTECT)
     ods = models.ManyToManyField(Ods, related_name="SustainableGoals", default=None)
     status = models.PositiveSmallIntegerField(choices=WORK_TYPE_STATUS_CHOICE, default=PENDING)
-    advisor = models.ForeignKey(User, on_delete=models.PROTECT, related_name="advisor", limit_choices_to={"is_advisor": True}, default=None, blank=True, null=True)
+    advisor = models.ForeignKey(User, on_delete=models.PROTECT, related_name="advisor", limit_choices_to={"is_advisor": True}, default=None)
+    advisor_status = models.PositiveSmallIntegerField(choices=WORK_ADVISOR_STATUS_CHOICE, default=PENDING_ADVISOR)
     feedback = models.TextField(blank=True, null=True)
     integrated_project = models.BooleanField(default=False)
     def __str__(self) -> str:

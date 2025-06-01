@@ -42,6 +42,7 @@ class User(AbstractUser):
     name = models.CharField(max_length=255, null=True)
     name_search = models.CharField(max_length=255, null=True)
     is_advisor = models.BooleanField(default=False, null=True, blank=True)
+    is_collaborator = models.BooleanField(default=False, null=True, blank=True)
     password_reset_token = models.CharField(
         _("Password Reset Token"), max_length=255, blank=True, null=True
     )
