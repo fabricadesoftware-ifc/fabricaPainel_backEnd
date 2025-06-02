@@ -14,7 +14,13 @@ from core.work.domain.validations import (
 )
 from core.user.infra.user_django_app.serializers import UserSerializer, EvaluatorSerializer
 from core.user.infra.user_django_app.models import User
+from core.work.infra.work_django_app.models import WorkCollaborator
 
+
+class WorkCollaboratorSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = WorkCollaborator
+        fields: list[str] = ["id", "collaborator", "status"]
 
 class OdsSerializer(serializers.ModelSerializer):
     class Meta:
@@ -32,6 +38,7 @@ class WorkDetailSerializer(serializers.ModelSerializer):
         allow_null = True,
         child=EvaluatorSerializer()
     )
+    work_collaborator = WorkCollaboratorSerializer(many=True, read_only=True)
 
     class Meta:
         model = Work
@@ -52,6 +59,7 @@ class WorkDetailSerializer(serializers.ModelSerializer):
             "advisor_status",
             "integrated_project",
             "feedback",
+            "work_collaborator",
         ]
         depth = 2
 
@@ -60,6 +68,7 @@ class WorkWriteSerializer(serializers.ModelSerializer):
     advisor = serializers.PrimaryKeyRelatedField(
         queryset=User.objects.all(), required=False, allow_null=True
     )
+    work_collaborator = WorkCollaboratorSerializer(many=False, read_only=False)
 
     class Meta:
         model = Work
@@ -76,6 +85,7 @@ class WorkWriteSerializer(serializers.ModelSerializer):
             "feedback",
             "advisor",
             "advisor_status",
+            "work_collaborator",
         ]
 
     def validate(self, attrs):

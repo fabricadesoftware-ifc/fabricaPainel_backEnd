@@ -1,5 +1,4 @@
 from django_filters.rest_framework import FilterSet, CharFilter, BaseInFilter, ModelChoiceFilter
-from django.db.models import Func
 from unidecode import unidecode
 from core.work.infra.work_django_app.models import (
     Work,
@@ -25,6 +24,8 @@ class WorkFilter(FilterSet):
     theme = CharFilter(method="filter_theme")
     status = BaseInFilter(field_name="status", lookup_expr="in")
     advisor_id = CharFilter(field_name="advisor__id", lookup_expr="exact")
+    evaluator_id = CharFilter(field_name="evaluator__id", lookup_expr="exact")
+    work_collaborator_id = CharFilter(field_name="work_collaborator__id", lookup_expr="exact")
     team_member_id = CharFilter(
         field_name="team__team_members__id", lookup_expr="exact"
     )

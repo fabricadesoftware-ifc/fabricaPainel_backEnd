@@ -38,7 +38,7 @@ class UserSerializer(serializers.ModelSerializer):
             "registration",
             "is_evaluator",
             "is_advisor",
-            "is_colaborator"
+            "is_collaborator"
         ]
     def Create(self, validated_data):
         return User.objects.create_user(**validated_data)

@@ -6,7 +6,7 @@ from core.edition.infra.edition_django_app.models import Edition
 from core.user.infra.user_django_app.models import User, Evaluator
 from core.field.infra.field_django_app.models import Field
 from core.cross_cutting_themes.infra.cross_cutting_themes_django_app.models import CrossCuttingTheme
-from core.work.domain.value_objects import WorkStatusType, WorkAdvisorStatusType
+from core.work.domain.value_objects import WorkStatusType, WorkAdvisorStatusType, WorkCollaboratorStatusType
 
 class Token(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -81,6 +81,7 @@ class Work(models.Model):
     advisor_status = models.PositiveSmallIntegerField(choices=WORK_ADVISOR_STATUS_CHOICE, default=PENDING_ADVISOR)
     feedback = models.TextField(blank=True, null=True)
     integrated_project = models.BooleanField(default=False)
+    
     def __str__(self) -> str:
         return f"{self.title} - {self.team} - {self.get_status_display()}"
 
@@ -100,3 +101,25 @@ class Keyword(models.Model):
         verbose_name = "Palavra-chave"
         verbose_name_plural = "Palavras-chave"
         ordering = ["-name"]
+        
+        
+class WorkCollaborator(models.Model):
+    PENDING = WorkCollaboratorStatusType.Type.PENDING.value
+    APPROVED = WorkCollaboratorStatusType.Type.APPROVED.value
+    CANCELED = WorkCollaboratorStatusType.Type.CANCELED.value
+    
+    WORK_COLLABORATOR_STATUS_CHOICE = (
+        (PENDING, WorkCollaboratorStatusType.Type.PENDING.label),
+        (APPROVED, WorkCollaboratorStatusType.Type.APPROVED.label),
+        (CANCELED, WorkCollaboratorStatusType.Type.CANCELED.label),
+    )
+    
+    work = models.ForeignKey(Work, on_delete=models.PROTECT, related_name="work_collaborator")
+    collaborator = models.ForeignKey(User, on_delete=models.PROTECT, limit_choices_to={"is_collaborator": True}, related_name="work_collaborator")
+    status = models.PositiveSmallIntegerField(choices=WORK_COLLABORATOR_STATUS_CHOICE, default=PENDING)
+    
+    
+    def __str__(self):
+        return f"{self.work} - {self.collaborator}"
+    
+    
