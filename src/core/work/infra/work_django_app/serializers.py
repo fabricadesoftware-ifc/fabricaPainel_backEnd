@@ -30,13 +30,39 @@ class OdsSerializer(serializers.ModelSerializer):
             "name",
         ]
 
+class WorkListSerializer(serializers.ModelSerializer):
+    work_collaborator = WorkCollaboratorSerializer(many=True, read_only=True)
+    advisor = serializers.PrimaryKeyRelatedField(
+        queryset=User.objects.all(), required=False, allow_null=True
+    )
+    class Meta:
+        model = Work
+        fields: list[str] = [
+            "id",
+            "title",
+            "abstract",
+            "edition",
+            "field",
+            "evaluator",
+            "cross_cutting_theme",
+            "verification_token",
+            "team",
+            "ods",
+            "needs_changes_submission_work_date",
+            "status",
+            "advisor",
+            "advisor_status",
+            "integrated_project",
+            "feedback",
+            "work_collaborator",
+        ]
+        depth = 2
+
 
 class WorkDetailSerializer(serializers.ModelSerializer):
     # team = serializers.StringRelatedField()
-    evaluator = serializers.ListSerializer(
-        required = False,
-        allow_null = True,
-        child=EvaluatorSerializer()
+    advisor = serializers.PrimaryKeyRelatedField(
+        queryset=User.objects.all(), required=False, allow_null=True
     )
     work_collaborator = WorkCollaboratorSerializer(many=True, read_only=True)
 
@@ -68,7 +94,14 @@ class WorkWriteSerializer(serializers.ModelSerializer):
     advisor = serializers.PrimaryKeyRelatedField(
         queryset=User.objects.all(), required=False, allow_null=True
     )
-    work_collaborator = WorkCollaboratorSerializer(many=False, read_only=False)
+    
+    # campo de escrita para colaboradores (lista de IDs)
+    collaborators = serializers.PrimaryKeyRelatedField(
+        many=True,
+        queryset=User.objects.all(),
+        write_only=True,
+        required=False,
+    )
 
     class Meta:
         model = Work
@@ -85,21 +118,31 @@ class WorkWriteSerializer(serializers.ModelSerializer):
             "feedback",
             "advisor",
             "advisor_status",
-            "work_collaborator",
+            "collaborators",  # <- apenas escrita
         ]
+
+    def create(self, validated_data):
+        collaborators = validated_data.pop("collaborators", [])
+        work = super().create(validated_data)
+        for user in collaborators:
+            WorkCollaborator.objects.create(work=work, collaborator=user)
+        return work
+
+    def update(self, instance, validated_data):
+        collaborators = validated_data.pop("collaborators", None)
+        if collaborators is not None:
+            WorkCollaborator.objects.filter(work=instance).delete()
+            for user in collaborators:
+                WorkCollaborator.objects.create(work=instance, collaborator=user)
+        return super().update(instance, validated_data)
 
     def validate(self, attrs):
         request = self.context.get("request")
         if request and request.method == "POST":
-            try:
-                validate_work_date_submission_is_valid(attrs)
-            except Exception as e:
-                raise e
-            try:
-                validate_work_team_members(attrs)
-            except Exception as e:
-                raise e
+            validate_work_date_submission_is_valid(attrs)
+            validate_work_team_members(attrs)
         return super().validate(attrs)
+
 
 
 class KeywordDetailSerializer(serializers.ModelSerializer):

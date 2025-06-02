@@ -10,7 +10,8 @@ from rest_framework import status
 from core.work.infra.work_django_app.models import Work, WorkStatusType, WorkAdvisorStatusType
 from core.work.infra.work_django_app.serializers import (
     WorkDetailSerializer,
-    WorkWriteSerializer
+    WorkWriteSerializer,
+    WorkListSerializer
 )
 from core.cross_cutting_themes.infra.cross_cutting_themes_django_app.models import CrossCuttingTheme
 from core.__seedwork.domain.actions.work_path import work_path, work_path_submission
@@ -27,11 +28,13 @@ class WorkViewSet(ModelViewSet):
     throttle_classes = [UserRateThrottle]
     filterset_class = WorkFilter
 
-    def get_serializer_class(self):
-        if self.action in ["list", "retrieve"]:
-            return WorkDetailSerializer
-        return WorkWriteSerializer
     http_method_names = ["get", "post", "patch", "delete"]
+    def get_serializer_class(self):
+        if self.action in ["list"]:
+            return WorkListSerializer
+        if self.action in ["retrieve"]:
+            return WorkDetailSerializer   
+        return WorkWriteSerializer
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
