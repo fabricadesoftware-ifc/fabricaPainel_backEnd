@@ -23,6 +23,8 @@ from core.work.infra.work_django_app.views import (
     reject_advisor_work,
     accept_submission,
     reject_submission,
+    accept_collaborator_work,
+    reject_collaborator_work,
 )
 from core.user.infra.user_django_app.utils import (
     reset_password,
@@ -61,11 +63,15 @@ urlpatterns = [
         name="needs-changes-work",
     ),
     path("api/canceled-work/<str:pk>/", CanceledWork.as_view(), name="canceled-work"),
-    #path("api/resend-invite-team/", resend_invite_team, name="resend-invite-team"),
+    #orientador
     path("api/accept-advisor-work/<str:verification_token>/", accept_advisor_work, name="accept-advisor-work"),
     path("api/reject-advisor-work/<str:verification_token>/", reject_advisor_work, name="reject-advisor-work"),
+    #colaborador
+    path("api/accept-collaborator-work/<str:verification_token>/", accept_collaborator_work, name="accept-collaborator-work"),
+    path("api/reject-collaborator-work/<str:verification_token>/", reject_collaborator_work, name="reject-collaborator-work"),
+    #submissão
     path("api/accept-submission/<str:verification_token>/", accept_submission, name="accept-submission"),
-    path("api/reject-submission/<str:verification_token>/", reject_submission, name="reject-submission"),
+    path("api/reject-submission/<str:verification_token>/", reject_submission,  name="reject-submission"),
     
     path('', lambda request: redirect('api/', permanent=True)),
 ]

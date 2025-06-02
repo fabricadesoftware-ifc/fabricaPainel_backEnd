@@ -7,7 +7,7 @@ from django_project.settings import EMAIL_HOST_USER
 from rest_framework.response import Response
 from rest_framework import status
 
-from core.work.infra.work_django_app.models import Work, WorkStatusType, WorkAdvisorStatusType
+from core.work.infra.work_django_app.models import Work, WorkStatusType, WorkAdvisorStatusType, WorkCollaborator
 from core.work.infra.work_django_app.serializers import (
     WorkDetailSerializer,
     WorkWriteSerializer,
@@ -17,6 +17,7 @@ from core.cross_cutting_themes.infra.cross_cutting_themes_django_app.models impo
 from core.__seedwork.domain.actions.work_path import work_path, work_path_submission
 from core.work.infra.work_django_app.filters import WorkFilter
 from core.work.domain.tasks import send_work_email_to_advisor
+from core.work.domain.tasks.send_email_collaborator.send_work_email_to_collaborator import send_work_email_to_collaborator
 
 from core.work.domain.tasks import notify_advisor_on_data_update
 
@@ -28,13 +29,13 @@ class WorkViewSet(ModelViewSet):
     throttle_classes = [UserRateThrottle]
     filterset_class = WorkFilter
 
-    http_method_names = ["get", "post", "patch", "delete"]
     def get_serializer_class(self):
         if self.action in ["list"]:
             return WorkListSerializer
         if self.action in ["retrieve"]:
             return WorkDetailSerializer   
         return WorkWriteSerializer
+    http_method_names = ["get", "post", "patch", "put", "delete"]
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -44,7 +45,7 @@ class WorkViewSet(ModelViewSet):
             work = serializer.save()
 
             if work.advisor:
-                accept_work_link, reject_work_link = work_path(work)
+                accept_work_advisor_link, reject_work_advisor_link, accept_work_collaborator_link, reject_work_collaborator_link = work_path(work)
                 from_email = EMAIL_HOST_USER
                 email_recipient_list = [work.advisor.email]
                 email_subject = "Convite para orientação de trabalho"
@@ -55,13 +56,37 @@ class WorkViewSet(ModelViewSet):
                     email_subject,
                     from_email,
                     email_recipient_list,
-                    accept_work_link,
-                    reject_work_link,
+                    accept_work_advisor_link,
+                    reject_work_advisor_link,
                     students_emails
                 )
 
                 work.advisor_status = WorkAdvisorStatusType.Type.PENDING.value
                 work.save()
+            
+            # Enviar emails para colaboradores se existirem
+            work_collaborators = WorkCollaborator.objects.filter(work=work)
+            if work_collaborators.exists():
+                for work_collaborator in work_collaborators:
+                    accept_work_advisor_link, reject_work_advisor_link, accept_work_collaborator_link, reject_work_collaborator_link = work_path(work)
+                    from_email = EMAIL_HOST_USER
+                    email_recipient_list = [work_collaborator.collaborator.email]
+                    email_subject = "Convite para colaboração em trabalho"
+                    students_emails = [member.email for member in work.team.team_members.all()]
+                    
+                    # Adiciona o email do colaborador como parâmetro na URL
+                    accept_work_collaborator_link += f"?collaborator_email={work_collaborator.collaborator.email}"
+                    reject_work_collaborator_link += f"?collaborator_email={work_collaborator.collaborator.email}"
+                    
+                    send_work_email_to_collaborator.delay(
+                        str(work.id),
+                        email_subject,
+                        from_email,
+                        email_recipient_list,
+                        accept_work_collaborator_link,
+                        reject_work_collaborator_link,
+                        students_emails
+                    )
 
             headers = self.get_success_headers(serializer.data)
             return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
@@ -74,7 +99,7 @@ class WorkViewSet(ModelViewSet):
 
             # Se o orientador foi alterado, envia novo email
             if work.advisor and (not old_work.advisor or old_work.advisor.id != work.advisor.id):
-                accept_work_link, reject_work_link = work_path(work)
+                accept_work_advisor_link, reject_work_advisor_link, accept_work_collaborator_link, reject_work_collaborator_link = work_path(work)
                 from_email = EMAIL_HOST_USER
                 email_recipient_list = [work.advisor.email]
                 email_subject = "Convite para orientação de trabalho"
@@ -85,13 +110,38 @@ class WorkViewSet(ModelViewSet):
                     email_subject,
                     from_email,
                     email_recipient_list,
-                    accept_work_link,
-                    reject_work_link,
+                    accept_work_advisor_link,
+                    reject_work_advisor_link,
                     students_emails
                 )
 
                 work.advisor_status = WorkAdvisorStatusType.Type.PENDING.value
                 work.save()
+
+            # Verifica se os colaboradores foram alterados
+            if 'collaborators' in request.data:
+                # Enviar emails para novos colaboradores
+                work_collaborators = WorkCollaborator.objects.filter(work=work)
+                for work_collaborator in work_collaborators:
+                    accept_work_advisor_link, reject_work_advisor_link, accept_work_collaborator_link, reject_work_collaborator_link = work_path(work)
+                    from_email = EMAIL_HOST_USER
+                    email_recipient_list = [work_collaborator.collaborator.email]
+                    email_subject = "Convite para colaboração em trabalho"
+                    students_emails = [member.email for member in work.team.team_members.all()]
+                    
+                    # Adiciona o email do colaborador como parâmetro na URL
+                    accept_work_collaborator_link += f"?collaborator_email={work_collaborator.collaborator.email}"
+                    reject_work_collaborator_link += f"?collaborator_email={work_collaborator.collaborator.email}"
+                    
+                    send_work_email_to_collaborator.delay(
+                        str(work.id),
+                        email_subject,
+                        from_email,
+                        email_recipient_list,
+                        accept_work_collaborator_link,
+                        reject_work_collaborator_link,
+                        students_emails
+                    )
 
             return response
         

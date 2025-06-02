@@ -11,6 +11,7 @@ from core.work.domain.validations import (
     validate_work_team_member_is_student,
     validate_work_advisor,
     validate_work_team_members,
+    validate_work_collaborators,
 )
 from core.user.infra.user_django_app.serializers import UserSerializer, EvaluatorSerializer
 from core.user.infra.user_django_app.models import User
@@ -141,6 +142,9 @@ class WorkWriteSerializer(serializers.ModelSerializer):
         if request and request.method == "POST":
             validate_work_date_submission_is_valid(attrs)
             validate_work_team_members(attrs)
+            # Valida colaboradores se fornecidos
+            if attrs.get('collaborators'):
+                validate_work_collaborators(attrs)
         return super().validate(attrs)
 
 

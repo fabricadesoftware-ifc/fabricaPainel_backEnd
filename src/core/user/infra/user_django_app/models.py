@@ -1,6 +1,7 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from django.core.exceptions import ValidationError
 from core.field.infra.field_django_app.models import Field
 from core.user.domain.value_objects import UserType
 from .managers import CustomUserManager
@@ -86,7 +87,6 @@ class UserClass(models.Model):
 class Evaluator(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="evaluator")
     
-
     def __str__(self):
         return self.user.name
 
