@@ -15,7 +15,7 @@ class UserViewSet(ModelViewSet):
 
 @extend_schema(tags=["advisors"])
 class AdvisorViewSet(ModelViewSet):
-    queryset = User.objects.filter(is_advisor=True).exclude(user_type=User.STUDENT)
+    queryset = User.objects.filter(is_advisor=True, user_type=User.TEACHER)
     serializer_class = UserSerializer
     http_method_names: list[str] = ["get"]
     filterset_class = UserFilter

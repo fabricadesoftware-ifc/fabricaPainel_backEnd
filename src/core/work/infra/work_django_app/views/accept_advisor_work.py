@@ -22,6 +22,13 @@ def accept_advisor_work(request, verification_token) -> Response:
             status=status.HTTP_404_NOT_FOUND,
         )
 
+    # Validação adicional: garantir que o advisor é professor
+    if work.advisor.user_type != work.advisor.TEACHER:
+        return Response(
+            {"error": "Apenas professores podem ser orientadores."},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
     # Pega os IDs dos estudantes
     students_ids = [s.id for s in work.team.team_members.all()]
     from_email = EMAIL_HOST_USER

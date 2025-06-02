@@ -33,6 +33,12 @@ def reject_collaborator_work(request, verification_token) -> Response:
 
     try:
         collaborator = User.objects.get(email=collaborator_email, is_collaborator=True)
+        # Validação adicional: garantir que não é estudante
+        if collaborator.user_type == User.STUDENT:
+            return Response(
+                {"error": "Estudantes não podem ser colaboradores."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
     except User.DoesNotExist:
         return Response(
             {"error": "Colaborador não encontrado."},

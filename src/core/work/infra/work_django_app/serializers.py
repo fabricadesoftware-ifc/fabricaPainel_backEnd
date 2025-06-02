@@ -34,7 +34,8 @@ class OdsSerializer(serializers.ModelSerializer):
 class WorkListSerializer(serializers.ModelSerializer):
     work_collaborator = WorkCollaboratorSerializer(many=True, read_only=True)
     advisor = serializers.PrimaryKeyRelatedField(
-        queryset=User.objects.all(), required=False, allow_null=True
+        queryset=User.objects.filter(is_advisor=True, user_type=User.TEACHER),
+        required=False, allow_null=True
     )
     class Meta:
         model = Work
@@ -63,7 +64,8 @@ class WorkListSerializer(serializers.ModelSerializer):
 class WorkDetailSerializer(serializers.ModelSerializer):
     # team = serializers.StringRelatedField()
     advisor = serializers.PrimaryKeyRelatedField(
-        queryset=User.objects.all(), required=False, allow_null=True
+        queryset=User.objects.filter(is_advisor=True, user_type=User.TEACHER),
+        required=False, allow_null=True
     )
     work_collaborator = WorkCollaboratorSerializer(many=True, read_only=True)
 
@@ -93,13 +95,14 @@ class WorkDetailSerializer(serializers.ModelSerializer):
 
 class WorkWriteSerializer(serializers.ModelSerializer):
     advisor = serializers.PrimaryKeyRelatedField(
-        queryset=User.objects.all(), required=False, allow_null=True
+        queryset=User.objects.filter(is_advisor=True, user_type=User.TEACHER),
+        required=False, allow_null=True
     )
     
-    # campo de escrita para colaboradores (lista de IDs)
+    # campo de escrita para colaboradores (lista de IDs) - apenas não-estudantes
     collaborators = serializers.PrimaryKeyRelatedField(
         many=True,
-        queryset=User.objects.all(),
+        queryset=User.objects.filter(is_collaborator=True).exclude(user_type=User.STUDENT),
         write_only=True,
         required=False,
     )
