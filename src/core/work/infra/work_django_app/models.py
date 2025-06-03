@@ -114,8 +114,8 @@ class WorkCollaborator(models.Model):
         (CANCELED, WorkCollaboratorStatusType.Type.CANCELED.label),
     )
     
-    work = models.ForeignKey(Work, on_delete=models.PROTECT, related_name="work_collaborator")
-    collaborator = models.ForeignKey(User, on_delete=models.PROTECT, limit_choices_to={"is_collaborator": True}, related_name="work_collaborator")
+    work = models.ForeignKey(Work, on_delete=models.CASCADE, related_name="work_collaborator")
+    collaborator = models.ForeignKey(User, on_delete=models.CASCADE, limit_choices_to={"is_collaborator": True}, related_name="work_collaborator")
     status = models.PositiveSmallIntegerField(choices=WORK_COLLABORATOR_STATUS_CHOICE, default=PENDING)
     
     

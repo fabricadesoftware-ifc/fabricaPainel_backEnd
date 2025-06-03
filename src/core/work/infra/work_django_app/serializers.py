@@ -135,19 +135,30 @@ class WorkWriteSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         collaborators = validated_data.pop("collaborators", None)
         if collaborators is not None:
-            WorkCollaborator.objects.filter(work=instance).delete()
             for user in collaborators:
-                WorkCollaborator.objects.create(work=instance, collaborator=user)
+                if not WorkCollaborator.objects.filter(work=instance, collaborator=user).exists(): # Verifica se o colaborador já está associado ao trabalho
+                    WorkCollaborator.objects.create(work=instance, collaborator=user)
         return super().update(instance, validated_data)
 
     def validate(self, attrs):
         request = self.context.get("request")
         if request and request.method == "POST":
-            validate_work_date_submission_is_valid(attrs)
-            validate_work_team_members(attrs)
-            # Valida colaboradores se fornecidos
+            try:
+                validate_work_date_submission_is_valid(attrs)
+            except ValidationError as e:
+                raise ValidationError({"date_submission": str(e)})
+            
+            try:
+                validate_work_team_members(attrs)
+            except ValidationError as e:
+                raise ValidationError({"team_members": str(e)})
+            
             if attrs.get('collaborators'):
-                validate_work_collaborators(attrs)
+                try:
+                    validate_work_collaborators(attrs)
+                except ValidationError as e:
+                    raise ValidationError({"collaborators": str(e)})
+                
         return super().validate(attrs)
 
 

@@ -121,8 +121,10 @@ class WorkViewSet(ModelViewSet):
             # Verifica se os colaboradores foram alterados
             if 'collaborators' in request.data:
                 # Enviar emails para novos colaboradores
-                work_collaborators = WorkCollaborator.objects.filter(work=work)
+                work_collaborators = request.data.getlist('collaborators', [])
+                print("work_collaborators", work_collaborators)
                 for work_collaborator in work_collaborators:
+                    work_collaborator = WorkCollaborator.objects.get(collaborator=work_collaborator)
                     accept_work_advisor_link, reject_work_advisor_link, accept_work_collaborator_link, reject_work_collaborator_link = work_path(work)
                     from_email = EMAIL_HOST_USER
                     email_recipient_list = [work_collaborator.collaborator.email]
@@ -132,7 +134,7 @@ class WorkViewSet(ModelViewSet):
                     # Adiciona o email do colaborador como parâmetro na URL
                     accept_work_collaborator_link += f"?collaborator_email={work_collaborator.collaborator.email}"
                     reject_work_collaborator_link += f"?collaborator_email={work_collaborator.collaborator.email}"
-                    
+                    print("accept_work_collaborator_link", accept_work_collaborator_link)
                     send_work_email_to_collaborator.delay(
                         str(work.id),
                         email_subject,

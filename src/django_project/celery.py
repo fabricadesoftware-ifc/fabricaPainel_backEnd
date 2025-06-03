@@ -3,7 +3,7 @@ from celery import Celery
 from dotenv import load_dotenv
 
 load_dotenv()
-BROKER_URL = os.getenv("BROKER_URL", "amqp://vini:123690@localhost/fabricapainel")
+BROKER_URL = os.getenv("BROKER_URL", "amqp://admin:admin@localhost/fabricapainel")
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'django_project.settings')
 
