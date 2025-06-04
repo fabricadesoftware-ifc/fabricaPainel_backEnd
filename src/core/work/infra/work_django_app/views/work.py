@@ -1,4 +1,3 @@
-from uuid import uuid4
 import logging
 from django.db import transaction
 from rest_framework.viewsets import ModelViewSet
@@ -8,13 +7,12 @@ from django_project.settings import EMAIL_HOST_USER
 from rest_framework.response import Response
 from rest_framework import status
 
-from core.work.infra.work_django_app.models import Work, WorkStatusType, WorkAdvisorStatusType, WorkCollaborator
+from core.work.infra.work_django_app.models import Work, WorkCollaborator
 from core.work.infra.work_django_app.serializers import (
     WorkDetailSerializer,
     WorkWriteSerializer,
     WorkListSerializer
 )
-from core.cross_cutting_themes.infra.cross_cutting_themes_django_app.models import CrossCuttingTheme
 from core.__seedwork.domain.actions.work_path import work_path, work_path_submission, work_collaborator_path
 from core.work.infra.work_django_app.filters import WorkFilter
 from core.work.domain.value_objects import WorkCollaboratorStatusType
@@ -30,152 +28,137 @@ class WorkViewSet(ModelViewSet):
     serializer_class = WorkDetailSerializer
     throttle_classes = [UserRateThrottle]
     filterset_class = WorkFilter
+    http_method_names = ["get", "post", "patch", "put", "delete"]
 
     def get_serializer_class(self):
-        if self.action in ["list"]:
+        if self.action == "list":
             return WorkListSerializer
-        if self.action in ["retrieve"]:
-            return WorkDetailSerializer   
+        elif self.action == "retrieve":
+            return WorkDetailSerializer
         return WorkWriteSerializer
-    http_method_names = ["get", "post", "patch", "put", "delete"]
-    
+
+    def _normalize_collaborators_data(self, collaborators_data):
+        """Normaliza dados de colaboradores para sempre retornar uma lista de inteiros"""
+        if isinstance(collaborators_data, (int, str)):
+            return [int(collaborators_data)]
+        elif isinstance(collaborators_data, list):
+            return [int(c) for c in collaborators_data if c]
+        return []
+
+    def _send_collaborator_emails(self, work, collaborators_data):
+        """Envia emails para novos colaboradores"""
+        if not collaborators_data:
+            return
+
+        for collaborator_id in collaborators_data:
+            work_collaborator = WorkCollaborator.objects.filter(
+                work=work, collaborator_id=collaborator_id
+            ).first()
+            
+            if work_collaborator:
+                accept_work_link, reject_work_link = work_collaborator_path(work_collaborator)
+                email_subject = f"Convite para colaborar no trabalho: {work.title}"
+                
+                send_work_email_to_collaborator.delay(
+                    work_collaborator.id,
+                    email_subject,
+                    EMAIL_HOST_USER,
+                    accept_work_link,
+                    reject_work_link
+                )
+
+    def _send_advisor_email(self, work, email_subject_prefix="Convite para orientar o trabalho"):
+        """Envia email para o advisor"""
+        if not work.advisor:
+            return
+
+        accept_link, reject_link, _, _ = work_path(work)
+        email_subject = f"{email_subject_prefix}: {work.title}"
+        email_recipient_list = [work.advisor.email]
+        students_emails = [member.email for member in work.team.team_members.all()]
+
+        send_work_email_to_advisor.delay(
+            str(work.id),
+            email_subject,
+            EMAIL_HOST_USER,
+            email_recipient_list,
+            accept_link,
+            reject_link,
+            students_emails
+        )
+
+    def _send_pending_collaborator_reminders(self, work):
+        """Envia lembretes para colaboradores pendentes"""
+        pending_collaborators = WorkCollaborator.objects.filter(
+            work=work, 
+            status=WorkCollaboratorStatusType.Type.PENDING.value
+        )
+        
+        for work_collaborator in pending_collaborators:
+            accept_link, reject_link = work_collaborator_path(work_collaborator)
+            email_subject = f"Lembrete: Convite para colaborar no trabalho: {work.title}"
+            
+            send_work_email_to_collaborator.delay(
+                work_collaborator.id,
+                email_subject,
+                EMAIL_HOST_USER,
+                accept_link,
+                reject_link
+            )
+
     def create(self, request, *args, **kwargs):
-        collaborators_data = request.data.get("collaborators", [])
+        """Cria um novo trabalho e envia emails para colaboradores e advisor"""
+        collaborators_data = self._normalize_collaborators_data(
+            request.data.get("collaborators", [])
+        )
         
         response = super().create(request, *args, **kwargs)
         
-        # Só processa emails se a criação foi bem-sucedida E retornou um ID
         if response.status_code == status.HTTP_201_CREATED and "id" in response.data:
             work_id = response.data["id"]
             
-            # Usa transaction.on_commit para garantir que emails só sejam enviados após commit
-            def send_emails():
+            def send_creation_emails():
                 try:
                     work = Work.objects.get(id=work_id)
-                    
-                    # Enviar emails para colaboradores
-                    if collaborators_data:
-                        for collaborator_id in collaborators_data:
-                            work_collaborator = WorkCollaborator.objects.filter(
-                                work=work, 
-                                collaborator_id=collaborator_id
-                            ).first()
-                            
-                            if work_collaborator:
-                                # Gera links únicos para este colaborador
-                                accept_work_link, reject_work_link = work_collaborator_path(work_collaborator)
-                                
-                                email_subject = f"Convite para colaborar no trabalho: {work.title}"
-                                from_email = EMAIL_HOST_USER
-                                
-                                send_work_email_to_collaborator.delay(
-                                    work_collaborator.id,
-                                    email_subject,
-                                    from_email,
-                                    accept_work_link,
-                                    reject_work_link
-                                )
-
-                    # Enviar email para advisor (lógica já existente)
-                    if work.advisor:
-                        accept_work_advisor_link, reject_work_advisor_link, accept_work_collaborator_link, reject_work_collaborator_link = work_path(work)
-                        
-                        email_subject = f"Convite para orientar o trabalho: {work.title}"
-                        email_recipient_list = [work.advisor.email]
-                        students_emails = [member.email for member in work.team.team_members.all()]
-                        from_email = EMAIL_HOST_USER
-
-                        send_work_email_to_advisor.delay(
-                            str(work.id),
-                            email_subject,
-                            from_email,
-                            email_recipient_list,
-                            accept_work_advisor_link,
-                            reject_work_advisor_link,
-                            students_emails
-                        )
+                    self._send_collaborator_emails(work, collaborators_data)
+                    self._send_advisor_email(work)
                 except Work.DoesNotExist:
                     logger.error(f"Trabalho com ID {work_id} não encontrado para envio de emails")
                 except Exception as e:
                     logger.error(f"Erro ao enviar emails na criação do trabalho: {e}")
             
-            # Agenda o envio de emails para após o commit da transação
-            transaction.on_commit(send_emails)
+            transaction.on_commit(send_creation_emails)
 
         return response
 
     def update(self, request, *args, **kwargs):
+        """Atualiza trabalho e envia emails para colaboradores pendentes e advisor se necessário"""
         instance = self.get_object()
-        collaborators_data = request.data.get("collaborators", [])
+        old_advisor = instance.advisor
         
-        # CORREÇÃO: Garantir que seja sempre uma lista de inteiros
-        if isinstance(collaborators_data, (int, str)):
-            collaborators_data = [int(collaborators_data)]
-        elif isinstance(collaborators_data, list):
-            collaborators_data = [int(c) for c in collaborators_data if c]
-        else:
-            collaborators_data = []
-        
-        # Armazena colaboradores atuais antes da atualização
-        current_collaborators = set(instance.work_collaborator.values_list('collaborator_id', flat=True))
-        old_work = Work.objects.get(id=instance.id)
         response = super().update(request, *args, **kwargs)
         
         if response.status_code == status.HTTP_200_OK:
-            instance_id = instance.id
-            
-            def send_update_emails(old_work):
+            def send_update_emails():
                 try:
-                    # Recarrega a instância atualizada
-                    updated_instance = Work.objects.get(id=instance_id)
+                    updated_work = Work.objects.get(id=instance.id)
                     
-                    # Verifica colaboradores - agora processa TODOS os colaboradores pendentes
-                    all_collaborators = WorkCollaborator.objects.filter(work=updated_instance)
+                    # Envia lembretes para colaboradores pendentes
+                    self._send_pending_collaborator_reminders(updated_work)
                     
-                    for work_collaborator in all_collaborators:
-                        # Colaborador pendente - enviar lembrete
-                        if work_collaborator.status == WorkCollaboratorStatusType.Type.PENDING.value:
-                            email_subject = f"Lembrete: Convite para colaborar no trabalho: {updated_instance.title}"
-                            
-                            # Gera novos links únicos
-                            accept_work_link, reject_work_link = work_collaborator_path(work_collaborator)
-                            from_email = EMAIL_HOST_USER
-                            
-                            send_work_email_to_collaborator.delay(
-                                work_collaborator.id,
-                                email_subject,
-                                from_email,
-                                accept_work_link,
-                                reject_work_link
-                            )
-
-                    # Lógica para advisor (já existente)
-                    if updated_instance.advisor != old_work.advisor:
-                        accept_work_advisor_link, reject_work_advisor_link, accept_work_collaborator_link, reject_work_collaborator_link = work_path(updated_instance)
+                    # Envia email para advisor se mudou
+                    if updated_work.advisor != old_advisor:
+                        self._send_advisor_email(updated_work, "Alteração no trabalho")
                         
-                        email_subject = f"Alteração no trabalho: {updated_instance.title}"
-                        email_recipient_list = [updated_instance.advisor.email]
-                        students_emails = [member.email for member in updated_instance.team.team_members.all()]
-                        from_email = EMAIL_HOST_USER
-
-                        send_work_email_to_advisor.delay(
-                            str(updated_instance.id),
-                            email_subject,
-                            from_email,
-                            email_recipient_list,
-                            accept_work_advisor_link,
-                            reject_work_advisor_link,
-                            students_emails
-                        )
                 except Exception as e:
                     logger.error(f"Erro ao enviar emails no update: {e}")
             
-            # Agenda o envio de emails para após o commit da transação
-            transaction.on_commit(lambda: send_update_emails(old_work))
+            transaction.on_commit(send_update_emails)
 
         return response
-        
+
     def partial_update(self, request, *args, **kwargs):
+        """Atualização parcial com ação específica para submissão"""
         work = self.get_object()
         action = request.data.get('action')
         abstract = request.data.get('abstract')
@@ -188,22 +171,24 @@ class WorkViewSet(ModelViewSet):
             def send_submission_email():
                 try:
                     updated_work = Work.objects.get(id=work.id)
-                    accept_work_link, reject_work_link = work_path_submission(updated_work)
+                    accept_link, reject_link = work_path_submission(updated_work)
                     notify_advisor_on_data_update.delay(
                         str(updated_work.id),
-                        accept_work_link,
-                        reject_work_link
+                        accept_link,
+                        reject_link
                     )
                 except Exception as e:
                     logger.error(f"Erro ao enviar email de submissão: {e}")
             
-            # Agenda o envio de email para após o commit da transação
             transaction.on_commit(send_submission_email)
+            return Response(
+                {"message": "Abstract enviado para o orientador"}, 
+                status=status.HTTP_200_OK
+            )
             
-            message = "Abstract enviado para o orientador"
-            return Response(data={"message": message}, status=status.HTTP_200_OK)
-            
-        return Response(data={"message": "Atualização realizada"}, status=status.HTTP_200_OK)
-
+        return Response(
+            {"message": "Atualização realizada"}, 
+            status=status.HTTP_200_OK
+        )
         
     

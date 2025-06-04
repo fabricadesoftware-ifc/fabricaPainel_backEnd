@@ -1,0 +1,44 @@
+<mjml>
+    <mj-body background-color="#f4f4f4">
+      <!-- Cabeçalho -->
+      <mj-section background-color="#d9534f" padding="20px 0">
+        <mj-column>
+          <mj-text align="center" font-size="20px" color="#ffffff" font-weight="bold">
+            Notificação de Rejeição de Orientação
+          </mj-text>
+        </mj-column>
+      </mj-section>
+  
+      <!-- Corpo principal -->
+      <mj-section background-color="#ffffff" padding="20px" border-radius="10px">
+        <mj-column>
+          <mj-text font-size="18px" color="#000000" font-weight="bold">
+            Prezado(a) estudante,
+          </mj-text>
+  
+          <mj-text font-size="16px" color="#000000">
+            Informamos que o orientador selecionado para seu trabalho optou por não aceitar a orientação.
+          </mj-text>
+  
+          <mj-text font-size="16px" color="#000000">
+            Por favor, acesse o sistema e selecione outro orientador para seu trabalho.
+          </mj-text>
+  
+          <mj-text font-size="16px" color="#000000">
+            Caso tenha dúvidas, entre em contato com a coordenação do curso.
+          </mj-text>
+        </mj-column>
+      </mj-section>
+  
+      <!-- Rodapé -->
+      <mj-section background-color="#d9534f" padding="20px 0">
+        <mj-column>
+          <mj-text align="center" font-size="14px" color="#ffffff">
+            Este é um email automático. Por favor, não responda.<br />
+            Caso tenha dúvidas, entre em contato com o suporte.
+          </mj-text>
+        </mj-column>
+      </mj-section>
+    </mj-body>
+  </mjml>
+  

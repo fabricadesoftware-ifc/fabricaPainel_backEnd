@@ -1,0 +1,39 @@
+<mjml>
+  <mj-body background-color="#f4f4f4">
+    <!-- Cabeçalho -->
+    <mj-section background-color="#34a853" padding="20px 0">
+      <mj-column>
+        <mj-text align="center" font-size="20px" color="#ffffff" font-weight="bold">
+          Trabalho Aceito pelo Orientador com Sucesso
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+    <!-- Conteúdo principal -->
+    <mj-section background-color="#ffffff" padding="20px" border-radius="10px">
+      <mj-column>
+        <mj-text font-size="18px" color="#000000" font-weight="bold">
+          Olá, estudante!
+        </mj-text>
+
+        <mj-text font-size="16px" color="#000000">
+          Parabéns! Seu trabalho foi aceito pelo seu orientador.
+        </mj-text>
+
+        <mj-text font-size="16px" color="#000000">
+          O Orientador, {{ advisor_email }}, aprovou a sua submissão com sucesso.
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+    <!-- Rodapé -->
+    <mj-section background-color="#34a853" padding="20px 0">
+      <mj-column>
+        <mj-text align="center" font-size="14px" color="#ffffff">
+          Este é um email automático. Por favor, não responda.<br />
+          Caso tenha dúvidas, entre em contato com o suporte.
+        </mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>
