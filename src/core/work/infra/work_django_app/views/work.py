@@ -16,6 +16,7 @@ from core.work.infra.work_django_app.serializers import (
 from core.cross_cutting_themes.infra.cross_cutting_themes_django_app.models import CrossCuttingTheme
 from core.__seedwork.domain.actions.work_path import work_path, work_path_submission
 from core.work.infra.work_django_app.filters import WorkFilter
+from core.work.domain.value_objects import WorkCollaboratorStatusType
 from core.work.domain.tasks import send_work_email_to_advisor
 from core.work.domain.tasks.send_email_collaborator.send_work_email_to_collaborator import send_work_email_to_collaborator
 
@@ -122,8 +123,10 @@ class WorkViewSet(ModelViewSet):
             if 'collaborators' in request.data:
                 # Enviar emails para novos colaboradores
                 work_collaborators = request.data.getlist('collaborators', [])
-                print("work_collaborators", work_collaborators)
                 for work_collaborator in work_collaborators:
+                    if work.work_collaborator.filter(collaborator=work_collaborator).exists():
+                        if not work.work_collaborator.get(collaborator=work_collaborator).status == WorkCollaboratorStatusType.Type.PENDING.value:
+                            continue
                     work_collaborator = WorkCollaborator.objects.get(collaborator=work_collaborator)
                     accept_work_advisor_link, reject_work_advisor_link, accept_work_collaborator_link, reject_work_collaborator_link = work_path(work)
                     from_email = EMAIL_HOST_USER
