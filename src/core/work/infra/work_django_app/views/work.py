@@ -1,4 +1,5 @@
 from uuid import uuid4
+import logging
 from django.db import transaction
 from rest_framework.viewsets import ModelViewSet
 from drf_spectacular.utils import extend_schema
@@ -20,6 +21,8 @@ from core.work.domain.value_objects import WorkCollaboratorStatusType
 from core.work.domain.tasks.send_email_advisor.send_work_email_to_advisor import send_work_email_to_advisor
 from core.work.domain.tasks.send_email_collaborator.send_work_email_to_collaborator import send_work_email_to_collaborator
 from core.work.domain.tasks.send_email_advisor.send_work_update_to_advisor import notify_advisor_on_data_update
+
+logger = logging.getLogger(__name__)
 
 @extend_schema(tags=["work"])
 class WorkViewSet(ModelViewSet):
@@ -92,9 +95,9 @@ class WorkViewSet(ModelViewSet):
                             students_emails
                         )
                 except Work.DoesNotExist:
-                    print(f"Erro: Trabalho com ID {work_id} não encontrado para envio de emails")
+                    logger.error(f"Trabalho com ID {work_id} não encontrado para envio de emails")
                 except Exception as e:
-                    print(f"Erro ao enviar emails: {e}")
+                    logger.error(f"Erro ao enviar emails na criação do trabalho: {e}")
             
             # Agenda o envio de emails para após o commit da transação
             transaction.on_commit(send_emails)
@@ -113,11 +116,8 @@ class WorkViewSet(ModelViewSet):
         else:
             collaborators_data = []
         
-        print(f"DEBUG: collaborators_data processado: {collaborators_data}")
-        
         # Armazena colaboradores atuais antes da atualização
         current_collaborators = set(instance.work_collaborator.values_list('collaborator_id', flat=True))
-        print(f"DEBUG: colaboradores atuais: {current_collaborators}")
         old_work = Work.objects.get(id=instance.id)
         response = super().update(request, *args, **kwargs)
         
@@ -129,28 +129,14 @@ class WorkViewSet(ModelViewSet):
                     # Recarrega a instância atualizada
                     updated_instance = Work.objects.get(id=instance_id)
                     
-                    print(f"DEBUG: Processando emails para work ID: {instance_id}")
-                    
                     # Verifica colaboradores - agora processa TODOS os colaboradores pendentes
                     all_collaborators = WorkCollaborator.objects.filter(work=updated_instance)
-                    print(f"DEBUG: Total de colaboradores encontrados: {all_collaborators.count()}")
                     
                     for work_collaborator in all_collaborators:
-                        print(f"DEBUG: Processando colaborador ID: {work_collaborator.collaborator.id}, Status: {work_collaborator.status}")
-                        
-                        should_send_email = False
-                        email_subject = ""
-                        
                         # Colaborador pendente - enviar lembrete
                         if work_collaborator.status == WorkCollaboratorStatusType.Type.PENDING.value:
-                            should_send_email = True
                             email_subject = f"Lembrete: Convite para colaborar no trabalho: {updated_instance.title}"
-                            print(f"DEBUG: Colaborador pendente - vai enviar lembrete")
-                        else:
-                            print(f"DEBUG: Colaborador não precisa de email, status: {work_collaborator.status}")
-                        
-                        if should_send_email:
-                            print(f"DEBUG: Enviando email para colaborador: {work_collaborator.collaborator.email}")
+                            
                             # Gera novos links únicos
                             accept_work_link, reject_work_link = work_collaborator_path(work_collaborator)
                             from_email = EMAIL_HOST_USER
@@ -162,11 +148,9 @@ class WorkViewSet(ModelViewSet):
                                 accept_work_link,
                                 reject_work_link
                             )
-                            print(f"DEBUG: Task enviada para collaborator ID: {work_collaborator.id}")
 
                     # Lógica para advisor (já existente)
                     if updated_instance.advisor != old_work.advisor:
-                        print(f"DEBUG: Enviando email para advisor: {updated_instance.advisor.email}")
                         accept_work_advisor_link, reject_work_advisor_link, accept_work_collaborator_link, reject_work_collaborator_link = work_path(updated_instance)
                         
                         email_subject = f"Alteração no trabalho: {updated_instance.title}"
@@ -183,11 +167,8 @@ class WorkViewSet(ModelViewSet):
                             reject_work_advisor_link,
                             students_emails
                         )
-                        print(f"DEBUG: Task enviada para advisor")
-                    else:
-                        print(f"DEBUG: Advisor não mudou, não enviando email")
                 except Exception as e:
-                    print(f"Erro ao enviar emails no update: {e}")
+                    logger.error(f"Erro ao enviar emails no update: {e}")
             
             # Agenda o envio de emails para após o commit da transação
             transaction.on_commit(lambda: send_update_emails(old_work))
@@ -204,8 +185,6 @@ class WorkViewSet(ModelViewSet):
             work.save()
             
         if action == 'submission':
-            print("submission" + str(abstract))
-            
             def send_submission_email():
                 try:
                     updated_work = Work.objects.get(id=work.id)
@@ -216,7 +195,7 @@ class WorkViewSet(ModelViewSet):
                         reject_work_link
                     )
                 except Exception as e:
-                    print(f"Erro ao enviar email de submissão: {e}")
+                    logger.error(f"Erro ao enviar email de submissão: {e}")
             
             # Agenda o envio de email para após o commit da transação
             transaction.on_commit(send_submission_email)

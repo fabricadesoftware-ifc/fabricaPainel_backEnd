@@ -1,9 +1,12 @@
 import os
+import logging
 from django.core.mail import send_mail
 from django.utils.html import strip_tags
 from core.work.infra.work_django_app.models import Work
 from celery import shared_task
 from django_project.settings import BASE_DIR
+
+logger = logging.getLogger(__name__)
 
 @shared_task
 def send_work_email_to_advisor(work_id, email_subject, from_email, email_recipient_list, accept_work_link, reject_work_link, students_emails):
@@ -46,9 +49,9 @@ def send_work_email_to_advisor(work_id, email_subject, from_email, email_recipie
             fail_silently=False,
         )
 
-        print("Email enviado com sucesso")
+        logger.info(f"Email enviado com sucesso para advisor {email_recipient_list[0] if email_recipient_list else 'desconhecido'}")
 
     except Work.DoesNotExist:
-        print("Work object not found.")
+        logger.error(f"Work com ID {work_id} não encontrado")
     except Exception as e:
-        print(f"Erro ao enviar o email: {e}")
+        logger.error(f"Erro ao enviar email para advisor do trabalho ID {work_id}: {e}")
