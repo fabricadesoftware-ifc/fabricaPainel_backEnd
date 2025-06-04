@@ -14,7 +14,7 @@ from core.work.infra.work_django_app.serializers import (
     WorkListSerializer
 )
 from core.cross_cutting_themes.infra.cross_cutting_themes_django_app.models import CrossCuttingTheme
-from core.__seedwork.domain.actions.work_path import work_path, work_path_submission
+from core.__seedwork.domain.actions.work_path import work_path, work_path_submission, work_collaborator_path
 from core.work.infra.work_django_app.filters import WorkFilter
 from core.work.domain.value_objects import WorkCollaboratorStatusType
 from core.work.domain.tasks import send_work_email_to_advisor
@@ -65,29 +65,8 @@ class WorkViewSet(ModelViewSet):
                 work.advisor_status = WorkAdvisorStatusType.Type.PENDING.value
                 work.save()
             
-            # Enviar emails para colaboradores se existirem
-            work_collaborators = WorkCollaborator.objects.filter(work=work)
-            if work_collaborators.exists():
-                for work_collaborator in work_collaborators:
-                    accept_work_advisor_link, reject_work_advisor_link, accept_work_collaborator_link, reject_work_collaborator_link = work_path(work)
-                    from_email = EMAIL_HOST_USER
-                    email_recipient_list = [work_collaborator.collaborator.email]
-                    email_subject = "Convite para colaboração em trabalho"
-                    students_emails = [member.email for member in work.team.team_members.all()]
-                    
-                    # Adiciona o email do colaborador como parâmetro na URL
-                    accept_work_collaborator_link += f"?collaborator_email={work_collaborator.collaborator.email}"
-                    reject_work_collaborator_link += f"?collaborator_email={work_collaborator.collaborator.email}"
-                    
-                    send_work_email_to_collaborator.delay(
-                        str(work.id),
-                        email_subject,
-                        from_email,
-                        email_recipient_list,
-                        accept_work_collaborator_link,
-                        reject_work_collaborator_link,
-                        students_emails
-                    )
+            # Enviar emails para colaboradores se existirem (emails já são enviados pelo serializer)
+            # Este código foi removido pois o serializer já lida com o envio de emails
 
             headers = self.get_success_headers(serializer.data)
             return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
@@ -119,34 +98,8 @@ class WorkViewSet(ModelViewSet):
                 work.advisor_status = WorkAdvisorStatusType.Type.PENDING.value
                 work.save()
 
-            # Verifica se os colaboradores foram alterados
-            if 'collaborators' in request.data:
-                # Enviar emails para novos colaboradores
-                work_collaborators = request.data.getlist('collaborators', [])
-                for work_collaborator in work_collaborators:
-                    if work.work_collaborator.filter(collaborator=work_collaborator).exists():
-                        if not work.work_collaborator.get(collaborator=work_collaborator).status == WorkCollaboratorStatusType.Type.PENDING.value:
-                            continue
-                    work_collaborator = WorkCollaborator.objects.get(collaborator=work_collaborator)
-                    accept_work_advisor_link, reject_work_advisor_link, accept_work_collaborator_link, reject_work_collaborator_link = work_path(work)
-                    from_email = EMAIL_HOST_USER
-                    email_recipient_list = [work_collaborator.collaborator.email]
-                    email_subject = "Convite para colaboração em trabalho"
-                    students_emails = [member.email for member in work.team.team_members.all()]
-                    
-                    # Adiciona o email do colaborador como parâmetro na URL
-                    accept_work_collaborator_link += f"?collaborator_email={work_collaborator.collaborator.email}"
-                    reject_work_collaborator_link += f"?collaborator_email={work_collaborator.collaborator.email}"
-                    print("accept_work_collaborator_link", accept_work_collaborator_link)
-                    send_work_email_to_collaborator.delay(
-                        str(work.id),
-                        email_subject,
-                        from_email,
-                        email_recipient_list,
-                        accept_work_collaborator_link,
-                        reject_work_collaborator_link,
-                        students_emails
-                    )
+            # Os emails para colaboradores já são enviados pelo serializer
+            # Este código foi removido para evitar duplicação
 
             return response
         

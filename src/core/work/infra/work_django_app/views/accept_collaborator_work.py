@@ -16,53 +16,28 @@ from core.work.domain.tasks.send_email_student.send_collaborator_response_email_
 @authentication_classes([])
 def accept_collaborator_work(request, verification_token) -> Response:
     try:
-        work = Work.objects.get(verification_token=verification_token)
-    except Work.DoesNotExist:
-        return Response(
-            {"error": "Trabalho não encontrado."},
-            status=status.HTTP_404_NOT_FOUND,
-        )
-
-    # Pega o email do colaborador a partir dos parâmetros da query
-    collaborator_email = request.query_params.get('collaborator_email')
-    if not collaborator_email:
-        return Response(
-            {"error": "Email do colaborador não fornecido."},
-            status=status.HTTP_400_BAD_REQUEST,
-        )
-
-    try:
-        collaborator = User.objects.get(email=collaborator_email, is_collaborator=True)
-        # Validação adicional: garantir que não é estudante
-        if collaborator.user_type == User.STUDENT:
-            return Response(
-                {"error": "Estudantes não podem ser colaboradores."},
-                status=status.HTTP_403_FORBIDDEN,
-            )
-    except User.DoesNotExist:
-        return Response(
-            {"error": "Colaborador não encontrado."},
-            status=status.HTTP_404_NOT_FOUND,
-        )
-
-    # Verifica se já existe uma relação para este colaborador com este trabalho
-    try:
-        work_collaborator = WorkCollaborator.objects.get(work=work, collaborator=collaborator)
-        work_collaborator.status = WorkCollaboratorStatusType.Type.APPROVED.value
-        work_collaborator.save()
+        work_collaborator = WorkCollaborator.objects.get(verification_token=verification_token)
     except WorkCollaborator.DoesNotExist:
         return Response(
             {"error": "Convite de colaboração não encontrado."},
             status=status.HTTP_404_NOT_FOUND,
         )
 
-    # Limpa o token de verificação
-    work.verification_token = None
-    work.save()
+    # Validação adicional: garantir que o colaborador não é estudante
+    if work_collaborator.collaborator.user_type == User.STUDENT:
+        return Response(
+            {"error": "Estudantes não podem ser colaboradores."},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
+    # Atualiza o status para APPROVED
+    work_collaborator.status = WorkCollaboratorStatusType.Type.APPROVED.value
+    work_collaborator.verification_token = None  # Limpa o token
+    work_collaborator.save()
 
     # Envia email para os estudantes informando que o colaborador aceitou
-    students_ids = [s.id for s in work.team.team_members.all()]
-    send_collaborator_accept_email_to_student.delay(students_ids, collaborator.id)
+    students_ids = [s.id for s in work_collaborator.work.team.team_members.all()]
+    send_collaborator_accept_email_to_student.delay(students_ids, work_collaborator.collaborator.id)
 
     return Response(
         {"message": "Colaboração aceita com sucesso."},

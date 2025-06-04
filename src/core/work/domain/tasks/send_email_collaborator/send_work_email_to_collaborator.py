@@ -1,14 +1,16 @@
 import os
 from django.core.mail import send_mail
 from django.utils.html import strip_tags
-from core.work.infra.work_django_app.models import Work
+from core.work.infra.work_django_app.models import Work, WorkCollaborator
 from celery import shared_task
 from django_project.settings import BASE_DIR
 
 @shared_task
-def send_work_email_to_collaborator(work_id, email_subject, from_email, email_recipient_list, accept_work_link, reject_work_link, students_emails):
+def send_work_email_to_collaborator(work_collaborator_id, email_subject, from_email, accept_work_link, reject_work_link):
     try:
-        work = Work.objects.get(id=work_id)
+        print(f"Enviando email para o colaborador {work_collaborator_id} com o email {from_email}")
+        work_collaborator = WorkCollaborator.objects.get(id=work_collaborator_id)
+        work = work_collaborator.work
 
         with open(os.path.join(BASE_DIR, 'templates/send_collaborator_email_template.html'), 'r', encoding='utf-8') as file:
             html = file.read()
@@ -37,6 +39,9 @@ def send_work_email_to_collaborator(work_id, email_subject, from_email, email_re
 
         plain_message = strip_tags(html)
 
+        # Envia email para o colaborador específico
+        email_recipient_list = [work_collaborator.collaborator.email]
+
         send_mail(
             email_subject,
             plain_message,
@@ -46,9 +51,9 @@ def send_work_email_to_collaborator(work_id, email_subject, from_email, email_re
             fail_silently=False,
         )
 
-        print("Email enviado com sucesso para colaborador")
+        print(f"Email enviado com sucesso para colaborador {work_collaborator.collaborator.email}")
 
-    except Work.DoesNotExist:
-        print("Work object not found.")
+    except WorkCollaborator.DoesNotExist:
+        print("WorkCollaborator object not found.")
     except Exception as e:
         print(f"Erro ao enviar o email: {e}")

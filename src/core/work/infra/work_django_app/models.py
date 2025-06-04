@@ -117,6 +117,7 @@ class WorkCollaborator(models.Model):
     work = models.ForeignKey(Work, on_delete=models.CASCADE, related_name="work_collaborator")
     collaborator = models.ForeignKey(User, on_delete=models.CASCADE, limit_choices_to={"is_collaborator": True}, related_name="work_collaborator")
     status = models.PositiveSmallIntegerField(choices=WORK_COLLABORATOR_STATUS_CHOICE, default=PENDING)
+    verification_token = models.CharField(max_length=100, blank=True, null=True)
     
     
     def __str__(self):
