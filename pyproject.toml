@@ -30,7 +30,6 @@ dependencies = [
     "python-dotenv>=1.0.1",
     "gunicorn>=23.0.0",
     "Pillow>=11.2.1",
-    "libmagic>=1.0",
     "django-extensions>=4.1",
     "python-magic-bin>=0.4.14",
 ]
@@ -50,8 +49,7 @@ migrate = "python src/manage.py migrate"
 makemigrations = "python src/manage.py makemigrations"
 shell = "python src/manage.py shell"
 populate = "python src/manage.py populate"
-celery = "celery -A src.django_project worker --pool=solo -l info"
-celery_beat = "celery -A src.django_project beat --loglevel=debug"
+celery = "celery -A src.django_project worker --loglevel=INFO --concurrency=10 -n worker1.%h --pool=solo"
 test = "python pop.py"
 
 

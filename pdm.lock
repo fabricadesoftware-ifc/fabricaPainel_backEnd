@@ -5,7 +5,7 @@
 groups = ["default"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:ef945a2f674811b72384e8e9b841820960c69f62f47abbd52222d2d062ba6015"
+content_hash = "sha256:ca088f1e508eba330f0eeb720b99a2f988868e27d4300107c4c0f5d146a2e7ac"
 
 [[metadata.targets]]
 requires_python = "==3.12.*"
@@ -498,15 +498,6 @@ dependencies = [
 files = [
     {file = "kombu-5.5.3-py3-none-any.whl", hash = "sha256:5b0dbceb4edee50aa464f59469d34b97864be09111338cfb224a10b6a163909b"},
     {file = "kombu-5.5.3.tar.gz", hash = "sha256:021a0e11fcfcd9b0260ef1fb64088c0e92beb976eb59c1dfca7ddd4ad4562ea2"},
-]
-
-[[package]]
-name = "libmagic"
-version = "1.0"
-summary = "libmagic bindings"
-groups = ["default"]
-files = [
-    {file = "libmagic-1.0.tar.gz", hash = "sha256:649f1ce7fb7c92796badbb812555e4a926351da4f5cdf82e810b5cd371aedf8d"},
 ]
 
 [[package]]

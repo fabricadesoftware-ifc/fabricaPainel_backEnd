@@ -17,9 +17,6 @@ from core.user.infra.user_django_app.serializers import UserSerializer, Evaluato
 from core.user.infra.user_django_app.models import User
 from core.work.infra.work_django_app.models import WorkCollaborator
 from core.work.domain.value_objects import WorkCollaboratorStatusType
-from core.__seedwork.domain.actions.work_path import work_collaborator_path
-from core.work.domain.tasks.send_email_collaborator.send_work_email_to_collaborator import send_work_email_to_collaborator
-from django_project.settings import EMAIL_HOST_USER
 
 
 class WorkCollaboratorSerializer(serializers.ModelSerializer):
@@ -133,24 +130,9 @@ class WorkWriteSerializer(serializers.ModelSerializer):
         collaborators = validated_data.pop("collaborators", [])
         work = super().create(validated_data)
         
-        # Cria WorkCollaborator e envia emails com tokens únicos
+        # Apenas cria os WorkCollaborator - sem envio de emails
         for user in collaborators:
-            work_collaborator = WorkCollaborator.objects.create(work=work, collaborator=user)
-            
-            # Gera links únicos para este colaborador específico
-            accept_work_link, reject_work_link = work_collaborator_path(work_collaborator)
-            
-            # Envia email para este colaborador
-            email_subject = f"Convite para colaborar no trabalho: {work.title}"
-            from_email = EMAIL_HOST_USER
-            
-            send_work_email_to_collaborator.delay(
-                work_collaborator.id,
-                email_subject,
-                from_email,
-                accept_work_link,
-                reject_work_link
-            )
+            WorkCollaborator.objects.create(work=work, collaborator=user)
             
         return work
 
@@ -161,45 +143,14 @@ class WorkWriteSerializer(serializers.ModelSerializer):
                 existing_collaborator = WorkCollaborator.objects.filter(work=instance, collaborator=user).first()
                 
                 if not existing_collaborator:
-                    # Cria novo WorkCollaborator se não existe
-                    work_collaborator = WorkCollaborator.objects.create(work=instance, collaborator=user)
-                    
-                    # Gera links únicos para este novo colaborador
-                    accept_work_link, reject_work_link = work_collaborator_path(work_collaborator)
-                    
-                    # Envia email para este colaborador
-                    email_subject = f"Convite para colaborar no trabalho: {instance.title}"
-                    from_email = EMAIL_HOST_USER
-                    
-                    send_work_email_to_collaborator.delay(
-                        work_collaborator.id,
-                        email_subject,
-                        from_email,
-                        accept_work_link,
-                        reject_work_link
-                    )
-                    
-                elif existing_collaborator.status == WorkCollaboratorStatusType.Type.PENDING.value:
-                    # Se existe mas está pendente, reenvia email com novo token
-                    accept_work_link, reject_work_link = work_collaborator_path(existing_collaborator)
-                    
-                    # Reenvia email para este colaborador
-                    email_subject = f"Lembrete: Convite para colaborar no trabalho: {instance.title}"
-                    from_email = EMAIL_HOST_USER
-                    
-                    send_work_email_to_collaborator.delay(
-                        existing_collaborator.id,
-                        email_subject,
-                        from_email,
-                        accept_work_link,
-                        reject_work_link
-                    )
+                    # Apenas cria novo WorkCollaborator - sem envio de emails
+                    WorkCollaborator.objects.create(work=instance, collaborator=user)
                     
         return super().update(instance, validated_data)
 
     def validate(self, attrs):
         request = self.context.get("request")
-        if request and request.method == "POST":
+        if request and request.method == "POST":    
             try:
                 validate_work_date_submission_is_valid(attrs)
             except ValidationError as e:

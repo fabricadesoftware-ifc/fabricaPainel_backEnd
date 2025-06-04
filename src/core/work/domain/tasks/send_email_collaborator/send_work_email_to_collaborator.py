@@ -8,9 +8,10 @@ from django_project.settings import BASE_DIR
 @shared_task
 def send_work_email_to_collaborator(work_collaborator_id, email_subject, from_email, accept_work_link, reject_work_link):
     try:
-        print(f"Enviando email para o colaborador {work_collaborator_id} com o email {from_email}")
         work_collaborator = WorkCollaborator.objects.get(id=work_collaborator_id)
         work = work_collaborator.work
+        
+        print(f"Enviando email para o colaborador {work_collaborator.collaborator.email} (ID: {work_collaborator_id})")
 
         with open(os.path.join(BASE_DIR, 'templates/send_collaborator_email_template.html'), 'r', encoding='utf-8') as file:
             html = file.read()
