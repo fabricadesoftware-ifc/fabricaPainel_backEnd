@@ -64,10 +64,6 @@ class WorkListSerializer(serializers.ModelSerializer):
 
 class WorkDetailSerializer(serializers.ModelSerializer):
     # team = serializers.StringRelatedField()
-    advisor = serializers.PrimaryKeyRelatedField(
-        queryset=User.objects.filter(is_advisor=True, user_type=User.TEACHER),
-        required=False, allow_null=True
-    )
     work_collaborator = WorkCollaboratorSerializer(many=True, read_only=True)
 
     class Meta:
