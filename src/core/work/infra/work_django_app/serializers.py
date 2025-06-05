@@ -107,6 +107,7 @@ class WorkWriteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Work
         fields: list[str] = [
+            "id",
             "title",
             "abstract",
             "edition",

@@ -74,7 +74,7 @@ class Work(models.Model):
     #final_submission_work_date = models.DateTimeField(blank=True, null=True)
     verification_token = models.CharField(max_length=100, blank=True, null=True)
     needs_changes_submission_work_date = models.DateTimeField(blank=True, null=True)
-    team = models.ForeignKey(Team, on_delete=models.PROTECT)
+    team = models.ForeignKey(Team, on_delete=models.CASCADE)
     ods = models.ManyToManyField(Ods, related_name="SustainableGoals", default=None)
     status = models.PositiveSmallIntegerField(choices=WORK_TYPE_STATUS_CHOICE, default=PENDING)
     advisor = models.ForeignKey(User, on_delete=models.PROTECT, related_name="advisor", limit_choices_to={"is_advisor": True}, default=None)

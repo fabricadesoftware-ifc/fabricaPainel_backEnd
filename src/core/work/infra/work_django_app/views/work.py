@@ -114,6 +114,7 @@ class WorkViewSet(ModelViewSet):
         
         response = super().create(request, *args, **kwargs)
         
+        # Só processa emails se a criação foi bem-sucedida
         if response.status_code == status.HTTP_201_CREATED and "id" in response.data:
             work_id = response.data["id"]
             
