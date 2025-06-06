@@ -96,7 +96,6 @@ class WorkWriteSerializer(serializers.ModelSerializer):
         required=False, allow_null=True
     )
     
-    # campo de escrita para colaboradores (lista de IDs) - apenas não-estudantes
     collaborators = serializers.PrimaryKeyRelatedField(
         many=True,
         queryset=User.objects.filter(is_collaborator=True).exclude(user_type=User.STUDENT),
@@ -105,19 +104,15 @@ class WorkWriteSerializer(serializers.ModelSerializer):
     )
     
     def _validate_work_status_for_updates(self, attrs):
-        """
-        Valida se o trabalho pode ser alterado baseado no seu status atual.
-        """
+        """Valida se o trabalho pode ser alterado baseado no seu status atual."""
         if not self.instance:
             return
             
-        # Trabalhos rejeitados não podem ser alterados de forma alguma
         if self.instance.status == 4:  # REJECTED
             raise ValidationError({
                 "non_field_errors": ["Este trabalho foi rejeitado e não pode mais ser alterado."]
             })
         
-        # Orientador e colaboradores só podem ser alterados quando o trabalho está pendente
         if self.instance.status != 1:  # Não é PENDING
             if 'advisor' in attrs:
                 raise ValidationError({
@@ -145,14 +140,13 @@ class WorkWriteSerializer(serializers.ModelSerializer):
             "feedback",
             "advisor",
             "advisor_status",
-            "collaborators",  # <- apenas escrita
+            "collaborators",
         ]
 
     def create(self, validated_data):
         collaborators = validated_data.pop("collaborators", [])
         work = super().create(validated_data)
         
-        # Apenas cria os WorkCollaborator - sem envio de emails
         for user in collaborators:
             WorkCollaborator.objects.create(work=work, collaborator=user)
             
@@ -165,7 +159,6 @@ class WorkWriteSerializer(serializers.ModelSerializer):
                 existing_collaborator = WorkCollaborator.objects.filter(work=instance, collaborator=user).first()
                 
                 if not existing_collaborator:
-                    # Apenas cria novo WorkCollaborator - sem envio de emails
                     WorkCollaborator.objects.create(work=instance, collaborator=user)
                     
         return super().update(instance, validated_data)
@@ -173,11 +166,9 @@ class WorkWriteSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         request = self.context.get("request")
         
-        # Validações para atualizações (PATCH/PUT)
         if request and request.method in ["PATCH", "PUT"] and self.instance:
             self._validate_work_status_for_updates(attrs)
         
-        # Validações específicas para criação (POST)
         if request and request.method == "POST":
             try:
                 validate_work_date_submission_is_valid(attrs)
@@ -244,9 +235,6 @@ class TeamDetailSerializer(serializers.ModelSerializer):
             "id",
             "team_members",
             "edition"
-            #"tokens",
-            #"accept_tokens",
-            #"reject_tokens",
         ]
         depth = 1
 
@@ -260,13 +248,9 @@ class TeamWriteSerializer(serializers.ModelSerializer):
             "id",
             "team_members",
             "edition",
-            #"tokens",
-            #"accept_tokens",
-            #"reject_tokens",
         ]
 
     def validate(self, attrs):
-        # Verifica se o time está associado a um trabalho rejeitado e impede alterações
         if self.instance and hasattr(self.instance, 'work'):
             if self.instance.work.status == 4:  # REJECTED
                 raise ValidationError({

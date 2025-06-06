@@ -107,14 +107,12 @@ class WorkViewSet(ModelViewSet):
             )
 
     def create(self, request, *args, **kwargs):
-        """Cria um novo trabalho e envia emails para colaboradores e advisor"""
         collaborators_data = self._normalize_collaborators_data(
             request.data.get("collaborators", [])
         )
         
         response = super().create(request, *args, **kwargs)
         
-        # Só processa emails se a criação foi bem-sucedida
         if response.status_code == status.HTTP_201_CREATED and "id" in response.data:
             work_id = response.data["id"]
             
@@ -133,7 +131,6 @@ class WorkViewSet(ModelViewSet):
         return response
 
     def update(self, request, *args, **kwargs):
-        """Atualiza trabalho e envia emails para colaboradores pendentes e advisor se necessário"""
         instance = self.get_object()
         old_advisor = instance.advisor
         
@@ -144,10 +141,8 @@ class WorkViewSet(ModelViewSet):
                 try:
                     updated_work = Work.objects.get(id=instance.id)
                     
-                    # Envia lembretes para colaboradores pendentes
                     self._send_pending_collaborator_reminders(updated_work)
                     
-                    # Envia email para advisor se mudou
                     if updated_work.advisor != old_advisor:
                         self._send_advisor_email(updated_work, "Alteração no trabalho")
                         
@@ -159,10 +154,8 @@ class WorkViewSet(ModelViewSet):
         return response
 
     def partial_update(self, request, *args, **kwargs):
-        """Atualização parcial com ação específica para submissão"""
         work = self.get_object()
         
-        # Validação: não permite qualquer operação em trabalhos rejeitados
         if work.status == 4:  # REJECTED
             return Response(
                 {"error": "Este trabalho foi rejeitado e não pode mais ser alterado."},
@@ -201,25 +194,16 @@ class WorkViewSet(ModelViewSet):
         )
         
     def destroy(self, request, *args, **kwargs):
-        """
-        Sobrescreve o método destroy para não deletar o trabalho do banco.
-        Apenas altera o status para REJECTED (sem envio de email, pois foi o aluno que deletou).
-        """
         from core.work.domain.value_objects import WorkStatusType
         
         work = self.get_object()
         
-        # Altera o status para REJECTED ao invés de deletar
         work.status = WorkStatusType.Type.REJECTED.value
-        
-        # Limpa o verification_token para impedir aceitações futuras
         work.verification_token = None
         work.save()
         
-        # Limpa os tokens dos colaboradores para impedir aceitações
         WorkCollaborator.objects.filter(work=work).update(verification_token=None)
         
-        # Retorna resposta de sucesso sem deletar o objeto e sem enviar email
         return Response(
             {"message": "Trabalho removido com sucesso. O registro foi mantido no histórico."},
             status=status.HTTP_200_OK
