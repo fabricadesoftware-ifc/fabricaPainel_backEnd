@@ -23,6 +23,13 @@ def accept_collaborator_work(request, verification_token) -> Response:
             status=status.HTTP_404_NOT_FOUND,
         )
 
+    # Verifica se o trabalho não está rejeitado
+    if work_collaborator.work.status == 4:  # REJECTED
+        return Response(
+            {"error": "Este trabalho foi rejeitado e não pode mais ser aceito."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
     # Validação adicional: garantir que o colaborador não é estudante
     if work_collaborator.collaborator.user_type == User.STUDENT:
         return Response(

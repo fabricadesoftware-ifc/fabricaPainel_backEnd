@@ -161,6 +161,14 @@ class WorkViewSet(ModelViewSet):
     def partial_update(self, request, *args, **kwargs):
         """Atualização parcial com ação específica para submissão"""
         work = self.get_object()
+        
+        # Validação: não permite qualquer operação em trabalhos rejeitados
+        if work.status == 4:  # REJECTED
+            return Response(
+                {"error": "Este trabalho foi rejeitado e não pode mais ser alterado."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
         action = request.data.get('action')
         abstract = request.data.get('abstract')
         
@@ -192,4 +200,28 @@ class WorkViewSet(ModelViewSet):
             status=status.HTTP_200_OK
         )
         
+    def destroy(self, request, *args, **kwargs):
+        """
+        Sobrescreve o método destroy para não deletar o trabalho do banco.
+        Apenas altera o status para REJECTED (sem envio de email, pois foi o aluno que deletou).
+        """
+        from core.work.domain.value_objects import WorkStatusType
+        
+        work = self.get_object()
+        
+        # Altera o status para REJECTED ao invés de deletar
+        work.status = WorkStatusType.Type.REJECTED.value
+        
+        # Limpa o verification_token para impedir aceitações futuras
+        work.verification_token = None
+        work.save()
+        
+        # Limpa os tokens dos colaboradores para impedir aceitações
+        WorkCollaborator.objects.filter(work=work).update(verification_token=None)
+        
+        # Retorna resposta de sucesso sem deletar o objeto e sem enviar email
+        return Response(
+            {"message": "Trabalho removido com sucesso. O registro foi mantido no histórico."},
+            status=status.HTTP_200_OK
+        )
     

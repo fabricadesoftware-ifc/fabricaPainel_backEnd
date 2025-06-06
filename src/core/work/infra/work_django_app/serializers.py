@@ -103,6 +103,31 @@ class WorkWriteSerializer(serializers.ModelSerializer):
         write_only=True,
         required=False,
     )
+    
+    def _validate_work_status_for_updates(self, attrs):
+        """
+        Valida se o trabalho pode ser alterado baseado no seu status atual.
+        """
+        if not self.instance:
+            return
+            
+        # Trabalhos rejeitados não podem ser alterados de forma alguma
+        if self.instance.status == 4:  # REJECTED
+            raise ValidationError({
+                "non_field_errors": ["Este trabalho foi rejeitado e não pode mais ser alterado."]
+            })
+        
+        # Orientador e colaboradores só podem ser alterados quando o trabalho está pendente
+        if self.instance.status != 1:  # Não é PENDING
+            if 'advisor' in attrs:
+                raise ValidationError({
+                    "advisor": ["Não é possível alterar o orientador após o trabalho sair do status pendente."]
+                })
+            
+            if 'collaborators' in attrs:
+                raise ValidationError({
+                    "collaborators": ["Não é possível alterar colaboradores após o trabalho sair do status pendente."]
+                })
 
     class Meta:
         model = Work
@@ -147,7 +172,13 @@ class WorkWriteSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         request = self.context.get("request")
-        if request and request.method == "POST":    
+        
+        # Validações para atualizações (PATCH/PUT)
+        if request and request.method in ["PATCH", "PUT"] and self.instance:
+            self._validate_work_status_for_updates(attrs)
+        
+        # Validações específicas para criação (POST)
+        if request and request.method == "POST":
             try:
                 validate_work_date_submission_is_valid(attrs)
             except ValidationError as e:
@@ -235,6 +266,13 @@ class TeamWriteSerializer(serializers.ModelSerializer):
         ]
 
     def validate(self, attrs):
+        # Verifica se o time está associado a um trabalho rejeitado e impede alterações
+        if self.instance and hasattr(self.instance, 'work'):
+            if self.instance.work.status == 4:  # REJECTED
+                raise ValidationError({
+                    "non_field_errors": ["Este time está associado a um trabalho rejeitado e não pode ser alterado."]
+                })
+        
         try:
             validate_work_max_and_min_members(attrs)
         except Exception as e:

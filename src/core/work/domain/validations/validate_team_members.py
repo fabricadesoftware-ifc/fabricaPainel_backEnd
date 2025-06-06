@@ -13,7 +13,13 @@ def validate_team_members(data) -> str | bool:
         raise ValidationError("O campo 'edition' é obrigatório")
 
     for member in team_members:
-        if Team.objects.filter(team_members=member, edition=edition).exists():
+        # Verifica se o membro está em um time com trabalho ativo (não rejeitado)
+        active_teams = Team.objects.filter(
+            team_members=member, 
+            edition=edition
+        ).exclude(work__status=4)  # Exclui trabalhos rejeitados
+        
+        if active_teams.exists():
             raise ValidationError(f"O membro {member.name} já está associado a outro time.")
 
     return False

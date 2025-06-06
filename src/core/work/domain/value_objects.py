@@ -14,7 +14,7 @@ class WorkStatusType(ValueObject):
         PENDING = (1, "Pendente")
         APPROVED = (2, "Aprovado")
         NEEDS_CHANGES = (3, "Pendente com Alterações")
-        CANCELED = (4, "Cancelado")
+        REJECTED = (4, "Rejeitado")
 
         def __init__(self, value, label):
             self._value_ = value

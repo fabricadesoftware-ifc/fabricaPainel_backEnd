@@ -44,7 +44,7 @@ class Work(models.Model):
     PENDING = WorkStatusType.Type.PENDING.value
     APPROVED = WorkStatusType.Type.APPROVED.value
     NEEDS_CHANGES = WorkStatusType.Type.NEEDS_CHANGES.value
-    CANCELED = WorkStatusType.Type.CANCELED.value
+    REJECTED = WorkStatusType.Type.REJECTED.value
     
     PENDING_ADVISOR = WorkAdvisorStatusType.Type.PENDING.value
     APPROVED_ADVISOR = WorkAdvisorStatusType.Type.APPROVED.value
@@ -54,7 +54,7 @@ class Work(models.Model):
         (PENDING, WorkStatusType.Type.PENDING.label),
         (APPROVED, WorkStatusType.Type.APPROVED.label),
         (NEEDS_CHANGES, WorkStatusType.Type.NEEDS_CHANGES.label),
-        (CANCELED, WorkStatusType.Type.CANCELED.label),
+        (REJECTED, WorkStatusType.Type.REJECTED.label),
     )
     
     WORK_ADVISOR_STATUS_CHOICE = (

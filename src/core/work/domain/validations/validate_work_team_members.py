@@ -13,7 +13,8 @@ def validate_work_team_members(attrs):
         raise ValidationError({"team": "O time deve ter pelo menos um membro."})
 
     for user in members:
-        if Work.objects.filter(team__team_members=user).exists():
+        # Exclui trabalhos com status REJECTED (4) - permite que usuários com trabalhos rejeitados criem novos
+        if Work.objects.filter(team__team_members=user).exclude(status=4).exists():
             raise ValidationError(
                 {
                     "team": f"O usuário {user.name or user.email} já está em outro trabalho."

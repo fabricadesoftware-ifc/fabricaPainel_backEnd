@@ -42,7 +42,8 @@ class TeamViewSet(ModelViewSet):
         team: Team = serializer.save()
         
         if sender_id:
-            get_sender_team = Team.objects.filter(team_members__id=sender_id).filter(~Q(id=team.id))
+            # Verifica se o usuário está em um time com trabalho ativo (não rejeitado)
+            get_sender_team = Team.objects.filter(team_members__id=sender_id).filter(~Q(id=team.id)).exclude(work__status=4)
             
             if get_sender_team:
                 team.delete()
@@ -52,7 +53,8 @@ class TeamViewSet(ModelViewSet):
             for member_id in team_members:
                 try:
                     member = User.objects.get(id=member_id)
-                    get_member_team = Team.objects.filter(team_members__id=member_id).filter(~Q(id=team.id))
+                    # Verifica se o membro está em um time com trabalho ativo (não rejeitado)
+                    get_member_team = Team.objects.filter(team_members__id=member_id).filter(~Q(id=team.id)).exclude(work__status=4)
                     
                     if get_member_team:
                         team.delete()
@@ -102,6 +104,14 @@ class TeamViewSet(ModelViewSet):
 
     def partial_update(self, request, *args, **kwargs):
         team: Team = self.get_object()
+        
+        # Verifica se o time está associado a um trabalho rejeitado
+        if hasattr(team, 'work') and team.work.status == 4:  # REJECTED
+            return Response(
+                {"error": "Este time está associado a um trabalho rejeitado e não pode ser alterado."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
         action = request.data.get('action')
         # token_id = request.data.get('token_id')
         user_id = request.data.get('user_id', '')
@@ -111,7 +121,8 @@ class TeamViewSet(ModelViewSet):
         if action == 'add':
             for id in new_members:
                 member = User.objects.get(id=id)
-                team_user = Team.objects.filter(team_members__id=id).filter(~Q(id=team.id))
+                # Verifica se o membro está em um time com trabalho ativo (não rejeitado)
+                team_user = Team.objects.filter(team_members__id=id).filter(~Q(id=team.id)).exclude(work__status=4)
                 if team_user:
                     return Response({"error": f"{member.name} já está em um time."}, status=status.HTTP_400_BAD_REQUEST)
         #         member_pending = Team.objects.filter(tokens__user__id=id).filter(Q(id=team.id))
