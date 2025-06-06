@@ -227,6 +227,10 @@ EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS")
 EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "fabricadesoftware.araquari@ifc.edu.br")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 
+# Configurações de codificação para emails
+DEFAULT_CHARSET = 'utf-8'
+EMAIL_CHARSET = 'utf-8'
+
 # Configurações básicas do Celery
 CELERY_TIMEZONE = "America/Sao_Paulo"
 CELERY_TASK_TRACK_STARTED = True

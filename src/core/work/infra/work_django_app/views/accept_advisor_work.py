@@ -22,6 +22,13 @@ def accept_advisor_work(request, verification_token) -> Response:
             status=status.HTTP_404_NOT_FOUND,
         )
 
+    # Verifica se o trabalho não está rejeitado
+    if work.status == 4:  # REJECTED
+        return Response(
+            {"error": "Este trabalho foi rejeitado e não pode mais ser aceito."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
     # Validação adicional: garantir que o advisor é professor
     if work.advisor.user_type != work.advisor.TEACHER:
         return Response(
