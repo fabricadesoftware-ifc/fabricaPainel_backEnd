@@ -59,7 +59,8 @@ class WorkListSerializer(serializers.ModelSerializer):
             "feedback",
             "work_collaborator",
         ]
-        depth = 2
+        depth = 1
+        # alterado para depth=1 para evitar vulnerabilidades em listagens grandes
 
 
 class WorkDetailSerializer(serializers.ModelSerializer):

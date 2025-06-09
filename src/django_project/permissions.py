@@ -1,5 +1,7 @@
 from rest_framework.permissions import BasePermission, SAFE_METHODS
 from core.user.domain.value_objects import UserType
+from core.work.domain.value_objects import WorkStatusType
+
 
 class RolePermission(BasePermission):
     """
@@ -84,10 +86,11 @@ class IsWorkOwnerOrReadOnly(BasePermission):
         return True  # global permission já é baseada no objeto
 
     def has_object_permission(self, request, view, obj):
-        if request.method in SAFE_METHODS:
-            return True
         user = request.user
+
+        if request.method in SAFE_METHODS and obj.evaluator.filter(user=user.id).exists() or obj.status == WorkStatusType.Type.APPROVED.value:
+            return True
         return bool(user.is_authenticated and (
             obj.team.team_members.filter(id=user.id).exists() or
-            obj.advisor == user
+            obj.advisor == user or obj.work_collaborators.filter(collaborator=user.id).exists()
         ))
