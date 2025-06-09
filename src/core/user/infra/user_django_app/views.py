@@ -15,7 +15,7 @@ class UserViewSet(ModelViewSet):
 
 @extend_schema(tags=["advisors"])
 class AdvisorViewSet(ModelViewSet):
-    queryset = User.objects.filter(is_advisor=True)
+    queryset = User.objects.filter(is_advisor=True, user_type=User.TEACHER)
     serializer_class = UserSerializer
     http_method_names: list[str] = ["get"]
     filterset_class = UserFilter
@@ -25,7 +25,7 @@ class EvaluatorViewSet(ModelViewSet):
     queryset = Evaluator.objects.all()
     filterset_class = EvaluatorFilter
     serializer_class = EvaluatorSerializer
-    http_method_names: list[str] = ["get"]
+    http_method_names: list[str] = ["get", "post", "patch", "delete"]
 
 
 @extend_schema(tags=["auth"])

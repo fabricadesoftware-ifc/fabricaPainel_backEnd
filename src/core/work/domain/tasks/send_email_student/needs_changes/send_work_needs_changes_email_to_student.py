@@ -5,6 +5,12 @@ from django.utils.html import strip_tags
 from django_project.settings import EMAIL_HOST_USER, BASE_DIR
 from core.user.infra.user_django_app.models import User
 
+def safe_replace(html, placeholder, value):
+    """Substitui placeholders de forma segura, tratando valores None ou vazios"""
+    if value is None:
+        value = ""
+    return html.replace(placeholder, str(value))
+
 @shared_task
 def send_work_needs_changes_email_to_student(students_ids, message: str, work_title: str):
     students_emails = list(User.objects.filter(id__in=students_ids).values_list('email', flat=True))
@@ -12,13 +18,13 @@ def send_work_needs_changes_email_to_student(students_ids, message: str, work_ti
     if not students_emails:
         raise ValueError("Nenhum e-mail de estudante encontrado.")
     
-    with open(os.path.join(BASE_DIR, 'templates/send_needs_changes_to_work_template.html'), 'r') as file:
+    with open(os.path.join(BASE_DIR, 'templates/send_needs_changes_to_work_template.html'), 'r', encoding='utf-8') as file:
             html = file.read()
             
-    html = html.replace("{{ title }}", 'Olá, estudante! Seu trabalho precisa de mudanças!')
-    html = html.replace("{{ work_title }}", work_title)
-    html = html.replace("{{ students_names }}", ', '.join(students_emails))
-    html = html.replace("{{ changes }}", message)
+    html = safe_replace(html, "{{ title }}", 'Olá, estudante! Seu trabalho precisa de mudanças!')
+    html = safe_replace(html, "{{ work_title }}", work_title)
+    html = safe_replace(html, "{{ students_names }}", ', '.join(students_emails))
+    html = safe_replace(html, "{{ changes }}", message)
     plain_message = strip_tags(html)
     
     from_email: str = EMAIL_HOST_USER

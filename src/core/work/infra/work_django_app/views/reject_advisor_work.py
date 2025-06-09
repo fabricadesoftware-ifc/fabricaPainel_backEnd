@@ -22,6 +22,20 @@ def reject_advisor_work(request, verification_token) -> Response:
             status=status.HTTP_404_NOT_FOUND,
         )
 
+    # Verifica se o trabalho não está rejeitado
+    if work.status == 4:  # REJECTED
+        return Response(
+            {"error": "Este trabalho foi rejeitado e não pode mais ser aceito."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    # Validação adicional: garantir que o advisor é professor
+    if work.advisor.user_type != work.advisor.TEACHER:
+        return Response(
+            {"error": "Apenas professores podem ser orientadores."},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
     # Pega os IDs dos estudantes
     students_ids = [s.id for s in work.team.team_members.all()]
     from_email = EMAIL_HOST_USER

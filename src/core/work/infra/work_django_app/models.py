@@ -44,7 +44,7 @@ class Work(models.Model):
     PENDING = WorkStatusType.Type.PENDING.value
     APPROVED = WorkStatusType.Type.APPROVED.value
     NEEDS_CHANGES = WorkStatusType.Type.NEEDS_CHANGES.value
-    CANCELED = WorkStatusType.Type.CANCELED.value
+    REJECTED = WorkStatusType.Type.REJECTED.value
     
     PENDING_ADVISOR = WorkAdvisorStatusType.Type.PENDING.value
     APPROVED_ADVISOR = WorkAdvisorStatusType.Type.APPROVED.value
@@ -54,7 +54,7 @@ class Work(models.Model):
         (PENDING, WorkStatusType.Type.PENDING.label),
         (APPROVED, WorkStatusType.Type.APPROVED.label),
         (NEEDS_CHANGES, WorkStatusType.Type.NEEDS_CHANGES.label),
-        (CANCELED, WorkStatusType.Type.CANCELED.label),
+        (REJECTED, WorkStatusType.Type.REJECTED.label),
     )
     
     WORK_ADVISOR_STATUS_CHOICE = (
@@ -74,7 +74,7 @@ class Work(models.Model):
     #final_submission_work_date = models.DateTimeField(blank=True, null=True)
     verification_token = models.CharField(max_length=100, blank=True, null=True)
     needs_changes_submission_work_date = models.DateTimeField(blank=True, null=True)
-    team = models.ForeignKey(Team, on_delete=models.PROTECT)
+    team = models.ForeignKey(Team, on_delete=models.CASCADE)
     ods = models.ManyToManyField(Ods, related_name="SustainableGoals", default=None)
     status = models.PositiveSmallIntegerField(choices=WORK_TYPE_STATUS_CHOICE, default=PENDING)
     advisor = models.ForeignKey(User, on_delete=models.PROTECT, related_name="advisor", limit_choices_to={"is_advisor": True}, default=None)
@@ -114,9 +114,10 @@ class WorkCollaborator(models.Model):
         (CANCELED, WorkCollaboratorStatusType.Type.CANCELED.label),
     )
     
-    work = models.ForeignKey(Work, on_delete=models.PROTECT, related_name="work_collaborator")
-    collaborator = models.ForeignKey(User, on_delete=models.PROTECT, limit_choices_to={"is_collaborator": True}, related_name="work_collaborator")
+    work = models.ForeignKey(Work, on_delete=models.CASCADE, related_name="work_collaborator")
+    collaborator = models.ForeignKey(User, on_delete=models.CASCADE, limit_choices_to={"is_collaborator": True}, related_name="work_collaborator")
     status = models.PositiveSmallIntegerField(choices=WORK_COLLABORATOR_STATUS_CHOICE, default=PENDING)
+    verification_token = models.CharField(max_length=100, blank=True, null=True)
     
     
     def __str__(self):

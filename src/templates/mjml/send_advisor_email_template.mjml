@@ -1,0 +1,47 @@
+<mjml>
+  <mj-body background-color="#f4f4f4">
+    <mj-section background-color="#34a853" padding="20px 0">
+      <mj-column>
+        <mj-text align="center" font-size="20px" color="#ffffff" font-weight="bold">
+          Notificação de Submissão de Trabalho
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+    <mj-section background-color="#ffffff" padding="20px" border-radius="10px">
+      <mj-column>
+
+        <mj-text font-size="16px" color="#000000" font-weight="bold">Título do Trabalho submetido:</mj-text>
+        <mj-text font-size="16px">{{ work_title }}</mj-text>
+
+        <mj-text font-size="16px" color="#000000" font-weight="bold">Campo do Trabalho submetido:</mj-text>
+        <mj-text font-size="16px">{{ work_field }}</mj-text>
+
+        <mj-text font-size="16px" color="#000000" font-weight="bold">Resumo do Trabalho submetido:</mj-text>
+        <mj-text font-size="16px">{{ work_abstract }}</mj-text>
+
+        <mj-text font-size="16px" color="#000000" font-weight="bold">Tema Transversal:</mj-text>
+        <mj-text font-size="16px">{{ work_cross_cutting_themes }}</mj-text>
+
+        <mj-text font-size="16px" color="#000000" font-weight="bold">Estudantes envolvidos:</mj-text>
+        <mj-text font-size="16px">{{ students_emails }}</mj-text>
+
+        <mj-text font-size="16px">Para aceitar ser orientador deste trabalho, clique no botão abaixo:</mj-text>
+        <mj-button background-color="#34a853" color="#ffffff" href="{{ accept_work_link }}">Aceitar Orientação</mj-button>
+
+        <mj-text font-size="16px">Caso não deseje orientar este trabalho, clique no botão abaixo:</mj-text>
+        <mj-button background-color="#d9534f" color="#ffffff" href="{{ reject_work_link }}">Rejeitar Orientação</mj-button>
+
+      </mj-column>
+    </mj-section>
+
+    <mj-section background-color="#34a853" padding="20px 0">
+      <mj-column>
+        <mj-text align="center" font-size="14px" color="#ffffff">
+          Este é um email automático. Por favor, não responda.<br />
+          Caso tenha dúvidas, entre em contato com o suporte.
+        </mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml> 

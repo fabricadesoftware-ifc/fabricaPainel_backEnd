@@ -1,4 +1,5 @@
 from core.user.infra.user_django_app.models import User
+from core.user.domain.validations import validate_advisor_work_assignment
 from rest_framework.exceptions import ValidationError
 
 def validate_work_advisor(attrs):
@@ -6,11 +7,9 @@ def validate_work_advisor(attrs):
     co_advisor = attrs.get('co_advisor')
 
     if advisor:
-        if advisor.user_type != User.TEACHER:
-            raise ValidationError(f"O orientador {advisor} deve ser um professor")
+        validate_advisor_work_assignment(advisor)
         
     if co_advisor:
-        if co_advisor.user_type != User.TEACHER:
-            raise ValidationError(f"O co-orientador {co_advisor} deve ser um professor")
+        validate_advisor_work_assignment(co_advisor)
 
     return attrs

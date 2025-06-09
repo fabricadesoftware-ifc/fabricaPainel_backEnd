@@ -227,19 +227,14 @@ EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS")
 EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "fabricadesoftware.araquari@ifc.edu.br")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 
+# Configurações de codificação para emails
+DEFAULT_CHARSET = 'utf-8'
+EMAIL_CHARSET = 'utf-8'
+
+# Configurações básicas do Celery
 CELERY_TIMEZONE = "America/Sao_Paulo"
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60
 CELERY_RESULT_BACKEND = "rpc://"
-
-
-# CELERY_BEAT_SCHEDULE = {
-#     "check_final_submission_date_and_assign_advisors": {
-#         "task": "core.assign_work_to_advisor",
-#         "schedule": crontab(hour=0, minute=0),  # horario dessa bomba
-#         "args": (),
-#     },
-# }
-
 
 TOKEN_EXPIRATION_SECONDS = 1200

@@ -1,6 +1,11 @@
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.contrib.auth import authenticate
+from core.user.domain.validations import (
+    validate_user_collaborator_status, 
+    validate_evaluator_creation,
+    validate_user_advisor_status
+)
 
 from .models import User, Evaluator, Class, UserClass
 
@@ -24,6 +29,28 @@ class UserSerializer(serializers.ModelSerializer):
 
     def get_is_evaluator(self, obj):
         return hasattr(obj, 'evaluator')
+
+    def validate(self, attrs):
+        # Usando validação do domínio para colaboradores
+        user_type = attrs.get('user_type', getattr(self.instance, 'user_type', None))
+        is_collaborator = attrs.get('is_collaborator', getattr(self.instance, 'is_collaborator', False))
+        
+        attrs_to_validate = {
+            'user_type': user_type,
+            'is_collaborator': is_collaborator
+        }
+        validate_user_collaborator_status(attrs_to_validate)
+        
+        # Usando validação do domínio para orientadores
+        is_advisor = attrs.get('is_advisor', getattr(self.instance, 'is_advisor', False))
+        
+        attrs_to_validate = {
+            'user_type': user_type,
+            'is_advisor': is_advisor
+        }
+        validate_user_advisor_status(attrs_to_validate)
+        
+        return attrs
 
     class Meta:
         model = User
@@ -54,11 +81,21 @@ class EvaluatorUserSerializer(serializers.ModelSerializer):
 
 
 class EvaluatorSerializer(serializers.ModelSerializer):
-    user = EvaluatorUserSerializer()
+    user = EvaluatorUserSerializer(read_only=True)
+    user_id = serializers.PrimaryKeyRelatedField(
+        queryset=User.objects.exclude(user_type=User.STUDENT),
+        source='user',
+        write_only=True
+    )
+    
+    def validate_user_id(self, value):
+        # Usando validação do domínio para avaliadores
+        validate_evaluator_creation(value)
+        return value
+    
     class Meta:
         model = Evaluator
-        fields = "__all__"
-        depth = 1
+        fields = ["id", "user", "user_id"]
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
