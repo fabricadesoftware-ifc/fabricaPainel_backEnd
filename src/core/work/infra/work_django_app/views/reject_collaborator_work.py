@@ -7,12 +7,14 @@ from django.utils import timezone
 
 from core.work.infra.work_django_app.models import Work, WorkCollaborator, WorkCollaboratorStatusType
 from django_project.settings import EMAIL_HOST_USER
+from django_project.permissions import IsCollaborator
 from core.user.infra.user_django_app.models import User
 from core.work.domain.tasks.send_email_student.send_collaborator_response_email_to_student import send_collaborator_reject_email_to_student
 
+
 @throttle_classes([UserRateThrottle])
 @api_view(["GET"])
-@permission_classes([AllowAny])
+@permission_classes([IsCollaborator])
 @authentication_classes([])
 def reject_collaborator_work(request, verification_token) -> Response:
     try:

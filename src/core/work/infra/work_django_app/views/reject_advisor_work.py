@@ -8,10 +8,11 @@ from django.utils import timezone
 from core.work.infra.work_django_app.models import Work, WorkAdvisorStatusType
 from django_project.settings import EMAIL_HOST_USER
 from core.work.domain.tasks.send_email_student.reject.send_work_reject_advisor_email_to_student import send_work_reject_advisor_email_to_student
+from django_project.permissions import IsAdvisor
 
 @throttle_classes([UserRateThrottle])
 @api_view(["GET"])
-@permission_classes([AllowAny])
+@permission_classes([IsAdvisor])
 @authentication_classes([])
 def reject_advisor_work(request, verification_token) -> Response:
     try:

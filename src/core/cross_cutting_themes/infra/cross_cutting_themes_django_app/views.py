@@ -4,6 +4,7 @@ from drf_spectacular.utils import extend_schema
 from core.cross_cutting_themes.infra.cross_cutting_themes_django_app.models import CrossCuttingTheme
 from core.cross_cutting_themes.infra.cross_cutting_themes_django_app.serializers import CrossCuttingThemeSerializer
 from core.cross_cutting_themes.infra.cross_cutting_themes_django_app.filters import CrossCuttingThemeFilter
+from django_project.permissions import IsAdminOrReadOnly
 
 @extend_schema(tags=["cross_cutting_themes"])
 class CrossCuttingThemeViewSet(viewsets.ModelViewSet):
@@ -11,4 +12,5 @@ class CrossCuttingThemeViewSet(viewsets.ModelViewSet):
     serializer_class = CrossCuttingThemeSerializer
     filterset_class = CrossCuttingThemeFilter
     http_method_names: list[str] = ["get", "post", "patch", "delete"]
-    # filterset_class = CrossCuttingThemeFilter
+    permission_classes = [IsAdminOrReadOnly]
+    

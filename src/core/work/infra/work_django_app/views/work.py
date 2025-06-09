@@ -4,6 +4,7 @@ from rest_framework.viewsets import ModelViewSet
 from drf_spectacular.utils import extend_schema
 from rest_framework.throttling import UserRateThrottle
 from django_project.settings import EMAIL_HOST_USER
+from django_project.permissions import IsWorkOwnerOrReadOnly
 from rest_framework.response import Response
 from rest_framework import status
 
@@ -29,6 +30,7 @@ class WorkViewSet(ModelViewSet):
     throttle_classes = [UserRateThrottle]
     filterset_class = WorkFilter
     http_method_names = ["get", "post", "patch", "put", "delete"]
+    permission_classes = [IsWorkOwnerOrReadOnly]
 
     def get_serializer_class(self):
         if self.action == "list":

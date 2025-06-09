@@ -7,11 +7,14 @@ from .models import User, Evaluator, Class, UserClass
 from .serializers import UserSerializer, EvaluatorSerializer, ClassSerializer, UserClassSerializer, UserViewSerializer
 from .filters import UserFilter, EvaluatorFilter
 
+from django_project.permissions import IsUserOwnerOrReadOnly, IsAuthenticated, IsAdminOrReadOnly
+
 @extend_schema(tags=["users"])
 class UserViewSet(ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     filterset_class = UserFilter
+    permission_classes = [IsUserOwnerOrReadOnly]
 
 @extend_schema(tags=["advisors"])
 class AdvisorViewSet(ModelViewSet):
@@ -19,6 +22,7 @@ class AdvisorViewSet(ModelViewSet):
     serializer_class = UserSerializer
     http_method_names: list[str] = ["get"]
     filterset_class = UserFilter
+    permission_classes = [IsAuthenticated]
 
 @extend_schema(tags=["evaluators"])
 class EvaluatorViewSet(ModelViewSet):
@@ -26,7 +30,7 @@ class EvaluatorViewSet(ModelViewSet):
     filterset_class = EvaluatorFilter
     serializer_class = EvaluatorSerializer
     http_method_names: list[str] = ["get", "post", "patch", "delete"]
-
+    permission_classes = [IsUserOwnerOrReadOnly]
 
 @extend_schema(tags=["auth"])
 class CustomTokenObtainPairView(TokenObtainPairView):
@@ -36,10 +40,12 @@ class CustomTokenObtainPairView(TokenObtainPairView):
 class ClassViewSet(ModelViewSet):
     queryset = Class.objects.all()
     serializer_class = ClassSerializer
+    permission_classes = [IsAdminOrReadOnly]
 
 @extend_schema(tags=["user_classes"])
 class UserClassViewSet(ModelViewSet):
     queryset = UserClass.objects.all()
     serializer_class = UserViewSerializer
     http_method_names: list[str] = ["get", "post", "put", "delete"]
+    permission_classes = [IsAdminOrReadOnly]
 

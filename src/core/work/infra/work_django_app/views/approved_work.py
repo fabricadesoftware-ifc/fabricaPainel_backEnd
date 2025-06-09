@@ -6,16 +6,16 @@ from datetime import datetime
 from django.utils import timezone
 
 from django_project.settings import EMAIL_HOST_USER
+from django_project.permissions import IsAdvisor
 from core.work.domain.tasks import send_work_approve_email_to_student
 from core.work.domain.tasks import send_work_new_status_approve_email_to_student
 from core.work.infra.work_django_app.models import Edition
 from core.work.infra.work_django_app.models import Work, WorkStatusType
-from rest_framework.permissions import AllowAny
 from rest_framework.decorators import permission_classes, authentication_classes
 
 @throttle_classes([UserRateThrottle])
 @api_view(["GET"])
-@permission_classes([AllowAny])
+@permission_classes([IsAdvisor])
 @authentication_classes([])
 def approve_work(request, verification_token) -> Response:
     try:
