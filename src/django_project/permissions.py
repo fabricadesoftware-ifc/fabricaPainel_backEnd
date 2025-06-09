@@ -83,14 +83,19 @@ class IsUserOwnerOrReadOnly(BasePermission):
 
 class IsWorkOwnerOrReadOnly(BasePermission):
     def has_permission(self, request, view):
-        return True  # global permission já é baseada no objeto
+        return True  # permite sempre avançar para a checagem por objeto
 
     def has_object_permission(self, request, view, obj):
         user = request.user
 
-        if request.method in SAFE_METHODS and obj.evaluator.filter(user=user.id).exists() or obj.status == WorkStatusType.Type.APPROVED.value:
-            return True
+        if request.method in SAFE_METHODS:
+            if obj.evaluator.filter(user=user.id).exists() or \
+               obj.status == WorkStatusType.Type.APPROVED.value:
+                return True
+            return False
+
         return bool(user.is_authenticated and (
             obj.team.team_members.filter(id=user.id).exists() or
-            obj.advisor == user or obj.work_collaborators.filter(collaborator=user.id).exists()
+            obj.advisor == user or
+            obj.work_collaborators.filter(collaborator=user.id).exists()
         ))
