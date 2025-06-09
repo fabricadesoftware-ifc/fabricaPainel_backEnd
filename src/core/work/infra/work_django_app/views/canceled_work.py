@@ -4,7 +4,7 @@ from rest_framework.views import APIView
 
 from django_project.settings import EMAIL_HOST_USER
 from core.work.domain.tasks import send_work_cancel_email_to_student
-from core.work.infra.work_django_app.models import Work
+from core.work.infra.work_django_app.models import Work, WorkStatusType
 from django_project.permissions import IsStudent
 
 
