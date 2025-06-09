@@ -88,14 +88,15 @@ class IsWorkOwnerOrReadOnly(BasePermission):
     def has_object_permission(self, request, view, obj):
         user = request.user
 
-        if request.method in SAFE_METHODS:
-            if obj.evaluator.filter(user=user.id).exists() or \
-               obj.status == WorkStatusType.Type.APPROVED.value:
-                return True
-            return False
+        if request.method in SAFE_METHODS and (
+            obj.evaluator.filter(user=user.id).exists() or
+            obj.status == WorkStatusType.Type.APPROVED.value
+        ):
+            return True
+
 
         return bool(user.is_authenticated and (
             obj.team.team_members.filter(id=user.id).exists() or
             obj.advisor == user or
-            obj.work_collaborators.filter(collaborator=user.id).exists()
+            obj.work_collaborator.filter(collaborator=user.id).exists()
         ))
