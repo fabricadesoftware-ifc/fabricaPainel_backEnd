@@ -1,4 +1,4 @@
-from rest_framework.decorators import api_view, throttle_classes, permission_classes, authentication_classes
+from rest_framework.decorators import api_view, throttle_classes, permission_classes
 from rest_framework.response import Response
 from rest_framework.throttling import UserRateThrottle
 from rest_framework import status
@@ -13,7 +13,6 @@ from django_project.permissions import IsAdvisor
 @throttle_classes([UserRateThrottle])
 @api_view(["GET"])
 @permission_classes([IsAdvisor])
-@authentication_classes([])
 def reject_advisor_work(request, verification_token) -> Response:
     try:
         work = Work.objects.get(verification_token=verification_token)

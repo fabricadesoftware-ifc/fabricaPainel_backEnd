@@ -4,11 +4,16 @@ from rest_framework.views import APIView
 
 from django_project.settings import EMAIL_HOST_USER
 from core.work.domain.tasks import send_work_cancel_email_to_student
-from core.work.infra.work_django_app.models import Work, WorkStatusType
+from core.work.infra.work_django_app.models import Work
+from django_project.permissions import IsStudent
 
 
 class CanceledWork(APIView):
-    def patch(self, request, **kwargs) -> Response:
+    permission_classes = [IsStudent]
+    
+    #TODO: FAZER VALIDAÇÃO PARA VERIFICAR SE O ESTUDANTE É DA EQUIPE DO TRABALHO
+
+    def patch(args, **kwargs) -> Response:        
         try:
             work = Work.objects.get(pk=kwargs["pk"])
         except Work.DoesNotExist:

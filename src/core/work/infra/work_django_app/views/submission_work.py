@@ -1,4 +1,4 @@
-from rest_framework.decorators import api_view, throttle_classes, permission_classes, authentication_classes
+from rest_framework.decorators import api_view, throttle_classes, permission_classes
 from rest_framework.response import Response
 from rest_framework.throttling import UserRateThrottle
 from rest_framework import status
@@ -14,7 +14,6 @@ from core.work.domain.tasks.send_email_student.needs_changes.send_work_needs_cha
 @throttle_classes([UserRateThrottle])
 @api_view(["GET"])
 @permission_classes([IsAdvisor])
-@authentication_classes([])
 def accept_submission(request, verification_token) -> Response:
     try:
         work = Work.objects.get(verification_token=verification_token)
@@ -44,8 +43,7 @@ def accept_submission(request, verification_token) -> Response:
 
 @throttle_classes([UserRateThrottle])
 @api_view(["GET"])
-@permission_classes([AllowAny])
-@authentication_classes([])
+@permission_classes([IsAdvisor])
 def reject_submission(request, verification_token) -> Response:
     try:
         work = Work.objects.get(verification_token=verification_token)
