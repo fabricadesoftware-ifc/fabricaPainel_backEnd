@@ -87,7 +87,9 @@ class IsUserOwnerOrReadOnly(BasePermission):
 
 class IsWorkOwnerOrReadOnly(BasePermission):
     def has_permission(self, request, view):
-        return True  # permite sempre avançar para a checagem por objeto
+        if request.method in SAFE_METHODS:
+            return True
+        return request.user.user_type == UserType.Type.STUDENT and request.user.is_authenticated
 
     def has_object_permission(self, request, view, obj):
         user = request.user
