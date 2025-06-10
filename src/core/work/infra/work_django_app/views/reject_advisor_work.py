@@ -1,4 +1,4 @@
-from rest_framework.decorators import api_view, throttle_classes, permission_classes, authentication_classes
+from rest_framework.decorators import api_view, throttle_classes, permission_classes
 from rest_framework.response import Response
 from rest_framework.throttling import UserRateThrottle
 from rest_framework import status
@@ -8,11 +8,11 @@ from django.utils import timezone
 from core.work.infra.work_django_app.models import Work, WorkAdvisorStatusType
 from django_project.settings import EMAIL_HOST_USER
 from core.work.domain.tasks.send_email_student.reject.send_work_reject_advisor_email_to_student import send_work_reject_advisor_email_to_student
+from django_project.permissions import IsAdvisor
 
 @throttle_classes([UserRateThrottle])
 @api_view(["GET"])
-@permission_classes([AllowAny])
-@authentication_classes([])
+@permission_classes([IsAdvisor])
 def reject_advisor_work(request, verification_token) -> Response:
     try:
         work = Work.objects.get(verification_token=verification_token)

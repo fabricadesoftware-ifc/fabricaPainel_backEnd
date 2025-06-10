@@ -2,13 +2,14 @@ from django.utils import timezone
 from datetime import datetime
 from uuid import uuid4
 
-from rest_framework.decorators import api_view, throttle_classes
+from rest_framework.decorators import api_view, throttle_classes, permission_classes
 from rest_framework.throttling import UserRateThrottle
 from rest_framework.response import Response
 from rest_framework import status
 
 from core.work.domain.tasks import send_work_new_status_needs_changes_email_to_student
 from core.work.domain.tasks import send_work_needs_changes_email_to_student
+from django_project.permissions import IsAdvisor
 
 from core.edition.infra.edition_django_app.models import Edition
 from core.work.infra.work_django_app.models import Work, WorkStatusType
@@ -16,6 +17,7 @@ from core.work.infra.work_django_app.models import Work, WorkStatusType
 
 @api_view(["GET"])
 @throttle_classes([UserRateThrottle])
+@permission_classes([IsAdvisor])
 def needs_changes_work(request, *args, **kwargs) -> Response:
     message = request.query_params.get("message", None)
     

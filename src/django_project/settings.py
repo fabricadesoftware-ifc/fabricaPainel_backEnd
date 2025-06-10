@@ -26,10 +26,17 @@ CSRF_TRUSTED_ORIGINS = [
     "http://localhost:3000",
 ]
 
-
 API_URL = os.getenv("API_URL", "http://localhost:8000")
 PAINEL_URL = os.getenv("PAINEL_URL", "http://localhost:3000")
 BROKER_URL = os.getenv("BROKER_URL", "amqp://rafaelbochi:2012@localhost/fabricapainel")
+
+# Security settings (uncomment and configure for production)
+# SECURE_SSL_REDIRECT = True
+# SESSION_COOKIE_SECURE = True
+# CSRF_COOKIE_SECURE = True
+# SECURE_HSTS_SECONDS = 3600
+# SECURE_BROWSER_XSS_FILTER = True
+# SECURE_CONTENT_TYPE_NOSNIFF = True
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -77,15 +84,16 @@ REST_FRAMEWORK = {
     #     'anon': '5/min',
     #     'user': '50/day'
     # },
-    # "DEFAULT_AUTHENTICATION_CLASSES": (
-    #     "rest_framework_simplejwt.authentication.JWTAuthentication",
-    # ),
-    # "DEFAULT_PERMISSION_CLASSES": [
-    #    "rest_framework.permissions.DjangoModelPermissions",
-    # ],
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ),
+    "DEFAULT_PERMISSION_CLASSES": [
+       "rest_framework.permissions.IsAuthenticatedOrReadOnly",
+    ],
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
 }
+
 
 SIMPLE_JWT = {
     "AUTH_HEADER_TYPES": ("Bearer",),

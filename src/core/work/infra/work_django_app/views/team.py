@@ -16,12 +16,15 @@ from core.edition.infra.edition_django_app.models import Edition
 from rest_framework.throttling import UserRateThrottle
 from core.work.infra.work_django_app.filters import TeamFilter
 
+from django_project.permissions import IsStudentOrReadOnly
+
 @extend_schema(tags=['team'])
 class TeamViewSet(ModelViewSet):
     queryset = Team.objects.all()
     serializer_class = TeamDetailSerializer
     throttle_classes = [UserRateThrottle]
     filterset_class = TeamFilter
+    permission_classes = [IsStudentOrReadOnly]
 
     def get_serializer_class(self):
         if self.action in ['list', 'retrieve']:
