@@ -15,6 +15,7 @@ class WorkStatusType(ValueObject):
         APPROVED = (2, "Aprovado")
         NEEDS_CHANGES = (3, "Pendente com Alterações")
         REJECTED = (4, "Rejeitado")
+        EXPIRED = (5, "Expirado")
 
         def __init__(self, value, label):
             self._value_ = value
@@ -25,7 +26,7 @@ class WorkStatusType(ValueObject):
             """Retorna a descrição legível do status."""
             return self.label
 
-    TypeValues = Literal[1, 2, 3, 4]  # Limita os valores possíveis para o status
+    TypeValues = Literal[1, 2, 3, 4, 5]  # Limita os valores possíveis para o status
 
     def __post_init__(self, init_value: Union["Type", str]) -> None:
         """Valida e define o valor correto após a inicialização."""
