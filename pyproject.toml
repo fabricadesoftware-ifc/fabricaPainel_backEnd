@@ -52,6 +52,7 @@ makemigrations = "python src/manage.py makemigrations"
 shell = "python src/manage.py shell"
 populate = "python src/manage.py populate"
 celery = "celery -A src.django_project worker --loglevel=INFO --concurrency=10 -n worker1.%h --pool=solo"
+beat = "celery -A src.django_project beat --loglevel=INFO"
 test = "python pop.py"
 
 

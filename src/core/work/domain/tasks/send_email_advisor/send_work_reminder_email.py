@@ -8,6 +8,8 @@ from core.edition.infra.edition_django_app.models import Edition
 from core.work.infra.work_django_app.models import Work
 from core.work.domain.value_objects import WorkAdvisorStatusType
 
+from datetime import datetime
+
 def safe_replace(html, placeholder, value):
     """Substitui placeholders de forma segura, tratando valores None ou vazios"""
     if value is None:
@@ -16,13 +18,14 @@ def safe_replace(html, placeholder, value):
 
 @shared_task
 def remind_advisor_to_verify_invites():   
-    current_edition = Edition.objects.get(is_open=True)
+    current_year = datetime.now().year
+    current_edition = Edition.objects.get(year=current_year)
     edition_works = Work.objects.filter(edition=current_edition)
-    pending_works = edition_works.filter(advisor_status=WorkAdvisorStatusType.Type.PENDING)
+    pending_works = edition_works.filter(advisor_status=WorkAdvisorStatusType.Type.PENDING.value)
     pending_advisors = pending_works.values_list('advisor__email', flat=True).distinct()
     
     from_email = EMAIL_HOST_USER
-    for advisor_email in list(pending_advisors):
+    for advisor_email in list(set(pending_advisors)):
 
         recipient_list = [advisor_email]
         
