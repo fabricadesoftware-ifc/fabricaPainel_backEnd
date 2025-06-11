@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     "django_filters",
     "drf_spectacular",
     "django_extensions",
+    'django_celery_beat',
     "core.populate.infra.populate_django_app",
     "core.user.infra.user_django_app",
     "core.uploader.infra.uploader_django_app",
@@ -244,5 +245,6 @@ CELERY_TIMEZONE = "America/Sao_Paulo"
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60
 CELERY_RESULT_BACKEND = "rpc://"
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 
 TOKEN_EXPIRATION_SECONDS = 1200
