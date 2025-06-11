@@ -14,6 +14,7 @@ class UserViewSet(ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     filterset_class = UserFilter
+    permission_classes = [IsUserOwnerOrReadOnly]
 
 @extend_schema(tags=["advisors"])
 class AdvisorViewSet(ModelViewSet):
