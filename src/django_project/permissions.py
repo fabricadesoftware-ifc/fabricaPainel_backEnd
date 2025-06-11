@@ -14,7 +14,7 @@ class RolePermission(BasePermission):
 
     def has_permission(self, request, view):
         user = request.user
-        if self.require_auth and not user.is_authenticated:
+        if self.require_auth and not user.is_authenticated or user.is_anonymous:
             return False
 
         if request.method in SAFE_METHODS:
@@ -89,20 +89,30 @@ class IsWorkOwnerOrReadOnly(BasePermission):
     def has_permission(self, request, view):
         if request.method in SAFE_METHODS:
             return True
-        return request.user.user_type == UserType.Type.STUDENT and request.user.is_authenticated
+
+        if not request.user.is_authenticated:
+            return False
+
+        return request.user.user_type == UserType.Type.STUDENT
 
     def has_object_permission(self, request, view, obj):
         user = request.user
 
-        if request.method in SAFE_METHODS and (
-            obj.evaluator.filter(user=user.id).exists() or
-            obj.status == WorkStatusType.Type.APPROVED.value
-        ):
+        if request.method in SAFE_METHODS:
+            # Permite leitura se:
+            # - o usuário for um dos avaliadores
+            # - OU o trabalho estiver aprovado
+            if user.is_authenticated and obj.evaluator.filter(user=user.id).exists():
+                return True
+            if obj.status == WorkStatusType.Type.APPROVED.value:
+                return True
             return True
 
+        if not user.is_authenticated:
+            return False
 
-        return bool(user.is_authenticated and (
+        return bool(
             obj.team.team_members.filter(id=user.id).exists() or
             obj.advisor == user or
             obj.work_collaborator.filter(collaborator=user.id).exists()
-        ))
+        )
