@@ -23,8 +23,8 @@ class WorkFilter(FilterSet):
     field = CharFilter(field_name="field__name", lookup_expr="icontains")
     theme = CharFilter(method="filter_theme")
     status = BaseInFilter(field_name="status", lookup_expr="in")
-    advisor_id = CharFilter(field_name="advisor__id", lookup_expr="exact")
-    evaluator_id = CharFilter(field_name="evaluator__id", lookup_expr="exact")
+    advisor_id = CharFilter(field_name="advisor", lookup_expr="exact")
+    evaluator_id = CharFilter(field_name="evaluator__user", lookup_expr="exact")
     
     # Filtros para colaboradores
     collaborator_id = CharFilter(field_name="work_collaborator__collaborator__id", lookup_expr="exact")

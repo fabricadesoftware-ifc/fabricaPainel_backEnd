@@ -22,7 +22,8 @@ from core.work.domain.value_objects import WorkCollaboratorStatusType
 class WorkCollaboratorSerializer(serializers.ModelSerializer):
     class Meta:
         model = WorkCollaborator
-        fields: list[str] = ["id", "collaborator", "status"]
+        fields: list[str] = '__all__'
+        depth = 2
 
 class OdsSerializer(serializers.ModelSerializer):
     class Meta:
@@ -61,7 +62,6 @@ class WorkListSerializer(serializers.ModelSerializer):
         ]
         depth = 1
         # alterado para depth=1 para evitar vulnerabilidades em listagens grandes
-
 
 class WorkDetailSerializer(serializers.ModelSerializer):
     # team = serializers.StringRelatedField()
