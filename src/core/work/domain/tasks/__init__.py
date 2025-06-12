@@ -1,5 +1,5 @@
 from .send_email_advisor.send_work_update_to_advisor import notify_advisor_on_data_update
-
+from .send_email_advisor.send_work_reminder_email import remind_advisor_to_verify_invites
 from .send_email_advisor.send_work_email_to_advisor import send_work_email_to_advisor
 
 from .send_email_student.needs_changes.send_work_needs_changes_email_to_student import send_work_needs_changes_email_to_student
