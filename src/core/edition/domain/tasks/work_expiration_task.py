@@ -2,6 +2,9 @@ from datetime import datetime
 from django.utils.timezone import make_aware, get_current_timezone
 from django_celery_beat.models import ClockedSchedule, PeriodicTask
 import json
+from core.edition.infra.edition_django_app.models import Edition
+
+
 
 def convert_date_to_datetime(date_str):
     """Converte uma string YYYY-MM-DD em datetime timezone-aware."""
@@ -13,9 +16,14 @@ def convert_date_to_datetime(date_str):
 
 def create_work_expiration_tasks(request):
     """Cria duas tarefas únicas para expirar trabalhos em duas datas específicas."""
+    #ver qual edição esta abarta
+    edition = Edition.objects.filter(is_open=True).first()
+    if not edition:
+        print("Nenhuma edição aberta encontrada.")
+        return
 
-    initial_advisor_acceptance = convert_date_to_datetime(request.data.get("initial_advisor_acceptance"))
-    final_second_advisor_date = convert_date_to_datetime(request.data.get("final_second_advisor_date"))
+    initial_advisor_acceptance = convert_date_to_datetime(edition.initial_advisor_acceptance)
+    final_second_advisor_date = convert_date_to_datetime(edition.final_second_advisor_date)
 
     if not initial_advisor_acceptance or not final_second_advisor_date:
         print("Datas inválidas fornecidas.")
