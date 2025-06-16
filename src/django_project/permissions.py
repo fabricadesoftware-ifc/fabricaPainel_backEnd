@@ -81,7 +81,7 @@ class IsUserOwnerOrReadOnly(BasePermission):
     def has_object_permission(self, request, view, obj):
         if request.method in SAFE_METHODS:
             return obj == request.user 
-        return request.user.user_type == UserType.Type.ADMIN
+        return request.user.is_authenticated and request.user.user_type == UserType.Type.ADMIN
 
 
 
