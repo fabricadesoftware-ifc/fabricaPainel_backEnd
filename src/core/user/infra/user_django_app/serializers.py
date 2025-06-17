@@ -67,6 +67,7 @@ class UserSerializer(serializers.ModelSerializer):
             "is_advisor",
             "is_collaborator"
         ]
+        depth=2
     def Create(self, validated_data):
         return User.objects.create_user(**validated_data)
 
