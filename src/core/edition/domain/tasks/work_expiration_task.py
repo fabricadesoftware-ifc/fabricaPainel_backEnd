@@ -31,7 +31,7 @@ def create_work_expiration_tasks(request):
     # 🔸 Criando a tarefa para a expiração da **primeira fase**
     clocked1, _ = ClockedSchedule.objects.get_or_create(clocked_time=final_advisor_acceptance)
 
-    PeriodicTask.objects.create(
+    PeriodicTask.objects.update_or_create(
         clocked=clocked1,
         name=f'Expiração primeira fase - {final_advisor_acceptance.isoformat()}',
         task='core.work.domain.tasks.change_status.change_status_to_expired_works.change_status_to_expired',  # <<< Nome da task no Celery para primeira fase
@@ -43,7 +43,7 @@ def create_work_expiration_tasks(request):
     # 🔸 Criando a tarefa para a expiração da **segunda fase**
     clocked2, _ = ClockedSchedule.objects.get_or_create(clocked_time=final_second_advisor_date)
 
-    PeriodicTask.objects.create(
+    PeriodicTask.objects.update_or_create(
         clocked=clocked2,
         name=f'Expiração segunda fase - {final_second_advisor_date.isoformat()}',
         task='core.work.domain.tasks.change_status.change_status_to_expired_works.change_status_to_expired',  # <<< Nome da task no Celery para segunda fase
