@@ -220,7 +220,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 CORS_ALLOW_ALL_ORIGINS = True
 
-CORS_ALLOW_METHODS = ("GET", "PATCH", "POST", "PUT")
+CORS_ALLOW_METHODS = ("GET", "PATCH", "POST", "PUT", "DELETE")
 
 AUTH_USER_MODEL = "user_django_app.User"
 
