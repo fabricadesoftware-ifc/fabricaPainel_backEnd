@@ -106,7 +106,7 @@ class IsWorkOwnerOrReadOnly(BasePermission):
                 return True
             if obj.status == WorkStatusType.Type.APPROVED.value:
                 return True
-            return True
+            return False
 
         if not user.is_authenticated:
             return False

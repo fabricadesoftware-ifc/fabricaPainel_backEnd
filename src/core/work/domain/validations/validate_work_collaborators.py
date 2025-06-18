@@ -1,5 +1,5 @@
 from rest_framework.exceptions import ValidationError
-from core.work.infra.work_django_app.models import WorkCollaborator
+from core.work.infra.work_django_app.models import WorkCollaborator, Work
 from core.user.infra.user_django_app.models import User
 from core.user.domain.validations import validate_user_can_be_collaborator
 from datetime import datetime
@@ -15,6 +15,7 @@ def validate_work_collaborators(attrs):
     """
     collaborators = attrs.get('collaborators', [])
     edition = attrs.get('edition')
+    work_id = attrs.get('id')
     
     if not edition:
         raise ValidationError({"edition": "O campo 'edition' é obrigatório"})
@@ -62,15 +63,16 @@ def validate_work_collaborators(attrs):
     
     # Validação do número máximo de trabalhos por colaborador
     for collaborator in collaborators:
-        current_works_count = WorkCollaborator.objects.filter(
-            collaborator=collaborator,
-            status=1  # PENDING
-        ).count() + WorkCollaborator.objects.filter(
-            collaborator=collaborator,
-            status=2  # APPROVED
-        ).count()
+        # Filtrar os trabalhos do colaborador (apenas os ativos e aprovados)
+        current_works = Work.objects.filter(
+            work_collaborator__collaborator=collaborator,
+            work_collaborator__status=2, # APPROVED
+            edition=edition,
+            status__in=[1, 2, 3] # PENDING, APPROVED, NEEDS_CHANGES
+        )
+        current_works_count = current_works.count() # Contar os trabalhos ativos do colaborador
         
-        if current_works_count >= edition.works_per_collaborator_max:
+        if current_works_count >= edition.works_per_collaborator_max: # Limite máximo de trabalhos por colaborador
             raise ValidationError({
                 "collaborators": f"O colaborador {collaborator.name or collaborator.email} já atingiu o limite máximo de {edition.works_per_collaborator_max} trabalhos"
             })
