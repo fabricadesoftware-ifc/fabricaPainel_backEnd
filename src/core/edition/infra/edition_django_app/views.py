@@ -3,7 +3,7 @@ from drf_spectacular.utils import extend_schema
 from datetime import datetime, timedelta
 from rest_framework.response import Response
 
-from core.edition.domain.tasks.advisors_periodic_task import create_remind_advisor_to_verify_invites_task
+from core.edition.domain.tasks import create_remind_advisor_to_verify_invites_task, create_work_expiration_tasks
 from core.edition.infra.edition_django_app.models import Edition
 from core.edition.infra.edition_django_app.serializers import (
     EditionDetailSerializer,
@@ -29,6 +29,7 @@ class EditionViewSet(ModelViewSet):
     def create(self, request, *args, **kwargs):
         try:
             create_remind_advisor_to_verify_invites_task(request)
+            create_work_expiration_tasks(request)
         except Exception as e:
             return Response({"error": str(e)}, status=400)
         return super().create(request, *args, **kwargs)     

@@ -85,9 +85,9 @@ REST_FRAMEWORK = {
     #     'anon': '5/min',
     #     'user': '50/day'
     # },
-    "DEFAULT_AUTHENTICATION_CLASSES": (
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
-    ),
+     "DEFAULT_AUTHENTICATION_CLASSES": (
+         "rest_framework_simplejwt.authentication.JWTAuthentication",
+     ),
     "DEFAULT_PERMISSION_CLASSES": [
        "rest_framework.permissions.IsAuthenticatedOrReadOnly",
     ],
