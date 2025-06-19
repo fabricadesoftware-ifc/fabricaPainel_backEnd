@@ -11,4 +11,3 @@ from .send_email_student.approve.send_work_new_status_approve_email_to_student i
 from .send_email_student.send_work_cancel_email_to_student import send_work_cancel_email_to_student
 
 from .change_status.change_status_to_expired_works import change_status_to_expired
-from .send_email_to_expirated_works import send_email_to_expirated_works

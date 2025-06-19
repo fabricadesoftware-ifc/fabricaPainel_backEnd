@@ -6,7 +6,7 @@
     <style>
         @page {
             size: A4;
-            margin: 100px 30px 70px 30px; /* topo, dir, baixo, esq */
+            margin: 100px 30px 70px 30px;
             @top-center {
                 content: element(page-header);
             }
@@ -23,7 +23,7 @@
         header {
             position: running(page-header);
             width: 100%;
-            background-color: #003366;
+            background-color: #1F8BDD;
             color: #fff;
             padding: 20px 30px;
             display: flex;
@@ -42,7 +42,7 @@
 
         .link-button {
             background-color: #ffffff;
-            color: #003366;
+            color: #1F8BDD;
             text-decoration: none;
             padding: 8px 16px;
             font-weight: bold;
@@ -53,7 +53,7 @@
         h2.title {
             text-align: center;
             margin: 20px 0;
-            color: #003366;
+            color: #1F8BDD;
         }
 
         .trabalho {
@@ -65,11 +65,11 @@
         }
 
         .trabalho:last-child {
-            page-break-after: auto; /* evita página extra no fim */
+            page-break-after: auto;
         }
 
         .trabalho h3 {
-            color: #003366;
+            color: #1F8BDD;
             margin-bottom: 10px;
         }
 
@@ -81,13 +81,30 @@
             font-weight: bold;
         }
 
-        ul.alunos {
+        ul.lista {
             margin: 5px 0 10px 20px;
             padding: 0;
         }
 
-        ul.alunos li {
+        ul.lista li {
             list-style-type: disc;
+        }
+
+        table.integrantes {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        table.integrantes th,
+        table.integrantes td {
+            border: 1px solid #aaa;
+            padding: 8px;
+            text-align: left;
+        }
+
+        table.integrantes th {
+            background-color: #f2f2f2;
         }
 
         footer {
@@ -114,16 +131,49 @@
 
 {% for trabalho in trabalhos_data %}
 <div class="trabalho">
-    <h3>{{ trabalho.nome }}</h3>
-    <p><span class="label">Descrição:</span> {{ trabalho.descricao }}</p>
-    <p><span class="label">Data de Entrega:</span> {{ trabalho.data_entrega }}</p>
-    <p><span class="label">Materias Integradas:</span> {{ trabalho.materias_integradas|join:", " }}</p>
-    <p><span class="label">Alunos:</span></p>
-    <ul class="alunos">
-        {% for aluno in trabalho.alunos %}
-            <li>{{ aluno }}</li>
+    <h3>{{ trabalho.title }}</h3>
+    <p><span class="label">Resumo:</span> {{ trabalho.abstract }}</p>
+    <p><span class="label">Orientador:</span> {{ trabalho.advisor.name }} - {{ trabalho.advisor.email }}</p>
+
+    <p><span class="label">Avaliadores:</span>
+        {% for avaliador in trabalho.evaluator %}
+            {{ avaliador.user.name }} - {{ avaliador.user.email }}{% if not forloop.last %}, {% endif %}
+        {% empty %}
+            Nenhum avaliador atribuído
+        {% endfor %}
+    </p>
+
+    <p><span class="label">Objetivos de Desenvolvimento Sustentável:</span></p>
+    <ul class="lista">
+        {% for ods in trabalho.ods %}
+            <li>{{ ods.name }}</li>
         {% endfor %}
     </ul>
+
+    <div class="cross-theme">
+    <p><span class="label">Tema Transversal:</span> {{ trabalho.cross_cutting_theme.name }}</p>
+    <p><span class="label">Descrição Tema Transversal:</span> {{ trabalho.cross_cutting_theme.description }}</p>
+</div>
+
+    <p><span class="label">Integrantes da Equipe:</span></p>
+    <table class="integrantes">
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>Email</th>
+                <th>Matrícula</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for membro in trabalho.team.team_members %}
+                <tr>
+                    <td>{{ membro.name }}</td>
+                    <td>{{ membro.email }}</td>
+                    <td>{{ membro.registration }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </div>
 {% endfor %}
 
