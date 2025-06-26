@@ -38,8 +38,8 @@ def reject_collaborator_work(request, verification_token) -> Response:
             status=status.HTTP_403_FORBIDDEN,
         )
 
-    # Atualiza o status para CANCELED
-    work_collaborator.status = WorkCollaboratorStatusType.Type.CANCELED.value
+    # Atualiza o status para REJECTED
+    work_collaborator.status = WorkCollaboratorStatusType.Type.REJECTED.value
     work_collaborator.verification_token = None  # Limpa o token
     work_collaborator.save()
 

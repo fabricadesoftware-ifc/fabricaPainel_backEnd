@@ -41,7 +41,7 @@ def reject_advisor_work(request, verification_token) -> Response:
     from_email = EMAIL_HOST_USER
 
     # Atualiza o status do orientador para CANCELED
-    work.advisor_status = WorkAdvisorStatusType.Type.CANCELED.value
+    work.advisor_status = WorkAdvisorStatusType.Type.REJECTED.value
     work.verification_token = None
     work.save()
 
