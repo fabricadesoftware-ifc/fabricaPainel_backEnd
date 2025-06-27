@@ -4,6 +4,7 @@ from rest_framework.throttling import UserRateThrottle
 from rest_framework import status
 from rest_framework.permissions import AllowAny
 from django.utils import timezone
+import uuid
 
 from core.work.infra.work_django_app.models import Work, WorkAdvisorStatusType
 from django_project.settings import EMAIL_HOST_USER
@@ -42,7 +43,7 @@ def reject_advisor_work(request, verification_token) -> Response:
 
     # Atualiza o status do orientador para CANCELED
     work.advisor_status = WorkAdvisorStatusType.Type.REJECTED.value
-    work.verification_token = None
+    work.verification_token = uuid.uuid4()  # Gera um novo token único
     work.save()
 
     # Envia email para os estudantes
