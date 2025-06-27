@@ -47,6 +47,7 @@ def reset_password(request: Request, *args: Any, **kwargs: Dict[str, Any]) -> Re
                 status=status.HTTP_404_NOT_FOUND
             )
     user.set_password(new_password)
+    
     user.password_reset_token = None
     user.password_reset_token_created = None
     user.save()
