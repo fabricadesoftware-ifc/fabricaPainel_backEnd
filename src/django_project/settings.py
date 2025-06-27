@@ -85,12 +85,12 @@ REST_FRAMEWORK = {
     #     'anon': '5/min',
     #     'user': '50/day'
     # },
-     "DEFAULT_AUTHENTICATION_CLASSES": (
-         "rest_framework_simplejwt.authentication.JWTAuthentication",
-     ),
-    "DEFAULT_PERMISSION_CLASSES": [
-       "rest_framework.permissions.IsAuthenticatedOrReadOnly",
-    ],
+    # "DEFAULT_AUTHENTICATION_CLASSES": (
+    #     "rest_framework_simplejwt.authentication.JWTAuthentication",
+    # ),
+    # "DEFAULT_PERMISSION_CLASSES": [
+    #    "rest_framework.permissions.IsAuthenticatedOrReadOnly",
+    # ],
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
 }
@@ -129,7 +129,6 @@ TEMPLATES = [
         },
     },
 ]
-
 
 WSGI_APPLICATION = "django_project.wsgi.application"
 
