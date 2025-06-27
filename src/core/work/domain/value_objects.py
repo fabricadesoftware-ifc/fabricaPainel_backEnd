@@ -55,7 +55,8 @@ class WorkAdvisorStatusType(ValueObject):
     class Type(Enum):
         PENDING = (1, "Pendente")
         APPROVED = (2, "Aprovado")
-        CANCELED = (3, "Cancelado")
+        REJECTED = (3, "Rejeitado")
+        EXPIRED = (4, "Expirado")
         
         def __init__(self, value, label):
             self._value_ = value
@@ -66,7 +67,7 @@ class WorkAdvisorStatusType(ValueObject):
             """Retorna a descrição legível do status."""
             return self.label
         
-    TypeValues = Literal[1, 2, 3]
+    TypeValues = Literal[1, 2, 3, 4]
 
     def __post_init__(self, init_value: Union["Type", str]) -> None:
         """Valida e define o valor correto após a inicialização."""
@@ -94,7 +95,8 @@ class WorkCollaboratorStatusType(ValueObject):
     class Type(Enum):
         PENDING = (1, "Pendente")
         APPROVED = (2, "Aprovado")
-        CANCELED = (3, "Cancelado")
+        REJECTED = (3, "Rejeitado")
+        EXPIRED = (4, "Expirado")
         
         def __init__(self, value, label):
             self._value_ = value
@@ -105,7 +107,7 @@ class WorkCollaboratorStatusType(ValueObject):
             """Retorna a descrição legível do status."""
             return self.label
 
-    TypeValues = Literal[1, 2, 3]
+    TypeValues = Literal[1, 2, 3, 4]
 
     def __post_init__(self, init_value: Union["Type", str]) -> None:
         """Valida e define o valor correto após a inicialização."""

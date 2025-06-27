@@ -45,22 +45,26 @@ class Work(models.Model):
     APPROVED = WorkStatusType.Type.APPROVED.value
     NEEDS_CHANGES = WorkStatusType.Type.NEEDS_CHANGES.value
     REJECTED = WorkStatusType.Type.REJECTED.value
+    EXPIRED = WorkStatusType.Type.EXPIRED.value
     
     PENDING_ADVISOR = WorkAdvisorStatusType.Type.PENDING.value
     APPROVED_ADVISOR = WorkAdvisorStatusType.Type.APPROVED.value
-    CANCELED_ADVISOR = WorkAdvisorStatusType.Type.CANCELED.value
+    REJECTED_ADVISOR = WorkAdvisorStatusType.Type.REJECTED.value
+    EXPIRED_ADVISOR = WorkAdvisorStatusType.Type.EXPIRED.value
     
     WORK_TYPE_STATUS_CHOICE = (
         (PENDING, WorkStatusType.Type.PENDING.label),
         (APPROVED, WorkStatusType.Type.APPROVED.label),
         (NEEDS_CHANGES, WorkStatusType.Type.NEEDS_CHANGES.label),
         (REJECTED, WorkStatusType.Type.REJECTED.label),
+        (EXPIRED, WorkStatusType.Type.EXPIRED.label),
     )
     
     WORK_ADVISOR_STATUS_CHOICE = (
         (PENDING_ADVISOR, WorkAdvisorStatusType.Type.PENDING.label),
         (APPROVED_ADVISOR, WorkAdvisorStatusType.Type.APPROVED.label),
-        (CANCELED_ADVISOR, WorkAdvisorStatusType.Type.CANCELED.label),
+        (REJECTED_ADVISOR, WorkAdvisorStatusType.Type.REJECTED.label),
+        (EXPIRED_ADVISOR, WorkAdvisorStatusType.Type.EXPIRED.label),
     )
     
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
@@ -106,12 +110,12 @@ class Keyword(models.Model):
 class WorkCollaborator(models.Model):
     PENDING = WorkCollaboratorStatusType.Type.PENDING.value
     APPROVED = WorkCollaboratorStatusType.Type.APPROVED.value
-    CANCELED = WorkCollaboratorStatusType.Type.CANCELED.value
+    REJECTED = WorkCollaboratorStatusType.Type.REJECTED.value
     
     WORK_COLLABORATOR_STATUS_CHOICE = (
         (PENDING, WorkCollaboratorStatusType.Type.PENDING.label),
         (APPROVED, WorkCollaboratorStatusType.Type.APPROVED.label),
-        (CANCELED, WorkCollaboratorStatusType.Type.CANCELED.label),
+        (REJECTED, WorkCollaboratorStatusType.Type.REJECTED.label),
     )
     
     work = models.ForeignKey(Work, on_delete=models.CASCADE, related_name="work_collaborator")

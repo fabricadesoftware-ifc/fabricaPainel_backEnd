@@ -8,6 +8,7 @@ from core.work.infra.work_django_app.models import Work, WorkAdvisorStatusType
 from django_project.settings import EMAIL_HOST_USER
 from django_project.permissions import IsAdvisor
 from core.work.domain.tasks.send_email_student.approve.send_work_approve_email_to_student import send_work_approve_email_to_student
+import uuid
 
 @throttle_classes([UserRateThrottle])
 @api_view(["GET"])
@@ -42,7 +43,7 @@ def accept_advisor_work(request, verification_token) -> Response:
 
     # Atualiza o status do orientador para APPROVED
     work.advisor_status = WorkAdvisorStatusType.Type.APPROVED.value
-    work.verification_token = None
+    work.verification_token = uuid.uuid4()  # Gera um novo token único
     work.save()
 
     # Envia email para os estudantes
