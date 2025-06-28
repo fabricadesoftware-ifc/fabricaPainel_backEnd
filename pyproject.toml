@@ -30,6 +30,7 @@ dependencies = [
     "Pillow>=11.2.1",
     "django-extensions>=4.1",
     "python-magic-bin>=0.4.14; sys_platform == 'win32'",
+    "python-magic>=0.4.24; sys_platform != 'win32'",
     "django-celery-beat>=2.8.1",
     "weasyprint>=65.1",
 ]
