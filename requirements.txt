@@ -54,6 +54,7 @@ pyphen==0.17.2
 python-crontab==3.2.0
 python-dateutil==2.9.0.post0
 python-dotenv==1.1.0
+python-magic==0.4.27; sys_platform != "win32"
 python-magic-bin==0.4.14; sys_platform == "win32"
 pytz==2025.2
 pyyaml==6.0.2
