@@ -7,7 +7,7 @@ attrs==25.3.0
 billiard==4.2.1
 brotli==1.1.0; platform_python_implementation == "CPython"
 brotlicffi==1.1.0.0; platform_python_implementation != "CPython"
-celery==5.5.2
+celery==5.5.3
 cffi==1.17.1
 click==8.2.1
 click-didyoumean==0.3.1
@@ -16,8 +16,8 @@ click-repl==0.3.0
 colorama==0.4.6; platform_system == "Windows"
 cron-descriptor==1.4.5
 cssselect2==0.8.0
-dj-database-url==2.3.0
-django==5.2.1
+dj-database-url==3.0.0
+django==5.2.3
 django-celery-beat==2.8.1
 django-celery-results==2.6.0
 django-cors-headers==4.7.0
@@ -27,7 +27,7 @@ django-timezone-field==7.1
 djangorestframework==3.16.0
 djangorestframework-simplejwt==5.5.0
 drf-spectacular==0.28.0
-faker==37.3.0
+faker==37.4.0
 fonttools[woff]==4.58.4
 gunicorn==23.0.0
 inflection==0.5.1
@@ -38,12 +38,12 @@ lml==0.2.0
 lxml==5.4.0
 numpy==2.2.6; python_version >= "3.12"
 packaging==25.0
-pandas==2.2.3
+pandas==2.3.0
 pillow==11.2.1
 prompt-toolkit==3.0.51
 psycopg2-binary==2.9.10
 pycparser==2.22
-pydot==4.0.0
+pydot==4.0.1
 pydyf==0.11.0
 pyexcel-ezodf==0.3.4
 pyexcel-io==0.6.7
@@ -53,14 +53,14 @@ pyparsing==3.2.3
 pyphen==0.17.2
 python-crontab==3.2.0
 python-dateutil==2.9.0.post0
-python-dotenv==1.1.0
+python-dotenv==1.1.1
 python-magic==0.4.27; sys_platform != "win32"
 python-magic-bin==0.4.14; sys_platform == "win32"
 pytz==2025.2
 pyyaml==6.0.2
 referencing==0.36.2
 rpds-py==0.25.1
-setuptools==80.8.0
+setuptools==80.9.0
 shell==1.0.1
 six==1.17.0
 sqlparse==0.5.3
