@@ -1,5 +1,7 @@
 from django.utils import timezone
 from core.work.infra.work_django_app.models import Work, WorkCollaborator
+from core.user.infra.user_django_app.models import User
+from core.user.domain.value_objects import UserType
 from core.work.domain.value_objects import WorkStatusType, WorkAdvisorStatusType, WorkCollaboratorStatusType
 from core.work.infra.work_django_app.serializers import (
     WorkDetailSerializer,
@@ -21,6 +23,7 @@ def change_status_to_expired():
     works_pending = Work.objects.filter(status__in=[WorkStatusType.Type.NEEDS_CHANGES.value, WorkStatusType.Type.PENDING.value])
     work_advisors = Work.objects.filter(advisor_status=WorkAdvisorStatusType.Type.PENDING.value)
     work_collaborators = WorkCollaborator.objects.filter(status=WorkCollaboratorStatusType.Type.PENDING.value)
+    admin_users = User.objects.filter(user_type=UserType.Type.ADMIN.value).values_list('email', flat=True)
 
     for work in works_pending:
         work.status =  WorkStatusType.Type.EXPIRED.value
@@ -36,8 +39,8 @@ def change_status_to_expired():
     
     works_expireds = Work.objects.filter(status=WorkStatusType.Type.EXPIRED.value)
     works_expireds_serialized = WorkDetailSerializer(works_expireds, many=True).data
-    send_email_to_expirated_works(works_expireds_serialized, ["jonatassilvaperaza@gmail.com"])
-    
+    send_email_to_expirated_works(works_expireds_serialized, admin_users)
+
     return 'Trabalhos expirados com sucesso'
 
 def send_email_to_expirated_works(works, to_emails):
