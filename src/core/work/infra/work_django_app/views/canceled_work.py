@@ -4,11 +4,16 @@ from rest_framework.views import APIView
 
 from django_project.settings import EMAIL_HOST_USER
 from core.work.domain.tasks import send_work_cancel_email_to_student
-from core.work.infra.work_django_app.models import Work
+from core.work.infra.work_django_app.models import Work, WorkStatusType
+from django_project.permissions import IsStudent
 
 
 class CanceledWork(APIView):
-    def patch(args, **kwargs) -> Response:
+    permission_classes = [IsStudent]
+    
+    #TODO: FAZER VALIDAÇÃO PARA VERIFICAR SE O ESTUDANTE É DA EQUIPE DO TRABALHO
+
+    def patch(args, **kwargs) -> Response:        
         try:
             work = Work.objects.get(pk=kwargs["pk"])
         except Work.DoesNotExist:
@@ -16,9 +21,21 @@ class CanceledWork(APIView):
                 {"error": "Trabalho não encontrado."},
                 status=status.HTTP_404_NOT_FOUND,
             )
+        
+        # Altera o status para REJECTED ao invés de deletar o trabalho
+        work.status = WorkStatusType.Type.REJECTED.value
+        
+        # Limpa o verification_token para impedir aceitações futuras
+        work.verification_token = None
+        work.save()
+        
+        # Limpa os tokens dos colaboradores para impedir aceitações
+        from core.work.infra.work_django_app.models import WorkCollaborator
+        WorkCollaborator.objects.filter(work=work).update(verification_token=None)
+        
         work_id = work.id
-
         from_email = EMAIL_HOST_USER
+        
         try:
             send_work_cancel_email_to_student.delay(work_id, from_email)
         except:

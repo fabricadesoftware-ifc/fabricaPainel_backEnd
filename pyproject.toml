@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "Default template for PDM package"
 authors = [
     {name = "lucasantonete@gmail.com", email = "lucasantonete@gmail.com"},
+    {name = "Jonatas Peraza", email = "jonatassilvaperaza@gmail.com"}
 ]
 dependencies = [
     "Django>=5.1.1",
@@ -11,17 +12,13 @@ dependencies = [
     "django-cors-headers>=4.3.1",
     "djangorestframework-simplejwt>=5.3.1",
     "setuptools>=70.0.0",
-    "python-magic>=0.4.27",
-    "Pillow>=10.3.0",
     "drf-spectacular>=0.27.2",
     "pyparsing>=3.1.2",
     "pydot>=2.0.0",
     "django-filter>=24.2",
-    "passage-identity>=2.1.4",
-    "pdfplumber>=0.11.1",
     "faker>=26.0.0",
     "celery>=5.4.0",
-    "django-celery-results>=2.5.1",
+    "django-celery-results>=2.6.0",
     "pandas>=2.2.2",
     "pyexcel-ods3>=0.6.1",
     "shell>=1.0.1",
@@ -30,10 +27,20 @@ dependencies = [
     "psycopg2-binary>=2.9.9",
     "python-dotenv>=1.0.1",
     "gunicorn>=23.0.0",
+    "Pillow>=11.2.1",
+    "django-extensions>=4.1",
+    "python-magic-bin>=0.4.14; sys_platform == 'win32'",
+    "python-magic>=0.4.24; sys_platform != 'win32'",
+    "django-celery-beat>=2.8.1",
+    "weasyprint>=65.1",
 ]
-requires-python = "==3.11.*"
+requires-python = "==3.12.*"
 readme = "README.md"
 license = {text = "MIT"}
+
+[[tool.pdm.autoexport]]
+filename = "requirements.txt"
+without-hashes = "true"
 
 [tool.pdm.scripts]
 dev = "python src/manage.py runserver localhost:8000"
@@ -43,12 +50,9 @@ migrate = "python src/manage.py migrate"
 makemigrations = "python src/manage.py makemigrations"
 shell = "python src/manage.py shell"
 populate = "python src/manage.py populate"
-celery = "celery -A django_project worker -l info"
-celery_beat = "celery -A src.django_project beat --loglevel=info"
-
-
-
+celery = "celery -A src.django_project worker --loglevel=INFO --concurrency=10 -n worker1.%h --pool=solo"
+beat = "celery -A src.django_project beat --loglevel=INFO"
+test = "python pop.py"
 
 [tool.pdm]
 distribution = false
-

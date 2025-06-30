@@ -3,7 +3,7 @@ from celery import Celery
 from dotenv import load_dotenv
 
 load_dotenv()
-BROKER_URL = os.getenv("BROKER_URL", "amqp://vini:123690@localhost/fabricapainel")
+BROKER_URL = os.getenv("BROKER_URL", "amqp://admin:admin@localhost/fabricapainel")
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'django_project.settings')
 
@@ -14,9 +14,7 @@ app.conf.update(
 )
 app.conf.task_always_eager = False
 app.config_from_object('django.conf:settings', namespace='CELERY')
-app.autodiscover_tasks([
-    'core.__seedwork.domain.tasks',
-])
+app.autodiscover_tasks()
 
 
 @app.task(bind=True, ignore_result=True)

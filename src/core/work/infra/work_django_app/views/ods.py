@@ -6,6 +6,8 @@ from core.work.infra.work_django_app.models import Ods
 from core.work.infra.work_django_app.serializers import OdsSerializer
 from core.work.infra.work_django_app.filters import OdsFilter
 
+from django_project.permissions import IsAdminOrReadOnly
+
 @extend_schema(tags=["ods"])
 class OdsViewSet(ModelViewSet):
     queryset = Ods.objects.all()
@@ -13,5 +15,6 @@ class OdsViewSet(ModelViewSet):
     throttle_classes = [UserRateThrottle]
     http_method_names = ["get", "post", "patch", "delete"]
     filterset_class = OdsFilter
+    permission_classes = [IsAdminOrReadOnly]
 
 

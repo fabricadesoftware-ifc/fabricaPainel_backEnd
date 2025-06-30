@@ -28,6 +28,11 @@ class EvaluatorAdmin(admin.ModelAdmin):
 
 @admin.register(User)
 class CustomUserAdmin(UserAdmin):
+
+    @admin.display(boolean=True, description="É avaliador?")
+    def is_evaluator_display(self, obj):
+        return hasattr(obj, "evaluator")
+
     add_form = CustomUserCreationForm
     form = CustomUserChangeForm
     model = User
@@ -38,6 +43,7 @@ class CustomUserAdmin(UserAdmin):
         "is_staff",
         "is_active",
         "is_advisor",
+        "is_evaluator_display",
         "count_crosscuttingtheme",
     )
 
@@ -51,6 +57,7 @@ class CustomUserAdmin(UserAdmin):
         "is_staff",
         "is_active",
         "is_advisor",
+   
     )
     fieldsets = (
         (None, {"fields": ("email", "password")}),
@@ -65,7 +72,7 @@ class CustomUserAdmin(UserAdmin):
         ),
         (
             _("Personal info"),
-            {"fields": (["user_type", "is_advisor"])},
+            {"fields": (["user_type", "is_advisor", "is_collaborator", "is_evaluator_display" ])},
         ),
         (
             _("Permissions"),
@@ -73,6 +80,8 @@ class CustomUserAdmin(UserAdmin):
         ),
         (_("Important dates"), {"fields": ("last_login", "date_joined")}),
     )
+
+  
     add_fieldsets = (
         (
             None,
@@ -96,4 +105,4 @@ class CustomUserAdmin(UserAdmin):
     )
     search_fields = ("email",)
     ordering = ("email",)
-    readonly_fields = ["date_joined", "last_login"]
+    readonly_fields = ["date_joined", "last_login", "is_evaluator_display"]

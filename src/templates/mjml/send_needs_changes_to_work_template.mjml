@@ -1,0 +1,32 @@
+<mjml>
+  <mj-body background-color="#f4f4f4">
+    <mj-section background-color="#34a853" padding="20px 0">
+      <mj-column>
+        <mj-text align="center" font-size="20px" color="#ffffff" font-weight="bold">
+          {{ title }}
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+    <mj-section background-color="#ffffff" padding="20px" border-radius="10px">
+      <mj-column>
+        <mj-text font-size="16px" color="#000000" font-weight="bold">Título do Trabalho:</mj-text>
+        <mj-text font-size="16px" color="#000000">{{ work_title }}</mj-text>
+
+        <mj-text font-size="16px" color="#000000" font-weight="bold">Estudantes envolvidos:</mj-text>
+        <mj-text font-size="16px" color="#000000">{{ students_names }}</mj-text>
+
+        <mj-text font-size="16px" color="#000000" font-weight="bold">Mudanças necessárias:</mj-text>
+        <mj-text font-size="16px" color="#000000">{{ changes }}</mj-text>
+      </mj-column>
+    </mj-section>
+
+    <mj-section background-color="#34a853" padding="20px 0">
+      <mj-column>
+        <mj-text align="center" font-size="14px" color="#ffffff">
+          Este é um email automático. Por favor, não responda.
+        </mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml> 

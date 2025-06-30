@@ -14,4 +14,4 @@ def validate_year(attrs):
     if Edition.objects.filter(year=attrs['year']).exists():
         raise ValueError("Já existe uma edição para este ano")
 
-    return attrs
+    return False

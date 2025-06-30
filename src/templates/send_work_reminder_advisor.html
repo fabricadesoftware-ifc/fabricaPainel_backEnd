@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Trabalhos pendentes para verificação</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            color: #333;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+        .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        h2 {
+            color: #0056b3;
+        }
+        ul {
+            padding-left: 20px;
+        }
+        li {
+            margin-bottom: 10px;
+        }
+        .button {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 12px 25px;
+            background-color: #28a745;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        .button:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Você possui trabalhos pendentes para verificação</h2>
+        <p>Segue abaixo a lista de trabalhos aguardando sua confirmação como orientador:</p>
+        
+        <ul>
+            {{ work_list }}
+        </ul>
+
+        <p>Para aceitar ou recusar os convites, acesse o link abaixo:</p>
+        <a href="{{ action_url }}" class="button">Verificar Trabalhos</a>
+    </div>
+</body>
+</html>

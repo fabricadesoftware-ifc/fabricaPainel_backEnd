@@ -1,5 +1,4 @@
 from django_filters.rest_framework import FilterSet, CharFilter, BaseInFilter, ModelChoiceFilter
-from django.db.models import Func
 from unidecode import unidecode
 from core.work.infra.work_django_app.models import (
     Work,
@@ -24,7 +23,15 @@ class WorkFilter(FilterSet):
     field = CharFilter(field_name="field__name", lookup_expr="icontains")
     theme = CharFilter(method="filter_theme")
     status = BaseInFilter(field_name="status", lookup_expr="in")
-    advisor_id = CharFilter(field_name="advisor__id", lookup_expr="exact")
+    advisor_id = CharFilter(field_name="advisor", lookup_expr="exact")
+    evaluator_id = CharFilter(field_name="evaluator__user", lookup_expr="exact")
+    
+    # Filtros para colaboradores
+    collaborator_id = CharFilter(field_name="work_collaborator__collaborator__id", lookup_expr="exact")
+    collaborator_name = CharFilter(field_name="work_collaborator__collaborator__name", lookup_expr="icontains")
+    collaborator_email = CharFilter(field_name="work_collaborator__collaborator__email", lookup_expr="icontains")
+    collaborator_status = BaseInFilter(field_name="work_collaborator__status", lookup_expr="in")
+    
     team_member_id = CharFilter(
         field_name="team__team_members__id", lookup_expr="exact"
     )
@@ -52,7 +59,7 @@ class WorkFilter(FilterSet):
 
     class Meta:
         model = Work
-        fields = ["title", "field", "theme", "status", "team"]
+        fields = ["title", "field", "theme", "status", "team", "collaborator_id", "collaborator_status"]
 
 
 class OdsFilter(FilterSet):

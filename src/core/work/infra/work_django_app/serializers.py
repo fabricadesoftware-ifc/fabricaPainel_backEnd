@@ -1,18 +1,29 @@
 from rest_framework import serializers
-
+from rest_framework.exceptions import ValidationError
 from core.work.infra.work_django_app.models import Work
 from core.work.infra.work_django_app.models import Keyword
 from core.work.infra.work_django_app.models import Team, Token
 from core.work.infra.work_django_app.models import Ods
 from core.work.domain.validations import (
     validate_work_date_submission_is_valid,
-    validate_work_team_members,
+    validate_team_members,
     validate_work_max_and_min_members,
     validate_work_team_member_is_student,
+    validate_work_advisor,
+    validate_work_team_members,
+    validate_work_collaborators,
 )
 from core.user.infra.user_django_app.serializers import UserSerializer, EvaluatorSerializer
 from core.user.infra.user_django_app.models import User
+from core.work.infra.work_django_app.models import WorkCollaborator
+from core.work.domain.value_objects import WorkCollaboratorStatusType
 
+
+class WorkCollaboratorSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = WorkCollaborator
+        fields: list[str] = '__all__'
+        depth = 2
 
 class OdsSerializer(serializers.ModelSerializer):
     class Meta:
@@ -22,14 +33,39 @@ class OdsSerializer(serializers.ModelSerializer):
             "name",
         ]
 
+class WorkListSerializer(serializers.ModelSerializer):
+    work_collaborator = WorkCollaboratorSerializer(many=True, read_only=True)
+    advisor = serializers.PrimaryKeyRelatedField(
+        queryset=User.objects.filter(is_advisor=True, user_type=User.TEACHER),
+        required=False, allow_null=True
+    )
+    class Meta:
+        model = Work
+        fields: list[str] = [
+            "id",
+            "title",
+            "abstract",
+            "edition",
+            "field",
+            "evaluator",
+            "cross_cutting_theme",
+            "verification_token",
+            "team",
+            "ods",
+            "needs_changes_submission_work_date",
+            "status",
+            "advisor",
+            "advisor_status",
+            "integrated_project",
+            "feedback",
+            "work_collaborator",
+        ]
+        depth = 1
+        # alterado para depth=1 para evitar vulnerabilidades em listagens grandes
 
 class WorkDetailSerializer(serializers.ModelSerializer):
     # team = serializers.StringRelatedField()
-    evaluator = serializers.ListSerializer(
-        required = False,
-        allow_null = True,
-        child=EvaluatorSerializer()
-    )
+    work_collaborator = WorkCollaboratorSerializer(many=True, read_only=True)
 
     class Meta:
         model = Work
@@ -41,28 +77,58 @@ class WorkDetailSerializer(serializers.ModelSerializer):
             "field",
             "evaluator",
             "cross_cutting_theme",
-            "initial_submission_work_date",
-            "final_submission_work_date",
             "verification_token",
             "team",
             "ods",
             "needs_changes_submission_work_date",
             "status",
             "advisor",
-            "co_advisor",
+            "advisor_status",
+            "integrated_project",
             "feedback",
+            "work_collaborator",
         ]
         depth = 2
 
 
 class WorkWriteSerializer(serializers.ModelSerializer):
     advisor = serializers.PrimaryKeyRelatedField(
-        queryset=User.objects.all(), required=False, allow_null=True
+        queryset=User.objects.filter(is_advisor=True, user_type=User.TEACHER),
+        required=False, allow_null=True
     )
+    
+    collaborators = serializers.PrimaryKeyRelatedField(
+        many=True,
+        queryset=User.objects.filter(is_collaborator=True).exclude(user_type=User.STUDENT),
+        write_only=True,
+        required=False,
+    )
+    
+    def _validate_work_status_for_updates(self, attrs):
+        """Valida se o trabalho pode ser alterado baseado no seu status atual."""
+        if not self.instance:
+            return
+            
+        if self.instance.status == 4:  # REJECTED
+            raise ValidationError({
+                "non_field_errors": ["Este trabalho foi rejeitado e não pode mais ser alterado."]
+            })
+        
+        if self.instance.status != 1:  # Não é PENDING
+            if 'advisor' in attrs:
+                raise ValidationError({
+                    "advisor": ["Não é possível alterar o orientador após o trabalho sair do status pendente."]
+                })
+            
+            if 'collaborators' in attrs:
+                raise ValidationError({
+                    "collaborators": ["Não é possível alterar colaboradores após o trabalho sair do status pendente."]
+                })
 
     class Meta:
         model = Work
         fields: list[str] = [
+            "id",
             "title",
             "abstract",
             "edition",
@@ -71,21 +137,58 @@ class WorkWriteSerializer(serializers.ModelSerializer):
             "cross_cutting_theme",
             "team",
             "ods",
-            "co_advisor",
+            "integrated_project",
             "feedback",
             "advisor",
+            "advisor_status",
+            "collaborators",
         ]
+
+    def create(self, validated_data):
+        collaborators = validated_data.pop("collaborators", [])
+        work = super().create(validated_data)
+        
+        for user in collaborators:
+            WorkCollaborator.objects.create(work=work, collaborator=user)
+            
+        return work
+
+    def update(self, instance, validated_data):
+        collaborators = validated_data.pop("collaborators", None)
+        if collaborators is not None:
+            for user in collaborators:
+                existing_collaborator = WorkCollaborator.objects.filter(work=instance, collaborator=user).first()
+                
+                if not existing_collaborator:
+                    WorkCollaborator.objects.create(work=instance, collaborator=user)
+                    
+        return super().update(instance, validated_data)
 
     def validate(self, attrs):
         request = self.context.get("request")
+        
+        if request and request.method in ["PATCH", "PUT"] and self.instance:
+            self._validate_work_status_for_updates(attrs)
+        
         if request and request.method == "POST":
-            if validate_work_date_submission_is_valid(attrs):
-                raise serializers.ValidationError("Fora da data de submissão")
-            if validate_work_team_members(attrs):
-                raise serializers.ValidationError(
-                    "Membro já associado a outro trabalho"
-                )
+            try:
+                validate_work_date_submission_is_valid(attrs)
+            except ValidationError as e:
+                raise ValidationError({"date_submission": str(e)})
+            
+            try:
+                validate_work_team_members(attrs)
+            except ValidationError as e:
+                raise ValidationError({"team_members": str(e)})
+            
+            if attrs.get('collaborators'):
+                try:
+                    validate_work_collaborators(attrs)
+                except ValidationError as e:
+                    raise ValidationError({"collaborators": str(e)})
+                
         return super().validate(attrs)
+
 
 
 class KeywordDetailSerializer(serializers.ModelSerializer):
@@ -123,18 +226,16 @@ class TokenSerializer(serializers.ModelSerializer):
 
 class TeamDetailSerializer(serializers.ModelSerializer):
     team_members = UserSerializer(many=True)
-    tokens = TokenSerializer(many=True)
-    accept_tokens = TokenSerializer(many=True)
-    reject_tokens = TokenSerializer(many=True)
+    #tokens = TokenSerializer(many=True)
+    #accept_tokens = TokenSerializer(many=True)
+    #reject_tokens = TokenSerializer(many=True)
 
     class Meta:
         model = Team
         fields: list[str] = [
             "id",
             "team_members",
-            "tokens",
-            "accept_tokens",
-            "reject_tokens",
+            "edition"
         ]
         depth = 1
 
@@ -147,15 +248,26 @@ class TeamWriteSerializer(serializers.ModelSerializer):
         fields: list[str] = [
             "id",
             "team_members",
-            "tokens",
-            "accept_tokens",
-            "reject_tokens",
+            "edition",
         ]
 
-    # def validate(self, attrs):
-    #     # print("Entrou na validação")  # Para ver se o método validate está sendo chamado
-    #     # if validate_work_max_and_min_members(attrs):
-    #     #     raise serializers.ValidationError("O time não pode ter mais do que 7 membros e menos que 4")
-    #     # if validate_work_team_member_is_student(attrs):
-    #     #     raise serializers.ValidationError("Um membro do time não é estudante")
-    #     # return super().validate(attrs)
+    def validate(self, attrs):
+        if self.instance and hasattr(self.instance, 'work'):
+            if self.instance.work.status == 4:  # REJECTED
+                raise ValidationError({
+                    "non_field_errors": ["Este time está associado a um trabalho rejeitado e não pode ser alterado."]
+                })
+        
+        try:
+            validate_work_max_and_min_members(attrs)
+        except Exception as e:
+            raise e
+        try:
+            validate_work_team_member_is_student(attrs)
+        except Exception as e:
+            raise e
+        try:
+            validate_team_members(attrs)
+        except Exception as e:
+            raise e
+        return super().validate(attrs)

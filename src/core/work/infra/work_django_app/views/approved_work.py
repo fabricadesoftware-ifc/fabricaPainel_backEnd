@@ -6,17 +6,16 @@ from datetime import datetime
 from django.utils import timezone
 
 from django_project.settings import EMAIL_HOST_USER
+from django_project.permissions import IsAdvisor
 from core.work.domain.tasks import send_work_approve_email_to_student
 from core.work.domain.tasks import send_work_new_status_approve_email_to_student
 from core.work.infra.work_django_app.models import Edition
 from core.work.infra.work_django_app.models import Work, WorkStatusType
-from rest_framework.permissions import AllowAny
-from rest_framework.decorators import permission_classes, authentication_classes
+from rest_framework.decorators import permission_classes
 
 @throttle_classes([UserRateThrottle])
 @api_view(["GET"])
-@permission_classes([AllowAny])
-@authentication_classes([])
+@permission_classes([IsAdvisor])
 def approve_work(request, verification_token) -> Response:
     try:
         work = Work.objects.get(verification_token=verification_token)
@@ -35,22 +34,22 @@ def approve_work(request, verification_token) -> Response:
     edition = Edition.objects.get(id=work.edition.id)
 
     if work.status == WorkStatusType.Type.NEEDS_CHANGES.value and edition.final_advisor_date > datetime.now().date():
-        work.final_submission_work_date = timezone.now()
+        # work.final_submission_work_date = timezone.now()
         work.verification_token = None
         work.status = WorkStatusType.Type.APPROVED.value
-        work.reject_submission_work_date = None
+        #work.reject_submission_work_date = None
         work.save()
 
 
-        if work.final_submission_work_date is not None:
+        if edition.final_submission_date is not None:
             send_work_new_status_approve_email_to_student.delay(from_email, students_ids)
             return Response(
         {"message": "O trabalho que tinha sido recusado foi aceito."},
         status=status.HTTP_200_OK,
         )
 
-    elif edition.final_advisor_date > datetime.now().date():
-        work.final_submission_work_date = timezone.now()
+    elif edition.final_advisor_acceptance > datetime.now().date():
+        #work.final_submission_work_date = timezone.now()
         work.verification_token = None
         
         work.status = WorkStatusType.Type.APPROVED.value
@@ -58,7 +57,7 @@ def approve_work(request, verification_token) -> Response:
 
         advisor_id = work.advisor.id
 
-        if work.final_submission_work_date is not None and work.verification_token is None:
+        if work.verification_token is None:
             send_work_approve_email_to_student.delay(from_email, students_ids, advisor_id)
             
         return Response(

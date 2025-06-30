@@ -1,1 +1,1 @@
-from core.__seedwork.domain.tasks.assign_work_to_advisor import assign_work_to_advisor
+# Arquivo vazio - todas as importações foram removidas pois a função não existe mais

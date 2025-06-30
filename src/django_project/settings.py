@@ -10,16 +10,33 @@ load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-MODE = os.getenv("MODE")
+MODE = os.getenv("MODE", 'DEVELOPMENT')
 
 SECRET_KEY = os.getenv("SECRET_KEY")
 DEBUG = os.getenv("DEBUG", "False")
 ALLOWED_HOSTS = ["*"]
-CSRF_TRUSTED_ORIGINS = ["https://*fabricadesoftware.ifc.edu.br"]
+CSRF_TRUSTED_ORIGINS = [
+    # Subdomínios de fexcompany.me
+    "https://*.fexcompany.me",
+    # Subdomínios de fabricadesoftware.ifc.edu.br
+    "https://*.fabricadesoftware.ifc.edu.br",
+    # Front-end local
+    "http://localhost:8000",
+    "http://localhost:5173",
+    "http://localhost:3000",
+]
 
 API_URL = os.getenv("API_URL", "http://localhost:8000")
 PAINEL_URL = os.getenv("PAINEL_URL", "http://localhost:3000")
 BROKER_URL = os.getenv("BROKER_URL", "amqp://rafaelbochi:2012@localhost/fabricapainel")
+
+# Security settings (uncomment and configure for production)
+# SECURE_SSL_REDIRECT = True
+# SESSION_COOKIE_SECURE = True
+# CSRF_COOKIE_SECURE = True
+# SECURE_HSTS_SECONDS = 3600
+# SECURE_BROWSER_XSS_FILTER = True
+# SECURE_CONTENT_TYPE_NOSNIFF = True
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -34,6 +51,8 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt",
     "django_filters",
     "drf_spectacular",
+    "django_extensions",
+    'django_celery_beat',
     "core.populate.infra.populate_django_app",
     "core.user.infra.user_django_app",
     "core.uploader.infra.uploader_django_app",
@@ -70,11 +89,12 @@ REST_FRAMEWORK = {
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
     "DEFAULT_PERMISSION_CLASSES": [
-        "rest_framework.permissions.DjangoModelPermissions",
+       "rest_framework.permissions.IsAuthenticatedOrReadOnly",
     ],
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
 }
+
 
 SIMPLE_JWT = {
     "AUTH_HEADER_TYPES": ("Bearer",),
@@ -109,7 +129,6 @@ TEMPLATES = [
         },
     },
 ]
-
 
 WSGI_APPLICATION = "django_project.wsgi.application"
 
@@ -183,6 +202,7 @@ else:
     MY_IP = os.getenv("MY_IP", "127.0.0.1")
     MEDIA_ENDPOINT = f"http://{MY_IP}:19003/media/"
 
+MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media/")
 FILE_UPLOAD_PERMISSIONS = 0o640
 
@@ -199,7 +219,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 CORS_ALLOW_ALL_ORIGINS = True
 
-CORS_ALLOW_METHODS = ("GET", "PATCH", "POST", "PUT")
+CORS_ALLOW_METHODS = ("GET", "PATCH", "POST", "PUT", "DELETE")
 
 AUTH_USER_MODEL = "user_django_app.User"
 
@@ -215,19 +235,15 @@ EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS")
 EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "fabricadesoftware.araquari@ifc.edu.br")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 
+# Configurações de codificação para emails
+DEFAULT_CHARSET = 'utf-8'
+EMAIL_CHARSET = 'utf-8'
+
+# Configurações básicas do Celery
 CELERY_TIMEZONE = "America/Sao_Paulo"
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60
 CELERY_RESULT_BACKEND = "rpc://"
-
-
-# CELERY_BEAT_SCHEDULE = {
-#     "check_final_submission_date_and_assign_advisors": {
-#         "task": "core.assign_work_to_advisor",
-#         "schedule": crontab(hour=0, minute=0),  # horario dessa bomba
-#         "args": (),
-#     },
-# }
-
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 
 TOKEN_EXPIRATION_SECONDS = 1200

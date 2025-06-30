@@ -5,9 +5,7 @@ from core.populate.infra.populate_django_app.management.commands._basic import p
 from core.populate.infra.populate_django_app.management.commands._field import populate_fields
 from core.populate.infra.populate_django_app.management.commands._edition import populate_editions, populate_images
 from core.populate.infra.populate_django_app.management.commands._work import populate_works
-
-
-
+from core.populate.infra.populate_django_app.management.commands._classes import populate_classes, assign_students_to_classes
 
 class Command(BaseCommand):
     """
@@ -60,6 +58,11 @@ class Command(BaseCommand):
             help="insert work in database"
         )
         parser.add_argument(
+            "--classes",
+            action="store_true",
+            help="insert classes in database"
+        )
+        parser.add_argument(
             "--all",
             action="store_true",
             help="insert all in database"
@@ -79,6 +82,8 @@ class Command(BaseCommand):
                 self.__handle_work()
             if options.get("teachers"):
                 self.__handle_teacher()
+            if options.get("classes"):
+                self.__handle_classes()
             if options.get("prod"):
                 self.__handle_prod()
             if options.get("all"):
@@ -129,6 +134,12 @@ class Command(BaseCommand):
         self.stdout.write("Populating teacher data in the database...", ending=" ")
         populate_teacher()
         self.stdout.write(self.style.SUCCESS("OK"))
+        
+    def __handle_classes(self) -> None:
+        self.stdout.write("Populating classes data in the database...", ending=" ")
+        populate_classes()
+        assign_students_to_classes()
+        self.stdout.write(self.style.SUCCESS("OK"))
 
     def __handle_prod(self) -> None:
         self.stdout.write("Populating for prod data in the database...", ending=" ")
@@ -142,10 +153,13 @@ class Command(BaseCommand):
     def __handle_all(self) -> None:
         self.stdout.write("Populating all data in the database...", ending=" ")
         populate_users()
-        populate_team()
+        populate_classes()
+        populate_teacher()
+        assign_students_to_classes()
         populate_ods()
         populate_images()
         populate_editions()
+        populate_team()
         populate_fields()
         populate_cross_cutting_themes()
         populate_works()

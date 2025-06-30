@@ -15,6 +15,7 @@ class UserType(ValueObject):
         STUDENT = "STUDENT"
         TEACHER = "TEACHER"
         ADMIN = "ADMIN"
+        TAE = "TAE"
 
         def __init__(self, value):
             self._value_ = value
@@ -25,6 +26,7 @@ class UserType(ValueObject):
                 "STUDENT": _("Student"),
                 "TEACHER": _("Teacher"),
                 "ADMIN": _("Admin"),
+                "TAE": _("TAE"),
             }
             return labels.get(self._value_, "Unknown")
 
