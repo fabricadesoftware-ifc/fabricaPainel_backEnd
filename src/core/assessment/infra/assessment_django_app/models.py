@@ -4,14 +4,13 @@ from core.work.infra.work_django_app.models import Work
 
 class Assessment(models.Model):
     work = models.ForeignKey(Work, on_delete=models.PROTECT)
-    grade = models.FloatField()
+    grade = models.DecimalField(max_digits=4, decimal_places=2)
     evaluator = models.ForeignKey(
         Evaluator,
         on_delete=models.PROTECT,
         related_name="assessments_evaluator",
         )
     date_time = models.DateTimeField()
-    student_feedback = models.TextField(blank=True, null=True)
     committee_feedback = models.TextField(blank=True, null=True)
 
     def __str__(self):
