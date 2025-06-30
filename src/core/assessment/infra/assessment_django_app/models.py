@@ -28,7 +28,7 @@ class Assessments(models.Model):
     
 
 class StudentAssessments(models.Model):
-    grade = models.FloatField()
+    grade = models.DecimalField(max_digits=4, decimal_places=2)
     work = models.ForeignKey(Work, on_delete=models.PROTECT)
     date_time = models.DateTimeField()
     student = models.ForeignKey(
