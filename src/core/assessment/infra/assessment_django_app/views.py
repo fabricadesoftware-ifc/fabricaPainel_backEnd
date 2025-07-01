@@ -5,10 +5,11 @@ from core.assessment.infra.assessment_django_app.models import Assessment, Asses
 from core.assessment.infra.assessment_django_app.serializers import (
     AssessmentDetailSerializer,
     AssessmentWriteSerializer,
-    StudentAssessmentsSerializer
-    
+    StudentAssessmentsSerializer,
+    StudentAssessmentsWriteSerializer
 )
-from core.assessment.infra.assessment_django_app.filters import AssessmentFilterSet
+from core.assessment.infra.assessment_django_app.filters import AssessmentFilterSet, StudentAssessmentFilterSet
+from django_project.permissions import IsAdvisorOrTeamMember
 
 @extend_schema(tags=["assessment"])
 class AssessmentViewSet(ModelViewSet):
@@ -24,5 +25,18 @@ class AssessmentViewSet(ModelViewSet):
 
 class StudentAssessmentsViewSet(ModelViewSet):
     queryset = StudentAssessments.objects.all()
-    serializer_class = StudentAssessmentsSerializer
+    permission_classes = [IsAdvisorOrTeamMember]
+    filterset_class = StudentAssessmentFilterSet
+    
+    def get_queryset(self):
+        user = self.request.user
+        qs = super().get_queryset()
 
+        if user.is_advisor:
+            return qs.filter(work__advisor=user)
+        return qs.filter(work__team__team_members=user)
+
+    def get_serializer_class(self):
+        if self.action in ["list", "retrieve"]:
+            return StudentAssessmentsSerializer
+        return StudentAssessmentsWriteSerializer
