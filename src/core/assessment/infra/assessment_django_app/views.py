@@ -2,6 +2,7 @@ from rest_framework.viewsets import ModelViewSet
 from drf_spectacular.utils import extend_schema
 
 from core.assessment.infra.assessment_django_app.models import Assessment, Assessments, StudentAssessments
+from core.user.infra.user_django_app.models import Evaluator
 from core.assessment.infra.assessment_django_app.serializers import (
     AssessmentDetailSerializer,
     AssessmentWriteSerializer,
@@ -9,13 +10,24 @@ from core.assessment.infra.assessment_django_app.serializers import (
     StudentAssessmentsWriteSerializer
 )
 from core.assessment.infra.assessment_django_app.filters import AssessmentFilterSet, StudentAssessmentFilterSet
-from django_project.permissions import IsAdvisorOrTeamMember
+from django_project.permissions import IsAdvisorOrTeamMember, IsAdvisorOrEvaluatorOrTeamMember
 
 @extend_schema(tags=["assessment"])
 class AssessmentViewSet(ModelViewSet):
     queryset = Assessment.objects.all()
-    serializer_class = AssessmentDetailSerializer
+    permission_classes = [IsAdvisorOrEvaluatorOrTeamMember]
     filterset_class = AssessmentFilterSet
+    
+    def get_queryset(self):
+        user = self.request.user
+        qs = super().get_queryset()
+
+        if Evaluator.objects.filter(user=user.id).exists():
+            evaluator = Evaluator.objects.get(user=user.id)
+            return qs.filter(work__evaluator=evaluator)
+        if user.is_advisor:
+            return qs.filter(work__advisor=user)
+        return qs.filter(work__team__team_members=user)
 
     def get_serializer_class(self):
         if self.action in ["list", "retrieve"]:
