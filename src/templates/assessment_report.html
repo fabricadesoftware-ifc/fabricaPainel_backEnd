@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Relatório de Avaliações</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 100px 30px 70px 30px;
+            @top-center {
+                content: element(page-header);
+            }
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            color: #333;
+            font-size: 14px;
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        header {
+            position: running(page-header);
+            width: 100%;
+            background-color: #1F8BDD;
+            color: #fff;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 22px;
+        }
+
+        .link-button {
+            background-color: #ffffff;
+            color: #1F8BDD;
+            text-decoration: none;
+            padding: 8px 16px;
+            font-weight: bold;
+            border-radius: 20px;
+            border: 2px solid #ffffff;
+        }
+
+        h2.title {
+            text-align: center;
+            margin: 20px 0;
+            color: #1F8BDD;
+        }
+
+        .bloco {
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            page-break-after: always;
+        }
+
+        .bloco:last-child {
+            page-break-after: auto;
+        }
+
+        .bloco h3 {
+            color: #1F8BDD;
+            margin-bottom: 10px;
+        }
+
+        .bloco p {
+            margin: 5px 0;
+        }
+
+        .label {
+            font-weight: bold;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        table th, table td {
+            border: 1px solid #aaa;
+            padding: 8px;
+            text-align: left;
+        }
+
+        table th {
+            background-color: #f2f2f2;
+        }
+
+        footer {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            text-align: center;
+            font-size: 12px;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Relatório de Avaliações</h1>
+    <a href="https://painel.fabricadesoftware.ifc.edu.br/" class="link-button">Acessar Plataforma</a>
+</header>
+
+<h2 class="title">Avaliação Geral por Trabalho</h2>
+
+{% for trabalho in works %}
+<div class="bloco">
+    <h3>{{ trabalho.title }}</h3>
+    <p><span class="label">Resumo:</span> {{ trabalho.abstract|default:"Sem resumo" }}</p>
+    <p><span class="label">Orientador:</span> {{ trabalho.advisor|default:"Sem orientador" }}</p>
+    <p><span class="label">Avaliadores:</span>
+        {% if trabalho.evaluators is not None %}
+            {% for evaluator in trabalho.evaluators %}
+                {{ evaluator.user.name }} ({{ evaluator.user.email }}){% if not forloop.last %}, {% endif %}
+            {% endfor %}
+        {% else %}
+            Pendente
+        {% endif %}
+    </p>
+
+    <p><span class="label">Nota do trabalho:</span> {{ trabalho.grade|default:"Pendente" }}</p>
+
+    <p><span class="label">Avaliações dos Estudantes:</span></p>
+        <table>
+            <thead>
+                <tr>
+                    <th>Estudante</th>
+                    <th>Email</th>
+                    <th>Nota do Estudante</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for member in trabalho.student_assessments_display %}
+                <tr>
+                    <td>{{ member.name }}</td>
+                    <td>{{ member.email }}</td>
+                    <td>{{ member.grade|default:"Pendente" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+</div>
+{% endfor %}
+
+<footer>
+    Este relatório foi gerado automaticamente pela plataforma FábricaPainel.
+</footer>
+
+</body>
+</html>
