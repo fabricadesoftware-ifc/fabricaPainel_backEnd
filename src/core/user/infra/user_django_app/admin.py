@@ -3,7 +3,7 @@ from django.contrib.auth.admin import UserAdmin
 from django.utils.translation import gettext_lazy as _
 
 from .forms import CustomUserChangeForm, CustomUserCreationForm
-from .models import User, Evaluator
+from .models import User, Evaluator, Class, UserClass
 
 # class WithCrossCuttingTheme(admin.SimpleListFilter):
 #     def lookups(self, request, model_admin):
@@ -106,3 +106,6 @@ class CustomUserAdmin(UserAdmin):
     search_fields = ("email",)
     ordering = ("email",)
     readonly_fields = ["date_joined", "last_login", "is_evaluator_display"]
+
+admin.site.register(Class)
+admin.site.register(UserClass)
