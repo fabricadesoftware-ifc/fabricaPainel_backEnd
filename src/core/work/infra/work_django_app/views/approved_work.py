@@ -1,4 +1,4 @@
-from rest_framework.decorators import api_view, throttle_classes
+from rest_framework.decorators import api_view, throttle_classes, permission_classes
 from rest_framework.response import Response
 from rest_framework.throttling import UserRateThrottle
 from rest_framework import status
@@ -11,7 +11,6 @@ from core.work.domain.tasks import send_work_approve_email_to_student
 from core.work.domain.tasks import send_work_new_status_approve_email_to_student
 from core.work.infra.work_django_app.models import Edition
 from core.work.infra.work_django_app.models import Work, WorkStatusType
-from rest_framework.decorators import permission_classes
 
 @throttle_classes([UserRateThrottle])
 @api_view(["GET"])

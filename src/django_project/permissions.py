@@ -42,7 +42,10 @@ class IsStudentOrReadOnly(RolePermission):
     role = UserType.Type.STUDENT
     require_auth = False
 
-
+class IsTeacher(RolePermission):
+    role = UserType.Type.TEACHER
+    require_auth = True
+    
 class IsAdvisorOrReadOnly(BasePermission):
     def has_permission(self, request, view):
         if request.method in SAFE_METHODS:
@@ -124,7 +127,7 @@ class IsAdvisorOrEvaluatorOrTeamMember(BasePermission):
             return True
 
         return user.is_authenticated and obj.work.evaluator == user
-
+    
 
     
 class IsWorkOwnerOrReadOnly(BasePermission):
