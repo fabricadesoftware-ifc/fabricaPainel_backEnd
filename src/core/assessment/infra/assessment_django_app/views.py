@@ -67,7 +67,7 @@ class StudentAssessmentsViewSet(ModelViewSet):
     
 @throttle_classes([UserRateThrottle])
 @api_view(["GET"])
-#@permission_classes([IsTeacher, IsAdmin])
+@permission_classes([IsTeacher, IsAdmin])
 def generate_assessment_report(request):
     template_path = os.path.join(settings.BASE_DIR, "templates", "assessment_report.html")
     context = {
