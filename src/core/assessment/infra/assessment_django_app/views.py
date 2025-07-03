@@ -68,10 +68,10 @@ class StudentAssessmentsViewSet(ModelViewSet):
 @throttle_classes([UserRateThrottle])
 @api_view(["GET"])
 @permission_classes([IsTeacher, IsAdmin])
-def generate_assessment_report(request):
+def generate_assessment_report(request, year):
     template_path = os.path.join(settings.BASE_DIR, "templates", "assessment_report.html")
     context = {
-        "works": prepare_grades(),
+        "works": prepare_grades(year),
     }    
     with open(template_path, 'r', encoding='utf-8') as template_file:
         template_code = template_file.read()

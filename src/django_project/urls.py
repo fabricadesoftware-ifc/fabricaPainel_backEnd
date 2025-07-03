@@ -59,7 +59,7 @@ urlpatterns = [
         SpectacularRedocView.as_view(url_name="schema"),
         name="redoc",
     ),
-    path("api/generate-assessment-report/", generate_assessment_report, name="generate-assessment-report"),
+    path("api/generate-assessment-report/<str:year>/", generate_assessment_report, name="generate-assessment-report"),
     path("api/accept-work/<str:verification_token>/", approve_work, name="accept-work"),
     path(
         "api/needs-changes-work/<str:pk>/",

@@ -18,8 +18,8 @@ from core.work.infra.work_django_app.models import Work
 from core.work.domain.value_objects import WorkStatusType
 
 
-def prepare_grades():
-    works = Work.objects.filter(edition__year=datetime.now().year, status=WorkStatusType.Type.APPROVED.value)
+def prepare_grades(year):
+    works = Work.objects.filter(edition__year=year, status=WorkStatusType.Type.APPROVED.value)
     
     for work in works:        
         assessment = Assessment.objects.filter(work=work).first()
