@@ -31,6 +31,9 @@ from core.user.infra.user_django_app.utils import (
     forget_password,
     validate_token,
 )
+from core.assessment.infra.assessment_django_app.views import (
+    generate_assessment_report,
+)
 
 from .router import router
 
@@ -56,6 +59,7 @@ urlpatterns = [
         SpectacularRedocView.as_view(url_name="schema"),
         name="redoc",
     ),
+    path("api/generate-assessment-report/", generate_assessment_report, name="generate-assessment-report"),
     path("api/accept-work/<str:verification_token>/", approve_work, name="accept-work"),
     path(
         "api/needs-changes-work/<str:pk>/",

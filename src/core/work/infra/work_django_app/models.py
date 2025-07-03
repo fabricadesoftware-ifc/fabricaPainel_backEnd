@@ -111,11 +111,13 @@ class WorkCollaborator(models.Model):
     PENDING = WorkCollaboratorStatusType.Type.PENDING.value
     APPROVED = WorkCollaboratorStatusType.Type.APPROVED.value
     REJECTED = WorkCollaboratorStatusType.Type.REJECTED.value
+    EXPIRED = WorkCollaboratorStatusType.Type.EXPIRED.value
     
     WORK_COLLABORATOR_STATUS_CHOICE = (
         (PENDING, WorkCollaboratorStatusType.Type.PENDING.label),
         (APPROVED, WorkCollaboratorStatusType.Type.APPROVED.label),
         (REJECTED, WorkCollaboratorStatusType.Type.REJECTED.label),
+        (EXPIRED, WorkCollaboratorStatusType.Type.EXPIRED.label),
     )
     
     work = models.ForeignKey(Work, on_delete=models.CASCADE, related_name="work_collaborator")
