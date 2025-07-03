@@ -2,19 +2,19 @@ from core.edition.infra.edition_django_app.models import Edition
 from core.edition.infra.edition_django_app.models import Image
 from core.populate.infra.resources.data_edition import editions
 from django.core.files.base import ContentFile
-import requests
+#import requests
 from io import BytesIO
 from django.core.files import File
 
 
-def download_random_image():
-    # Replace this URL with any random image API of your choice
-    url = "https://picsum.photos/500"
+# def download_random_image():
+#     # Replace this URL with any random image API of your choice
+#     url = "https://picsum.photos/500"
 
-    response = requests.get(url)
-    if response.status_code == 200:
-        return response.content  # Return image content as bytes
-    return None
+#     response = requests.get(url)
+#     if response.status_code == 200:
+#         return response.content  # Return image content as bytes
+#     return None
 
 
 def populate_images():
