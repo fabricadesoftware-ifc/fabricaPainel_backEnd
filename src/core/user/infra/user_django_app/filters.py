@@ -4,15 +4,40 @@ from django_filters.rest_framework import (
     BaseInFilter,
     NumberFilter,
 )
+from django_project.settings import MODE
 from core.user.infra.user_django_app.models import User, Evaluator
 from django.db.models import Q
+from django.db.models import Func
+import unicodedata
 
 
+def remove_accents(input_str):
+    return ''.join(c for c in unicodedata.normalize('NFKD', input_str) if not unicodedata.combining(c)).lower()
+
+class Unaccent(Func):
+    function = 'unaccent'
+    template='%(function)s(%(expressions)s)'
 class UserFilter(FilterSet):
-    name = CharFilter(field_name="name", lookup_expr="icontains")
+    name = CharFilter(method="filter_name")
     field = CharFilter(field_name="field__name", lookup_expr="icontains")
     type = BaseInFilter(field_name="user_type", lookup_expr="in")
     registration = CharFilter(field_name="registration", lookup_expr="icontains")
+    
+    def filter_name(self, queryset, name, value):
+        if MODE == "DEVELOPMENT":
+            value_normalized = remove_accents(value)
+            return queryset.filter(
+                name__isnull=False
+            ).filter(
+                pk__in=[
+                    user.pk for user in queryset
+                    if user.name and remove_accents(user.name).lower().find(value_normalized) != -1
+                ]
+            )
+
+        return queryset.annotate(
+            name_unaccent=Unaccent('name')
+        ).filter(name_unaccent__icontains=value)
     
     # Opção 1: Filtro atual - busca por IDs das classes
     
