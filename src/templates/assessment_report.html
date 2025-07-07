@@ -118,8 +118,8 @@
     <p><span class="label">Resumo:</span> {{ trabalho.abstract|default:"Sem resumo" }}</p>
     <p><span class="label">Orientador:</span> {{ trabalho.advisor|default:"Sem orientador" }}</p>
     <p><span class="label">Avaliadores:</span>
-        {% if trabalho.evaluators is not None %}
-            {% for evaluator in trabalho.evaluators %}
+        {% if trabalho.evaluators_display %}
+            {% for evaluator in trabalho.evaluators_display %}
                 {{ evaluator.user.name }} ({{ evaluator.user.email }}){% if not forloop.last %}, {% endif %}
             {% endfor %}
         {% else %}
