@@ -105,7 +105,7 @@ class Command(BaseCommand):
     def __handle_basic_info(self) -> None:
         self.stdout.write("Populating basic data in the database...", ending=" ")
         populate_users()
-        populate_team()
+        #populate_team()
         self.stdout.write(self.style.SUCCESS("OK"))  # pylint: disable=no-member
 
 
