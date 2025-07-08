@@ -24,6 +24,8 @@ def prepare_grades(year):
     for work in works:        
         assessment = Assessment.objects.filter(work=work).first()
         members_display = []
+        evaluators_display = []
+        
         if assessment:
             work.grade = assessment.grade
         
@@ -41,8 +43,12 @@ def prepare_grades(year):
             "email": member.email,
             "grade": grade,
             })
+            
+        for evaluator in work.evaluator.all():
+            evaluators_display.append(evaluator)
         
         work.student_assessments_display = members_display
+        work.evaluators_display = evaluators_display
                     
     return works
 
