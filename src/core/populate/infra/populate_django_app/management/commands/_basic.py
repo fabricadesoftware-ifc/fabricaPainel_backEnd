@@ -34,14 +34,15 @@ def remove_accent(text):
 
 
 def populate_users():
-    if User.objects.exists():
-        print("student")
-        return
+    # if User.objects.exists():
+    #     print("student")
+    #     return
 
-    __get_or_create_super_user()
+    # __get_or_create_super_user()
 
     students_to_create = []
     for student_data in students:
+        print(student_data, "populando alunos")
 
         student_data["email"] = student_data["email"].strip()
 

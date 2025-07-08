@@ -5,6 +5,7 @@ from core.user.infra.user_django_app.models import UserClass
 
 def validate_work_team_members(attrs):
     team: Team = attrs.get("team")
+    current_edition = attrs.get("edition")
     if not team:
         raise ValidationError({"team": "O campo 'team' é obrigatório."})
 
@@ -14,7 +15,7 @@ def validate_work_team_members(attrs):
 
     for user in members:
         # Exclui trabalhos com status REJECTED (4) - permite que usuários com trabalhos rejeitados criem novos
-        if Work.objects.filter(team__team_members=user).exclude(status=4).exists():
+        if Work.objects.filter(team__team_members=user, edition=current_edition).exclude(status__in=[4, 5]).exists():    
             raise ValidationError(
                 {
                     "team": f"O usuário {user.name or user.email} já está em outro trabalho."
