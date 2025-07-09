@@ -1,26 +1,21 @@
-name: Deploy to Dokku
+name: 'deploy'
 
 on:
   push:
     branches:
-      - main
+      - master
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
-
+    runs-on: ubuntu-24.04
     steps:
-      - name: Checkout código
-        uses: actions/checkout@v3
+      - name: Cloning repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Instalar chave SSH
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.DOKKU_SSH_KEY }}" > ~/.ssh/id_ed25519
-          chmod 600 ~/.ssh/id_ed25519
-          ssh-keyscan -p 1022 app1.fabricadesoftware.ifc.edu.br >> ~/.ssh/known_hosts
-
-      - name: Adicionar remote Dokku e fazer push
-        run: |
-          git remote add dokku "ssh://dokku@app1.fabricadesoftware.ifc.edu.br:1022/painel"
-          git push dokku -vvv
+      - name: Push to dokku
+        uses: dokku/github-action@master
+        with:
+          git_remote_url: 'ssh://dokku@app1.fabricadesoftware.ifc.edu.br:1022/painel'
+          ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
