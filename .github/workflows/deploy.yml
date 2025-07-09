@@ -16,8 +16,8 @@ jobs:
       - name: Instalar chave SSH
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.DOKKU_SSH_KEY }}" > ~/.ssh/id_ed25519.pub
-          chmod 600 ~/.ssh/id_ed25519.pub
+          echo "${{ secrets.DOKKU_SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan -p 1022 app1.fabricadesoftware.ifc.edu.br >> ~/.ssh/known_hosts
 
       - name: Adicionar remote Dokku e fazer push
