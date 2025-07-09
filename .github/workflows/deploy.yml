@@ -19,3 +19,4 @@ jobs:
         with:
           git_remote_url: 'ssh://dokku@app1.fabricadesoftware.ifc.edu.br:1022/painel'
           ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
+          branch: main
