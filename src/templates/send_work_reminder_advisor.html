@@ -2,53 +2,6 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Trabalhos pendentes para verificação</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            color: #333;
-            background-color: #f4f4f4;
-            padding: 20px;
-        }
-        .container {
-            background-color: #fff;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        h2 {
-            color: #0056b3;
-        }
-        ul {
-            padding-left: 20px;
-        }
-        li {
-            margin-bottom: 10px;
-        }
-        .button {
-            display: inline-block;
-            margin-top: 20px;
-            padding: 12px 25px;
-            background-color: #28a745;
-            color: white;
-            text-decoration: none;
-            border-radius: 8px;
-            font-size: 16px;
-        }
-        .button:hover {
-            background-color: #218838;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h2>Você possui trabalhos pendentes para verificação</h2>
-        <p>Segue abaixo a lista de trabalhos aguardando sua confirmação como orientador:</p>
-        
-        <ul><!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <style>
@@ -428,7 +381,7 @@
                 </div>
                 
                 <div class="work-section">
-                    <span class="work-counter">{{ work_count }}</span>
+                    <h3>Trabalhos Aguardando Confirmação <span class="work-counter">{{ work_count }}</span></h3>
                     <ul class="work-list">
                         {{ work_list }}
                     </ul>
@@ -436,7 +389,7 @@
                 
                 <div class="action-section">
                     <div class="action-title">Acesse o sistema para revisar os trabalhos</div>
-                    <a href="{{ action_url }}" class="action-button">Verificar Trabalhos</a>
+                    <a href="https://painel.fabricadesoftware.ifc.edu.br" class="action-button">Verificar Trabalhos</a>
                 </div>
                 
                 <p><strong>Importante:</strong> Sua resposta é fundamental para que os estudantes possam dar continuidade aos seus projetos acadêmicos.</p>
@@ -453,14 +406,6 @@
                 <p>ou acesse nossa <a href="#">central de ajuda</a></p>
             </div>
         </div>
-    </div>
-</body>
-</html>
-            {{ work_list }}
-        </ul>
-
-        <p>Para aceitar ou recusar os convites, acesse o link abaixo:</p>
-        <a href="{{ action_url }}" class="button">Verificar Trabalhos</a>
     </div>
 </body>
 </html>
