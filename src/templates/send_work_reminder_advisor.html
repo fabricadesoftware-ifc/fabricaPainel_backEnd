@@ -2,55 +2,410 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Trabalhos pendentes para verificação</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <style>
+        /* Reset básico */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
         body {
-            font-family: Arial, sans-serif;
-            color: #333;
-            background-color: #f4f4f4;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
             padding: 20px;
+            line-height: 1.6;
+            color: #333;
         }
+        
+        /* Container principal */
+        .email-wrapper {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e0e0e0;
+        }
+        
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #0056b3 0%, #004494 100%);
+            color: #ffffff;
+            padding: 30px 25px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: shimmer 3s ease-in-out infinite;
+        }
+        
+        @keyframes shimmer {
+            0%, 100% { transform: translateX(-100%); }
+            50% { transform: translateX(100%); }
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+            margin: 0;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* Container de conteúdo */
         .container {
-            background-color: #fff;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 40px 30px;
+            background: #ffffff;
         }
-        h2 {
-            color: #0056b3;
+        
+        .greeting {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 25px;
+            border-left: 4px solid #0056b3;
+            padding-left: 15px;
         }
-        ul {
-            padding-left: 20px;
-        }
-        li {
-            margin-bottom: 10px;
-        }
-        .button {
-            display: inline-block;
-            margin-top: 20px;
-            padding: 12px 25px;
-            background-color: #28a745;
-            color: white;
-            text-decoration: none;
-            border-radius: 8px;
+        
+        .content p {
             font-size: 16px;
+            line-height: 1.8;
+            margin-bottom: 20px;
+            color: #555;
         }
-        .button:hover {
-            background-color: #218838;
+        
+        .content p:last-child {
+            margin-bottom: 0;
+        }
+        
+        /* Seção de trabalhos */
+        .work-section {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 25px;
+            margin: 30px 0;
+        }
+        
+        .work-section h3 {
+            color: #495057;
+            font-size: 18px;
+            margin-bottom: 20px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+        }
+        
+        .work-section h3::before {
+            content: '';
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #28a745;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        
+        .work-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .work-list li {
+            background: #ffffff;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 12px;
+            font-size: 15px;
+            color: #495057;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .work-list li:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            border-color: #0056b3;
+        }
+        
+        .work-list li:last-child {
+            margin-bottom: 0;
+        }
+        
+        .work-list li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: #28a745;
+            border-radius: 0 3px 3px 0;
+        }
+        
+        /* Seção de ação */
+        .action-section {
+            background: linear-gradient(135deg, #e8f5e8 0%, #d4edda 100%);
+            border: 1px solid #c3e6cb;
+            border-left: 4px solid #28a745;
+            border-radius: 8px;
+            padding: 25px;
+            margin: 30px 0;
+            text-align: center;
+        }
+        
+        .action-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #155724;
+            margin-bottom: 15px;
+        }
+        
+        .action-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: #ffffff;
+            text-decoration: none;
+            padding: 16px 32px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+            border: none;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .action-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+            background: linear-gradient(135deg, #218838 0%, #1e7e34 100%);
+        }
+        
+        /* Seção de informações importantes */
+        .info-box {
+            background: #d1ecf1;
+            border: 1px solid #b3d7e0;
+            border-left: 4px solid #17a2b8;
+            border-radius: 6px;
+            padding: 20px;
+            margin: 25px 0;
+        }
+        
+        .info-box .info-icon {
+            color: #0c5460;
+            font-size: 16px;
+            font-weight: bold;
+            margin-right: 10px;
+            border: 2px solid #0c5460;
+            border-radius: 50%;
+            padding: 2px 6px;
+            display: inline-block;
+            text-align: center;
+        }
+        
+        .info-box p {
+            margin: 0;
+            color: #0c5460;
+            font-weight: 500;
+        }
+        
+        /* Footer */
+        .footer {
+            background: linear-gradient(135deg, #343a40 0%, #495057 100%);
+            color: #ffffff;
+            padding: 25px;
+            text-align: center;
+            font-size: 14px;
+        }
+        
+        .footer p {
+            margin-bottom: 8px;
+            opacity: 0.9;
+        }
+        
+        .footer p:last-child {
+            margin-bottom: 0;
+        }
+        
+        .footer .contact-info {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .footer a {
+            color: #17a2b8;
+            text-decoration: none;
+        }
+        
+        .footer a:hover {
+            text-decoration: underline;
+        }
+        
+        /* Contador de trabalhos */
+        .work-counter {
+            background: #dc3545;
+            color: white;
+            border-radius: 50%;
+            padding: 5px 10px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+            min-width: 20px;
+            text-align: center;
+            display: inline-block;
+        }
+        
+        /* Responsividade */
+        @media only screen and (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+            
+            .email-wrapper {
+                border-radius: 8px;
+            }
+            
+            .header {
+                padding: 25px 20px;
+            }
+            
+            .header h1 {
+                font-size: 20px;
+            }
+            
+            .container {
+                padding: 25px 20px;
+            }
+            
+            .greeting {
+                font-size: 16px;
+            }
+            
+            .content p {
+                font-size: 15px;
+            }
+            
+            .work-section {
+                padding: 20px;
+                margin: 20px 0;
+            }
+            
+            .work-list li {
+                padding: 12px;
+            }
+            
+            .action-section {
+                padding: 20px;
+                margin: 20px 0;
+            }
+            
+            .action-button {
+                padding: 14px 28px;
+                font-size: 15px;
+            }
+            
+            .footer {
+                padding: 20px;
+            }
+        }
+        
+        /* Animações */
+        .email-wrapper {
+            animation: fadeInUp 0.8s ease-out;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .work-list li {
+            animation: slideInLeft 0.5s ease-out;
+        }
+        
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
         }
     </style>
+    <title>Trabalhos pendentes para verificação</title>
 </head>
 <body>
-    <div class="container">
-        <h2>Você possui trabalhos pendentes para verificação</h2>
-        <p>Segue abaixo a lista de trabalhos aguardando sua confirmação como orientador:</p>
+    <div class="email-wrapper">
+        <div class="header">
+            <h1>Trabalhos Pendentes para Verificação</h1>
+        </div>
         
-        <ul>
-            {{ work_list }}
-        </ul>
-
-        <p>Para aceitar ou recusar os convites, acesse o link abaixo:</p>
-        <a href="{{ action_url }}" class="button">Verificar Trabalhos</a>
+        <div class="container">
+            <div class="greeting">
+                Prezado(a) Professor(a),
+            </div>
+            
+            <div class="content">
+                <p>Você possui trabalhos acadêmicos aguardando sua análise e confirmação como orientador.</p>
+                
+                <div class="info-box">
+                    <p><span class="info-icon">i</span> <strong>Ação necessária:</strong> Os trabalhos listados abaixo precisam de sua aprovação ou recusa para dar continuidade ao processo.</p>
+                </div>
+                
+                <div class="work-section">
+                    <h3>Trabalhos Aguardando Confirmação <span class="work-counter">{{ work_count }}</span></h3>
+                    <ul class="work-list">
+                        {{ work_list }}
+                    </ul>
+                </div>
+                
+                <div class="action-section">
+                    <div class="action-title">Acesse o sistema para revisar os trabalhos</div>
+                    <a href="https://painel.fabricadesoftware.ifc.edu.br" class="action-button">Verificar Trabalhos</a>
+                </div>
+                
+                <p><strong>Importante:</strong> Sua resposta é fundamental para que os estudantes possam dar continuidade aos seus projetos acadêmicos.</p>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p><strong>Email Automático</strong></p>
+            <p>Este é um email automático. Por favor, não responda diretamente a esta mensagem.</p>
+            
+            <div class="contact-info">
+                <p>Para dúvidas e suporte:</p>
+                <p>Entre em contato com a <a href="mailto:coordenacao@universidade.edu.br">coordenação do curso</a></p>
+                <p>ou acesse nossa <a href="#">central de ajuda</a></p>
+            </div>
+        </div>
     </div>
 </body>
 </html>
