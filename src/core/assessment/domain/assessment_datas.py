@@ -2,6 +2,7 @@ from django.http import HttpResponse
 from django.template import engines
 from django.template.loader import render_to_string
 from django.conf import settings
+from django.db.models import Prefetch
 from rest_framework.viewsets import ModelViewSet
 from drf_spectacular.utils import extend_schema
 from rest_framework.decorators import api_view, throttle_classes, permission_classes
@@ -19,81 +20,98 @@ from core.edition.infra.edition_django_app.models import Edition
 from core.work.infra.work_django_app.models import Work
 from core.work.domain.value_objects import WorkStatusType
 
-
 def prepare_grades(year, class_name=None):
-    current_edition = Edition.objects.filter(year=year).first()    
+    current_edition = Edition.objects.filter(year=year).first()
     if not current_edition:
         raise ValueError(f"No edition found for year {year}")
-    
-    classes = Class.objects.all()
-    if not classes:
-        raise ValueError("No classes found in the system.")
 
-    all_students = UserClass.objects.filter(year=year)
+    # 1. Seleciona estudantes com dados relacionados de user e class de forma eficiente
+    all_students = (
+        UserClass.objects.filter(year=year)
+        .select_related("user", "class_name")
+    )
     if not all_students.exists():
         raise ValueError(f"No students found for year {year}")
-    
-    student_assessments = StudentAssessments.objects.filter(work__edition=current_edition)
-    if not student_assessments.exists():
+
+    # 2. Carrega os trabalhos aprovados relacionados à edição, com advisor e evaluators
+    works_qs = (
+        Work.objects.filter(edition=current_edition, status=WorkStatusType.Type.APPROVED.value)
+        .select_related("advisor", "edition")
+        .prefetch_related(
+            Prefetch("team__team_members", to_attr="members"),
+            Prefetch("evaluator", to_attr="evaluators"),
+        )
+    )
+    if not works_qs.exists():
+        raise ValueError(f"No approved works found for year {year}")
+
+    # 3. Carrega as avaliações de estudantes e trabalhos, incluindo relações importantes
+    student_assessments_qs = (
+        StudentAssessments.objects.filter(work__edition=current_edition)
+        .select_related("student", "work")
+    )
+    if not student_assessments_qs.exists():
         raise ValueError(f"No student assessments found for year {year}")
 
-    assessments = Assessment.objects.filter(work__edition=current_edition)
-    if not assessments.exists():
+    assessments_qs = (
+        Assessment.objects.filter(work__edition=current_edition)
+        .select_related("work", "evaluator")
+    )
+    if not assessments_qs.exists():
         raise ValueError(f"No assessments found for year {year}")
-    
-    works = Work.objects.filter(edition=current_edition, status=WorkStatusType.Type.APPROVED.value)
-    if not works.exists():
-        raise ValueError(f"No approved works found for year {year}")
-    
-    grades = []
-        
-    if class_name != None:
+
+    # 4. Filtra classes se necessário
+    classes = Class.objects.all()
+    if class_name:
         classes = classes.filter(name=class_name)
-    
+    if not classes.exists():
+        raise ValueError("No classes found in the system.")
+
+    grades = []
+
+    # Cria dicionários precalculados: mapa do aluno → avaliação, trabalho → avaliação
+    student_assessment_map = {
+        sa.student_id: sa for sa in student_assessments_qs
+    }
+    work_assessment_map = {
+        assess.work_id: assess for assess in assessments_qs
+    }
+
+    # Itera pelas classes
     for class_ in classes:
-        class_grades = {
-            'class': class_,
-            'year': year,
-            'students': []
-        }
+        class_grades = {'class': class_, 'year': year, 'students': []}
         students = all_students.filter(class_name=class_)
-        for student in students:
-            user = student.user
-            student_grade = {
-                    'student': user,
-                    'average_score': None,
-            }
-            work = works.filter(team__team_members=user).first()
+        for uc in students:
+            user = uc.user
+            entry = {'student': user, 'average_score': None}
+
+            # Procura trabalho na lista em memória → sem query adicional
+            work = next((w for w in works_qs if user in w.team.members), None)
             if not work:
-                student_grade['situation'] = 'Não Avaliado. Não há trabalho associado.'
-                class_grades['students'].append(student_grade)
+                entry['situation'] = 'Não Avaliado. Não há trabalho associado.'
+                class_grades['students'].append(entry)
                 continue
 
-            student_grade['work_title'] = work.title
-            student_grade['advisor'] = work.advisor
-            student_grade['evaluator'] = work.evaluator.first()
-            
-            student_assessment = student_assessments.filter(student=user).first()
-            work_assessment = assessments.filter(work=work).first()
-            if not student_assessment:
-                student_grade['situation'] = 'Pendente. Falta Avaliação do Orientador.'
-                class_grades['students'].append(student_grade)
-                continue
-            
-            if not work_assessment:
-                student_grade['situation'] = 'Pendente. Falta Avaliação do Trabalho.'
-                class_grades['students'].append(student_grade)
-                continue
-            
-            total_score = work_assessment.grade + student_assessment.grade
-            average_score = total_score / 2
+            entry.update({
+                'work_title': work.title,
+                'advisor': work.advisor,
+                'evaluator': work.evaluators[0] if work.evaluators else None,
+            })
 
-            student_grade['average_score'] = average_score
-            student_grade['situation'] = 'Aprovado' if average_score >= 6 else 'Reprovado'
-            
-            
-            class_grades['students'].append(student_grade)
-            
+            sa = student_assessment_map.get(user.id)
+            wa = work_assessment_map.get(work.id)
+
+            if not sa:
+                entry['situation'] = 'Pendente. Falta Avaliação do Orientador.'
+            elif not wa:
+                entry['situation'] = 'Pendente. Falta Avaliação do Trabalho.'
+            else:
+                avg = (sa.grade + wa.grade) / 2
+                entry['average_score'] = avg
+                entry['situation'] = 'Aprovado' if avg >= 6 else 'Reprovado'
+
+            class_grades['students'].append(entry)
+
         grades.append(class_grades)
-    return grades
 
+    return grades

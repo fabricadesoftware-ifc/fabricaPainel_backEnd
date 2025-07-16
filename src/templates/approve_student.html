@@ -1,8 +1,8 @@
 <!doctype html>
-<html lang="und" dir="auto" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+<html lang="pt-BR" dir="auto" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
 
 <head>
-  <title></title>
+  <title>Trabalho Aceito pelo Orientador</title>
   <!--[if !mso]><!-->
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <!--<![endif]-->
@@ -18,6 +18,8 @@
       padding: 0;
       -webkit-text-size-adjust: 100%;
       -ms-text-size-adjust: 100%;
+      background-color: #f8f9fa;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
 
     table,
@@ -41,6 +43,160 @@
       margin: 13px 0;
     }
 
+    /* Gradiente melhorado */
+    .header-gradient {
+      background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+      box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+    }
+
+    .footer-gradient {
+      background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+    }
+
+    /* Estilo do cartão principal */
+    .main-card {
+      background: #ffffff;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+      margin: 20px 0;
+    }
+
+    /* Ícone de sucesso */
+    .success-icon {
+      width: 60px;
+      height: 60px;
+      background: linear-gradient(135deg, #28a745, #20c997);
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin: 20px 0;
+      box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+    }
+
+    .success-icon::before {
+      content: "✓";
+      color: white;
+      font-size: 30px;
+      font-weight: bold;
+    }
+
+    /* Tipografia melhorada */
+    .title-text {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-size: 24px;
+      font-weight: 600;
+      line-height: 1.3;
+      color: #ffffff;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .greeting-text {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-size: 20px;
+      font-weight: 600;
+      line-height: 1.4;
+      color: #2c3e50;
+      margin-bottom: 10px;
+    }
+
+    .content-text {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-size: 16px;
+      line-height: 1.6;
+      color: #495057;
+      margin-bottom: 15px;
+    }
+
+    .highlight-text {
+      font-weight: 600;
+      color: #28a745;
+    }
+
+    .footer-text {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+      color: #ffffff;
+      opacity: 0.9;
+    }
+
+    /* Botão de ação */
+    .action-button {
+      background: linear-gradient(135deg, #007bff, #0056b3);
+      color: white;
+      padding: 12px 30px;
+      border-radius: 25px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 16px;
+      display: inline-block;
+      margin: 20px 0;
+      box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+      transition: all 0.3s ease;
+    }
+
+    .action-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 123, 255, 0.4);
+    }
+
+    /* Divider decorativo */
+    .divider {
+      height: 2px;
+      background: linear-gradient(90deg, transparent, #28a745, transparent);
+      margin: 20px 0;
+    }
+
+    /* Responsividade melhorada */
+    @media only screen and (max-width: 600px) {
+      .mj-column-per-100 {
+        width: 100% !important;
+        max-width: 100%;
+      }
+      
+      .main-card {
+        margin: 10px;
+        border-radius: 10px;
+      }
+      
+      .title-text {
+        font-size: 20px;
+      }
+      
+      .greeting-text {
+        font-size: 18px;
+      }
+      
+      .content-text {
+        font-size: 15px;
+      }
+      
+      .action-button {
+        padding: 10px 25px;
+        font-size: 15px;
+      }
+    }
+
+    @media only screen and (max-width: 480px) {
+      .title-text {
+        font-size: 18px;
+      }
+      
+      .greeting-text {
+        font-size: 16px;
+      }
+      
+      .success-icon {
+        width: 50px;
+        height: 50px;
+      }
+      
+      .success-icon::before {
+        font-size: 24px;
+      }
+    }
   </style>
   <!--[if mso]>
     <noscript>
@@ -57,121 +213,119 @@
       .mj-outlook-group-fix { width:100% !important; }
     </style>
     <![endif]-->
-  <!--[if !mso]><!-->
-  <link href="https://fonts.googleapis.com/css?family=Ubuntu:300,400,500,700" rel="stylesheet" type="text/css">
-  <style type="text/css">
-    @import url(https://fonts.googleapis.com/css?family=Ubuntu:300,400,500,700);
-
-  </style>
-  <!--<![endif]-->
-  <style type="text/css">
-    @media only screen and (min-width:480px) {
-      .mj-column-per-100 {
-        width: 100% !important;
-        max-width: 100%;
-      }
-    }
-
-  </style>
-  <style media="screen and (min-width:480px)">
-    .moz-text-html .mj-column-per-100 {
-      width: 100% !important;
-      max-width: 100%;
-    }
-
-  </style>
 </head>
 
-<body style="word-spacing:normal;background-color:#f4f4f4;">
-  <div style="background-color:#f4f4f4;" lang="und" dir="auto">
-    <!-- Cabeçalho -->
-    <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" bgcolor="#34a853" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
-    <div style="background:#34a853;background-color:#34a853;margin:0px auto;max-width:600px;">
-      <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background:#34a853;background-color:#34a853;width:100%;">
+<body style="word-spacing:normal;background-color:#f8f9fa;padding:20px 0;">
+  <div style="background-color:#f8f9fa;" lang="pt-BR" dir="auto">
+    
+    <!-- Cabeçalho com gradiente -->
+    <div class="header-gradient" style="margin:0px auto;max-width:600px;border-radius:15px 15px 0 0;">
+      <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
         <tbody>
           <tr>
-            <td style="direction:ltr;font-size:0px;padding:20px 0;text-align:center;">
-              <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:600px;" ><![endif]-->
+            <td style="direction:ltr;font-size:0px;padding:30px 20px;text-align:center;">
               <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
                 <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%">
                   <tbody>
                     <tr>
+                      <td align="center" style="font-size:0px;padding:0;word-break:break-word;">
+                        <div class="success-icon"></div>
+                      </td>
+                    </tr>
+                    <tr>
                       <td align="center" style="font-size:0px;padding:10px 25px;word-break:break-word;">
-                        <div style="font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:20px;font-weight:bold;line-height:1;text-align:center;color:#ffffff;">Trabalho Aceito pelo Orientador com Sucesso</div>
+                        <div class="title-text">Trabalho Aceito com Sucesso!</div>
                       </td>
                     </tr>
                   </tbody>
                 </table>
               </div>
-              <!--[if mso | IE]></td></tr></table><![endif]-->
             </td>
           </tr>
         </tbody>
       </table>
     </div>
-    <!--[if mso | IE]></td></tr></table><![endif]-->
+
     <!-- Conteúdo principal -->
-    <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" bgcolor="#ffffff" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
-    <div style="background:#ffffff;background-color:#ffffff;margin:0px auto;border-radius:10px;max-width:600px;">
-      <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background:#ffffff;background-color:#ffffff;width:100%;border-radius:10px;">
+    <div class="main-card" style="margin:0px auto;max-width:600px;">
+      <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background:#ffffff;width:100%;">
         <tbody>
           <tr>
-            <td style="direction:ltr;font-size:0px;padding:20px;text-align:center;">
-              <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:560px;" ><![endif]-->
+            <td style="direction:ltr;font-size:0px;padding:40px 30px;text-align:center;">
               <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
                 <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%">
                   <tbody>
                     <tr>
-                      <td align="left" style="font-size:0px;padding:10px 25px;word-break:break-word;">
-                        <div style="font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:18px;font-weight:bold;line-height:1;text-align:left;color:#000000;">Olá, estudante!</div>
+                      <td align="left" style="font-size:0px;padding:0 0 20px 0;word-break:break-word;">
+                        <div class="greeting-text">Olá, estudante!</div>
                       </td>
                     </tr>
                     <tr>
-                      <td align="left" style="font-size:0px;padding:10px 25px;word-break:break-word;">
-                        <div style="font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:16px;line-height:1;text-align:left;color:#000000;">Parabéns! Seu trabalho foi aceito pelo seu orientador.</div>
+                      <td align="left" style="font-size:0px;padding:0 0 15px 0;word-break:break-word;">
+                        <div class="content-text">
+                          <strong>Parabéns!</strong> Temos uma excelente notícia para você. Seu trabalho foi <span class="highlight-text">aceito pelo seu orientador</span> com sucesso.
+                        </div>
                       </td>
                     </tr>
                     <tr>
-                      <td align="left" style="font-size:0px;padding:10px 25px;word-break:break-word;">
-                        <div style="font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:16px;line-height:1;text-align:left;color:#000000;">O Orientador, {{ advisor_email }}, aprovou a sua submissão com sucesso.</div>
+                      <td align="left" style="font-size:0px;padding:0 0 15px 0;word-break:break-word;">
+                        <div class="content-text">
+                          O orientador <strong>{{ advisor_email }}</strong> aprovou sua submissão e você pode prosseguir para as próximas etapas do seu projeto acadêmico.
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="left" style="font-size:0px;padding:0 0 20px 0;word-break:break-word;">
+                        <div class="divider"></div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="left" style="font-size:0px;padding:0 0 15px 0;word-break:break-word;">
+                        <div class="content-text">
+                          Continue mantendo a excelência no seu trabalho acadêmico. Estamos aqui para apoiá-lo em cada etapa da sua jornada.
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="center" style="font-size:0px;padding:20px 0;word-break:break-word;">
+                        <a href="#" class="action-button">Acessar Plataforma</a>
                       </td>
                     </tr>
                   </tbody>
                 </table>
               </div>
-              <!--[if mso | IE]></td></tr></table><![endif]-->
             </td>
           </tr>
         </tbody>
       </table>
     </div>
-    <!--[if mso | IE]></td></tr></table><![endif]-->
+
     <!-- Rodapé -->
-    <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" bgcolor="#34a853" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
-    <div style="background:#34a853;background-color:#34a853;margin:0px auto;max-width:600px;">
-      <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background:#34a853;background-color:#34a853;width:100%;">
+    <div class="footer-gradient" style="margin:0px auto;max-width:600px;border-radius:0 0 15px 15px;">
+      <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
         <tbody>
           <tr>
-            <td style="direction:ltr;font-size:0px;padding:20px 0;text-align:center;">
-              <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:600px;" ><![endif]-->
+            <td style="direction:ltr;font-size:0px;padding:25px 20px;text-align:center;">
               <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
                 <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%">
                   <tbody>
                     <tr>
-                      <td align="center" style="font-size:0px;padding:10px 25px;word-break:break-word;">
-                        <div style="font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:14px;line-height:1;text-align:center;color:#ffffff;">Este é um email automático. Por favor, não responda.<br /> Caso tenha dúvidas, entre em contato com o suporte.</div>
+                      <td align="center" style="font-size:0px;padding:0;word-break:break-word;">
+                        <div class="footer-text">
+                          Este é um email automático. Por favor, não responda.<br />
+                          Caso tenha dúvidas, entre em contato com o suporte.<br />
+                          Suas informações estão seguras conosco.
+                        </div>
                       </td>
                     </tr>
                   </tbody>
                 </table>
               </div>
-              <!--[if mso | IE]></td></tr></table><![endif]-->
             </td>
           </tr>
         </tbody>
       </table>
     </div>
-    <!--[if mso | IE]></td></tr></table><![endif]-->
   </div>
 </body>
 

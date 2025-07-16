@@ -39,7 +39,7 @@ def remind_advisor_to_verify_invites():
             titles += f"<li>{work.title}</li>"
 
         html = safe_replace(html, "{{ work_list }}", titles)
-        html = safe_replace(html, "{{ action_url }}", "http://www.republiquedesmangues.fr")  # ajuste a URL conforme seu front
+        html = safe_replace(html, "{{ work_count }}", str(works_to_notify.count()))
 
         plain_message = strip_tags(html)
 
