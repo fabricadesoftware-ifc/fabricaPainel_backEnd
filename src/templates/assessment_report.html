@@ -1,335 +1,48 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <title>Relatório de Avaliações por Turma</title>
-    <style>
-        @page {
-            size: A4;
-            margin: 100px 30px 70px 30px;
-            @top-center {
-                content: element(page-header);
-            }
-        }
+  <meta charset="UTF-8">
+  <title>Relatório Avaliações</title>
+  <style>
+    @page { size: A4; margin: 40px; }
+    body { font-family: sans-serif; font-size: 12px; color: #333; margin:0; }
 
-        body {
-            font-family: 'Arial', sans-serif;
-            color: #333;
-            font-size: 12px;
-            line-height: 1.3;
-            margin: 0;
-            background-color: #f8f9fa;
-        }
+    header, footer {
+      width:100%; text-align:center; font-size:12px;
+    }
+    header { margin-bottom:20px; }
+    footer { margin-top:20px; position: running(footer); }
 
-        header {
-            position: running(page-header);
-            width: 100%;
-            background: linear-gradient(135deg, #1F8BDD, #0d6efd);
-            color: #fff;
-            padding: 20px 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
+    .turma { margin-bottom:20px; padding:10px; background:#fff; }
+    .turma h3 { font-size: 14px; margin: 0 0 6px; color: #007bff; }
 
-        header h1 {
-            margin: 0;
-            font-size: 22px;
-            font-weight: 600;
-        }
+    .aluno { margin-bottom:8px; padding:8px; border:1px solid #ccc; }
+    .aluno .nome { font-weight:600; margin-bottom:4px; }
+    .aluno .info { display:flex; gap:12px; font-size:11px; }
 
-        .link-button {
-            background-color: #ffffff;
-            color: #1F8BDD;
-            text-decoration: none;
-            padding: 10px 20px;
-            font-weight: 600;
-            border-radius: 25px;
-            border: 2px solid #ffffff;
-            transition: all 0.3s ease;
-        }
-
-        .link-button:hover {
-            background-color: #f8f9fa;
-            transform: translateY(-2px);
-        }
-
-        h2.title {
-            text-align: center;
-            margin: 15px 0;
-            color: #1F8BDD;
-            font-size: 20px;
-            font-weight: 600;
-        }
-
-        .turma {
-            background: white;
-            border-radius: 6px;
-            padding: 15px;
-            margin-bottom: 15px;
-            page-break-after: always;
-            box-shadow: 0 1px 6px rgba(0,0,0,0.04);
-            border: 1px solid #e9ecef;
-        }
-
-        .turma:last-child {
-            page-break-after: auto;
-        }
-
-        .turma h3 {
-            color: #1F8BDD;
-            margin-bottom: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            padding-bottom: 5px;
-            border-bottom: 2px solid #e9ecef;
-        }
-
-        .turma-info {
-            margin-bottom: 12px;
-            padding: 8px;
-            background-color: #f8f9fa;
-            border-radius: 4px;
-            border-left: 3px solid #1F8BDD;
-        }
-
-        .label {
-            font-weight: 600;
-            color: #495057;
-        }
-
-        /* Container para cada aluno */
-        .student-container {
-            background: #fff;
-            border: 1px solid #e9ecef;
-            border-radius: 6px;
-            margin-bottom: 12px;
-            padding: 10px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
-            transition: all 0.3s ease;
-        }
-
-        .student-container:hover {
-            box-shadow: 0 4px 15px rgba(31, 139, 221, 0.1);
-            border-color: #1F8BDD;
-        }
-
-        /* Cabeçalho do aluno */
-        .student-header {
-            background: linear-gradient(135deg, #1F8BDD, #0d6efd);
-            color: white;
-            padding: 8px 12px;
-            border-radius: 4px;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .student-header .student-number {
-            background: rgba(255,255,255,0.2);
-            padding: 3px 8px;
-            border-radius: 15px;
-            font-weight: 600;
-            font-size: 11px;
-        }
-
-        .student-header .student-name {
-            font-size: 14px;
-            font-weight: 600;
-            flex-grow: 1;
-        }
-
-        /* Grid de informações do aluno */
-        .student-info {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-            margin-bottom: 8px;
-        }
-
-        .info-card {
-            background: #f8f9fa;
-            padding: 8px;
-            border-radius: 4px;
-            border-left: 3px solid #dee2e6;
-        }
-
-        .info-card.evaluator {
-            border-left-color: #28a745;
-        }
-
-        .info-card.advisor {
-            border-left-color: #ffc107;
-        }
-
-        .info-card.work {
-            border-left-color: #17a2b8;
-        }
-
-        .info-card.grade {
-            border-left-color: #dc3545;
-        }
-
-        .info-card.situation {
-            border-left-color: #6f42c1;
-        }
-
-        .info-card .label {
-            font-size: 10px;
-            color: #6c757d;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 3px;
-        }
-
-        .info-card .value {
-            font-size: 12px;
-            color: #495057;
-            font-weight: 500;
-        }
-
-        /* Grid de trabalho e avaliação */
-        .work-evaluation {
-            display: grid;
-            grid-template-columns: 2fr 0.8fr 1.2fr;
-            gap: 8px;
-        }
-
-        /* Situação com cor */
-        .situation-approved {
-            color: #28a745;
-            font-weight: 600;
-        }
-
-        .situation-pending {
-            color: #ffc107;
-            font-weight: 600;
-        }
-
-        .situation-rejected {
-            color: #dc3545;
-            font-weight: 600;
-        }
-
-        /* Nota com destaque */
-        .grade-value {
-            font-size: 14px;
-            font-weight: 700;
-            color: #1F8BDD;
-        }
-
-        /* Separador visual entre alunos */
-        .student-separator {
-            height: 1px;
-            background: linear-gradient(to right, transparent, #dee2e6, transparent);
-            margin: 10px 0;
-        }
-
-        footer {
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-            text-align: center;
-            font-size: 12px;
-            color: #6c757d;
-            background: white;
-            padding: 10px 0;
-            border-top: 1px solid #e9ecef;
-        }
-
-        /* Responsividade para impressão */
-        @media print {
-            .student-container {
-                page-break-inside: avoid;
-            }
-            
-            body {
-                background-color: white;
-            }
-        }
-    </style>
+    .label { font-weight:600; }
+    .situation { font-weight:600; }
+  </style>
 </head>
 <body>
-
-<header>
-    <h1>Relatório de Avaliações por Turma</h1>
-    <a href="https://painel.fabricadesoftware.ifc.edu.br/" class="link-button">Acessar Plataforma</a>
-</header>
-
-<h2 class="title">Avaliação Individual de Estudantes</h2>
-
-{% for turma in grades %}
-<div class="turma">
-    <h3>{{ turma.class.name }}</h3>
-    
-    <div class="turma-info">
-        <span class="label">Ano:</span> {{ turma.year }}
+  <header>Relatório de Avaliações — {{ year }}</header>
+  {% for turma in grades %}
+  <div class="turma">
+    <h3>Turma: {{ turma.class.name }}</h3>
+    {% for a in turma.students %}
+    <div class="aluno">
+      <div class="nome">{{ forloop.counter }}. {{ a.student }}</div>
+      <div class="info">
+        <span><span class="label">Trabalho:</span> {{ a.work_title|default:"–" }}</span>
+        <span><span class="label">Nota:</span> {{ a.average_score|default:"–" }}</span>
+        <span><span class="label">Situação:</span>
+          <span class="situation">{{ a.situation }}</span>
+        </span>
+      </div>
     </div>
-
-    {% for aluno in turma.students %}
-        <div class="student-container">
-            <!-- Cabeçalho do aluno -->
-            <div class="student-header">
-                <div class="student-number">{{ forloop.counter }}</div>
-                <div class="student-name">{{ aluno.student }}</div>
-            </div>
-
-            <!-- Informações do aluno em grid -->
-            <div class="student-info">
-                <div class="info-card evaluator">
-                    <div class="label">Avaliador</div>
-                    <div class="value">{{ aluno.evaluator|default:"Não atribuído" }}</div>
-                </div>
-                <div class="info-card advisor">
-                    <div class="label">Orientador</div>
-                    <div class="value">{{ aluno.advisor|default:"Não atribuído" }}</div>
-                </div>
-            </div>
-
-            <!-- Trabalho e avaliação -->
-            <div class="work-evaluation">
-                <div class="info-card work">
-                    <div class="label">Trabalho</div>
-                    <div class="value">{{ aluno.work_title|default:"Sem trabalho" }}</div>
-                </div>
-                <div class="info-card grade">
-                    <div class="label">Nota</div>
-                    <div class="value">
-                        {% if aluno.average_score %}
-                            <span class="grade-value">{{ aluno.average_score|floatformat:2 }}</span>
-                        {% else %}
-                            <span class="grade-value">-</span>
-                        {% endif %}
-                    </div>
-                </div>
-                <div class="info-card situation">
-                    <div class="label">Situação</div>
-                    <div class="value">
-                        {% if aluno.situation == "Aprovado" %}
-                            <span class="situation-approved">{{ aluno.situation }}</span>
-                        {% elif aluno.situation == "Pendente" %}
-                            <span class="situation-pending">{{ aluno.situation }}</span>
-                        {% else %}
-                            <span class="situation-rejected">{{ aluno.situation }}</span>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Separador visual entre alunos (exceto o último) -->
-        {% if not forloop.last %}
-            <div class="student-separator"></div>
-        {% endif %}
     {% endfor %}
-</div>
-{% endfor %}
-
-<footer>
-    Este relatório foi gerado automaticamente pela plataforma FábricaPainel.
-</footer>
-
+  </div>
+  {% endfor %}
+  <footer>Gerado em {{ now|date:"d/m/Y H:i" }}</footer>
 </body>
 </html>
