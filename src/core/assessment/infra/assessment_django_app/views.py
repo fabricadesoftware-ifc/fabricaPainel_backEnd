@@ -1,14 +1,18 @@
 from django.http import HttpResponse
 from django.template import engines
 from django.conf import settings
+from django.http import FileResponse
 from rest_framework.viewsets import ModelViewSet
 from drf_spectacular.utils import extend_schema
 from rest_framework.decorators import api_view, throttle_classes, permission_classes
 from rest_framework.response import Response
 from rest_framework.throttling import UserRateThrottle
 from rest_framework import status
-from weasyprint import HTML
-import tempfile
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import A4
+from io import BytesIO
+# from weasyprint import HTML
+# import tempfile
 import os
 
 from core.assessment.infra.assessment_django_app.models import Assessment, Assessments, StudentAssessments
@@ -67,28 +71,40 @@ class StudentAssessmentsViewSet(ModelViewSet):
     
 @throttle_classes([UserRateThrottle])
 @api_view(["GET"])
-@permission_classes([IsTeacher, IsAdmin])
+# @permission_classes([IsTeacher, IsAdmin])
 def generate_assessment_report(request, year, class_name=None):
-    template_path = os.path.join(settings.BASE_DIR, "templates", "assessment_report.html")
-    context = {
-        "grades": prepare_grades(year, class_name),
-    }
-    with open(template_path, 'r', encoding='utf-8') as template_file:
-        template_code = template_file.read()
+        try:
+            grades = prepare_grades(int(year), class_name)
+        except ValueError as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-    html_string = engines['django'].from_string(template_code).render(context)
+        buffer = BytesIO()
+        p = canvas.Canvas(buffer, pagesize=A4)
+        width, height = A4
 
-    html = HTML(string=html_string)
-    
-    try:
-        with tempfile.NamedTemporaryFile(delete=True) as tmp_file:
-            html.write_pdf(tmp_file)
-            tmp_file.seek(0)
-            response = HttpResponse(tmp_file.read(), content_type="application/pdf")
-            response["Content-Disposition"] = 'attachment; filename="assessment_report.pdf"'
-            return response
-    except Exception as e:
-        return Response(
-            {"error": f"Erro ao gerar o relatório: {str(e)}"},
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR
-        )
+        y = height - 50
+        p.setFont("Helvetica-Bold", 14)
+        p.drawString(50, y, f"Assessment Report - {year}{' - ' + class_name if class_name else ''}")
+        y -= 30
+
+        p.setFont("Helvetica", 10)
+        for class_block in grades:
+            p.drawString(50, y, f"Classe: {class_block['class'].name}")
+            y -= 20
+
+            for student in class_block['students']:
+                text = f"{student['student'].get_full_name()} | Trabalho: {student.get('work_title','N/A')} | " \
+                       f"Média: {student.get('average_score','-')} | Situação: {student['situation']}"
+                if y < 50:
+                    p.showPage()
+                    y = height - 50
+                    p.setFont("Helvetica", 10)
+                p.drawString(60, y, text)
+                y -= 15
+
+            y -= 10  # espaço entre classes
+
+        p.showPage()
+        p.save()
+        buffer.seek(0)
+        return FileResponse(buffer, as_attachment=True, filename="assessment_report.pdf")
