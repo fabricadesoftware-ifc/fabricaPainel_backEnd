@@ -5,7 +5,7 @@
 groups = ["default"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:76df92512327d65664651a7998e773442c9316550199307cf809f53101bdb78f"
+content_hash = "sha256:c8926bf0265d186deb7f060cc8a120419445952ae918429a42f4f633dcdd6d8e"
 
 [[metadata.targets]]
 requires_python = "==3.12.*"
@@ -325,6 +325,21 @@ dependencies = [
 files = [
     {file = "django_cors_headers-4.7.0-py3-none-any.whl", hash = "sha256:f1c125dcd58479fe7a67fe2499c16ee38b81b397463cf025f0e2c42937421070"},
     {file = "django_cors_headers-4.7.0.tar.gz", hash = "sha256:6fdf31bf9c6d6448ba09ef57157db2268d515d94fc5c89a0a1028e1fc03ee52b"},
+]
+
+[[package]]
+name = "django-debug-toolbar"
+version = "5.2.0"
+requires_python = ">=3.9"
+summary = "A configurable set of panels that display various debug information about the current request/response."
+groups = ["default"]
+dependencies = [
+    "django>=4.2.9",
+    "sqlparse>=0.2",
+]
+files = [
+    {file = "django_debug_toolbar-5.2.0-py3-none-any.whl", hash = "sha256:15627f4c2836a9099d795e271e38e8cf5204ccd79d5dbcd748f8a6c284dcd195"},
+    {file = "django_debug_toolbar-5.2.0.tar.gz", hash = "sha256:9e7f0145e1a1b7d78fcc3b53798686170a5b472d9cf085d88121ff823e900821"},
 ]
 
 [[package]]
