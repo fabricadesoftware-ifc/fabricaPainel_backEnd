@@ -74,7 +74,7 @@ class StudentAssessmentsViewSet(ModelViewSet):
     
 @throttle_classes([UserRateThrottle])
 @api_view(["GET"])
-@permission_classes([IsTeacher, IsAdmin])
+# @permission_classes([IsTeacher, IsAdmin])
 def generate_assessment_report(request, year, class_name=None):
     try:
         grades = prepare_grades(int(year), class_name)
