@@ -250,4 +250,4 @@ CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 
 TOKEN_EXPIRATION_SECONDS = 1200
 
-INTERNAL_IPS = ["*", "localhost", "127.0.0.1"]
+INTERNAL_IPS = ['*', 'localhost', '127.0.0.1', '172.17.0.1',]
