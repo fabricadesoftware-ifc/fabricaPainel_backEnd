@@ -8,6 +8,9 @@ from rest_framework.decorators import api_view, throttle_classes, permission_cla
 from rest_framework.response import Response
 from rest_framework.throttling import UserRateThrottle
 from rest_framework import status
+from reportlab.lib import colors
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 from io import BytesIO
@@ -71,40 +74,50 @@ class StudentAssessmentsViewSet(ModelViewSet):
     
 @throttle_classes([UserRateThrottle])
 @api_view(["GET"])
-# @permission_classes([IsTeacher, IsAdmin])
+@permission_classes([IsTeacher, IsAdmin])
 def generate_assessment_report(request, year, class_name=None):
-        try:
-            grades = prepare_grades(int(year), class_name)
-        except ValueError as e:
-            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    try:
+        grades = prepare_grades(int(year), class_name)
+    except ValueError as e:
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-        buffer = BytesIO()
-        p = canvas.Canvas(buffer, pagesize=A4)
-        width, height = A4
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=40, leftMargin=40, topMargin=40, bottomMargin=40)
+    styles = getSampleStyleSheet()
+    style_normal = styles["BodyText"]
+    style_header = styles["Heading1"]
 
-        y = height - 50
-        p.setFont("Helvetica-Bold", 14)
-        p.drawString(50, y, f"Assessment Report - {year}{' - ' + class_name if class_name else ''}")
-        y -= 30
+    elements = []
+    elements.append(Paragraph(f"Assessment Report — {year}{' — ' + class_name if class_name else ''}", style_header))
+    elements.append(Spacer(1, 12))
 
-        p.setFont("Helvetica", 10)
-        for class_block in grades:
-            p.drawString(50, y, f"Classe: {class_block['class'].name}")
-            y -= 20
+    for class_block in grades:
+        elements.append(Paragraph(f"Classe: {class_block['class'].name}", styles["Heading2"]))
+        elements.append(Spacer(1, 6))
 
-            for student in class_block['students']:
-                text = f"{student['student'].get_full_name()} | Trabalho: {student.get('work_title','N/A')} | " \
-                       f"Média: {student.get('average_score','-')} | Situação: {student['situation']}"
-                if y < 50:
-                    p.showPage()
-                    y = height - 50
-                    p.setFont("Helvetica", 10)
-                p.drawString(60, y, text)
-                y -= 15
+        data = [["Aluno", "Trabalho", "Média", "Situação"]]
+        for s in class_block['students']:
+            aluno = Paragraph(s.get('student', 'voce é incapaz'), style_normal)
+            trabalho = Paragraph(s.get('work_title','N/A'), style_normal)
+            media = Paragraph(f"{s.get('average_score','-'):0.2f}" if s.get('average_score') is not None else "-", style_normal)
+            situacao = Paragraph(s['situation'], style_normal)
+            data.append([aluno, trabalho, media, situacao])
 
-            y -= 10  # espaço entre classes
+        col_widths = [doc.width * 0.3, doc.width * 0.3, doc.width * 0.15, doc.width * 0.25]
+        table = Table(data, colWidths=col_widths, repeatRows=1)
+        table.setStyle(TableStyle([
+            ('BACKGROUND', (0,0), (-1,0), colors.lightgrey),
+            ('TEXTCOLOR', (0,0), (-1,0), colors.whitesmoke),
+            ('ALIGN', (2,1), (2,-1), 'CENTER'),
+            ('ALIGN', (3,1), (3,-1), 'CENTER'),
+            ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+            ('BOTTOMPADDING', (0,0), (-1,0), 8),
+            ('GRID', (0,0), (-1,-1), 0.5, colors.grey),
+            ('ROWBACKGROUNDS', (0,1), (-1,-1), [colors.whitesmoke, colors.lightyellow]),
+        ]))
+        elements.append(table)
+        elements.append(Spacer(1, 12))
 
-        p.showPage()
-        p.save()
-        buffer.seek(0)
-        return FileResponse(buffer, as_attachment=True, filename="assessment_report.pdf")
+    doc.build(elements)
+    buffer.seek(0)
+    return FileResponse(buffer, as_attachment=True, filename="assessment_report.pdf")
