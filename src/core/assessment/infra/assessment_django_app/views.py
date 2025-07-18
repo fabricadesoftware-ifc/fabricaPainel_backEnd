@@ -17,6 +17,7 @@ from io import BytesIO
 # from weasyprint import HTML
 # import tempfile
 import os
+from django.db.models import Q
 
 from core.assessment.infra.assessment_django_app.models import Assessment, Assessments, StudentAssessments
 from core.assessment.domain.assessment_datas import prepare_grades
@@ -41,12 +42,20 @@ class AssessmentViewSet(ModelViewSet):
         user = self.request.user
         qs = super().get_queryset()
 
+        # Cria uma condição OR para trabalhos onde o usuário é avaliador ou orientador
+        conditions = Q()
+        
         if Evaluator.objects.filter(user=user.id).exists():
             evaluator = Evaluator.objects.get(user=user.id)
-            return qs.filter(work__evaluator=evaluator)
+            conditions |= Q(work__evaluator=evaluator)
+            
         if user.is_advisor:
-            return qs.filter(work__advisor=user)
-        return qs.filter(work__team__team_members=user)
+            conditions |= Q(work__advisor=user)
+            
+        if not conditions:  # Se não é nem avaliador nem orientador, filtra por membro da equipe
+            return qs.filter(work__team__team_members=user)
+            
+        return qs.filter(conditions)
 
     def get_serializer_class(self):
         if self.action in ["list", "retrieve"]:
@@ -56,7 +65,7 @@ class AssessmentViewSet(ModelViewSet):
 
 class StudentAssessmentsViewSet(ModelViewSet):
     queryset = StudentAssessments.objects.all()
-    permission_classes = [IsAdvisorOrTeamMember]
+    permission_classes = [IsAdvisorOrEvaluatorOrTeamMember]
     filterset_class = StudentAssessmentFilterSet
     
     def get_queryset(self):
