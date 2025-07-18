@@ -83,7 +83,7 @@ def prepare_grades(year, class_name=None):
         students = all_students.filter(class_name=class_)
         for uc in students:
             user = uc.user
-            entry = {'student': user, 'average_score': None}
+            entry = {'student': user.name, 'average_score': None}
 
             # Procura trabalho na lista em memória → sem query adicional
             work = next((w for w in works_qs if user in w.team.members), None)
