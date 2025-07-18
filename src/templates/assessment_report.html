@@ -254,84 +254,24 @@
     </style>
 </head>
 <body>
-
-<header>
-    <h1>Relatório de Avaliações por Turma</h1>
-    <a href="https://painel.fabricadesoftware.ifc.edu.br/" class="link-button">Acessar Plataforma</a>
-</header>
-
-<h2 class="title">Avaliação Individual de Estudantes</h2>
-
-{% for turma in grades %}
-<div class="turma">
-    <h3>{{ turma.class.name }}</h3>
-    
-    <div class="turma-info">
-        <span class="label">Ano:</span> {{ turma.year }}
+  <header>Relatório de Avaliações — {{ year }}</header>
+  {% for turma in grades %}
+  <div class="turma">
+    <h3>Turma: {{ turma.class.name }}</h3>
+    {% for a in turma.students %}
+    <div class="aluno">
+      <div class="nome">{{ forloop.counter }}. {{ a.student }}</div>
+      <div class="info">
+        <span><span class="label">Trabalho:</span> {{ a.work_title|default:"–" }}</span>
+        <span><span class="label">Nota:</span> {{ a.average_score|default:"–" }}</span>
+        <span><span class="label">Situação:</span>
+          <span class="situation">{{ a.situation }}</span>
+        </span>
+      </div>
     </div>
-
-    {% for aluno in turma.students %}
-        <div class="student-container">
-            <!-- Cabeçalho do aluno -->
-            <div class="student-header">
-                <div class="student-number">{{ forloop.counter }}</div>
-                <div class="student-name">{{ aluno.student }}</div>
-            </div>
-
-            <!-- Informações do aluno em grid -->
-            <div class="student-info">
-                <div class="info-card evaluator">
-                    <div class="label">Avaliador</div>
-                    <div class="value">{{ aluno.evaluator|default:"Não atribuído" }}</div>
-                </div>
-                <div class="info-card advisor">
-                    <div class="label">Orientador</div>
-                    <div class="value">{{ aluno.advisor|default:"Não atribuído" }}</div>
-                </div>
-            </div>
-
-            <!-- Trabalho e avaliação -->
-            <div class="work-evaluation">
-                <div class="info-card work">
-                    <div class="label">Trabalho</div>
-                    <div class="value">{{ aluno.work_title|default:"Sem trabalho" }}</div>
-                </div>
-                <div class="info-card grade">
-                    <div class="label">Nota</div>
-                    <div class="value">
-                        {% if aluno.average_score %}
-                            <span class="grade-value">{{ aluno.average_score|floatformat:2 }}</span>
-                        {% else %}
-                            <span class="grade-value">-</span>
-                        {% endif %}
-                    </div>
-                </div>
-                <div class="info-card situation">
-                    <div class="label">Situação</div>
-                    <div class="value">
-                        {% if aluno.situation == "Aprovado" %}
-                            <span class="situation-approved">{{ aluno.situation }}</span>
-                        {% elif aluno.situation == "Pendente" %}
-                            <span class="situation-pending">{{ aluno.situation }}</span>
-                        {% else %}
-                            <span class="situation-rejected">{{ aluno.situation }}</span>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Separador visual entre alunos (exceto o último) -->
-        {% if not forloop.last %}
-            <div class="student-separator"></div>
-        {% endif %}
     {% endfor %}
-</div>
-{% endfor %}
-
-<footer>
-    Este relatório foi gerado automaticamente pela plataforma FábricaPainel.
-</footer>
-
+  </div>
+  {% endfor %}
+  <footer>Gerado em {{ now|date:"d/m/Y H:i" }}</footer>
 </body>
 </html>

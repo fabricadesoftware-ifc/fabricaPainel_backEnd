@@ -52,7 +52,7 @@ INSTALLED_APPS = [
     "django_filters",
     "drf_spectacular",
     "django_extensions",
-    'django_celery_beat',
+    "django_celery_beat",
     "core.populate.infra.populate_django_app",
     "core.user.infra.user_django_app",
     "core.uploader.infra.uploader_django_app",
@@ -61,6 +61,7 @@ INSTALLED_APPS = [
     "core.edition.infra.edition_django_app",
     "core.field.infra.field_django_app",
     "core.cross_cutting_themes.infra.cross_cutting_themes_django_app",
+    "debug_toolbar",
 ]
 
 MIDDLEWARE = [
@@ -72,6 +73,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "debug_toolbar.middleware.DebugToolbarMiddleware"
 ]
 
 ROOT_URLCONF = "django_project.urls"
@@ -247,3 +249,5 @@ CELERY_RESULT_BACKEND = "rpc://"
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 
 TOKEN_EXPIRATION_SECONDS = 1200
+
+INTERNAL_IPS = ['*', 'localhost', '127.0.0.1', '172.17.0.1',]

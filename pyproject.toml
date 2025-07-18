@@ -34,6 +34,7 @@ dependencies = [
     "django-celery-beat>=2.8.1",
     "weasyprint>=65.1",
     "reportlab>=4.4.2",
+    "django-debug-toolbar>=5.2.0",
 ]
 requires-python = "==3.12.*"
 readme = "README.md"
