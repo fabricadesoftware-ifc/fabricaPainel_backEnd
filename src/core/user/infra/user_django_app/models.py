@@ -38,12 +38,12 @@ class User(AbstractUser):
         (TAE, UserType.Type.TAE),
     )
     username = None
-    email = models.EmailField(_("e-mail address"), unique=True)
-    registration = models.IntegerField(null=True, unique=True)
-    name = models.CharField(max_length=255, null=True)
+    email = models.EmailField(_("e-mail address"), unique=True, db_index=True)
+    registration = models.IntegerField(null=True, unique=True, db_index=True)
+    name = models.CharField(max_length=255, null=True, db_index=True)
     name_search = models.CharField(max_length=255, null=True)
-    is_advisor = models.BooleanField(default=False, null=True, blank=True)
-    is_collaborator = models.BooleanField(default=False, null=True, blank=True)
+    is_advisor = models.BooleanField(default=False, null=True, blank=True, db_index=True)
+    is_collaborator = models.BooleanField(default=False, null=True, blank=True, db_index=True)
     password_reset_token = models.CharField(
         _("Password Reset Token"), max_length=255, blank=True, null=True
     )
@@ -51,8 +51,9 @@ class User(AbstractUser):
         _("Password Reset Token Created"), blank=True, null=True
     )  
     field = models.ForeignKey(Field, on_delete=models.SET_NULL, null=True)
-    user_type = models.CharField(max_length=10,choices=USER_TYPE_CHOICE, default=STUDENT)
+    user_type = models.CharField(max_length=10, choices=USER_TYPE_CHOICE, default=STUDENT, db_index=True)
     is_management = models.BooleanField(default=False)
+    is_confirmed = models.BooleanField(default=False, db_index=True)
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ['name']
@@ -70,6 +71,11 @@ class User(AbstractUser):
         verbose_name = "Usuário"
         verbose_name_plural = "Usuários"
         ordering = ["-date_joined"]
+        indexes = [
+            models.Index(fields=['email', 'is_confirmed']),
+            models.Index(fields=['user_type', 'is_advisor']),
+            models.Index(fields=['user_type', 'is_collaborator']),
+        ]
 
 class UserClass(models.Model):
     class_name = models.ForeignKey(Class, on_delete=models.CASCADE, related_name="user_classes", help_text="turma do aluno")
