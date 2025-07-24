@@ -70,6 +70,9 @@ class Edition(models.Model):
     works_per_advisor_max = models.IntegerField(
         "Número máximo de trabalhos por orientador", default=3
     )
+    words_per_work_min = models.IntegerField(
+        "Número mínimo de palavras por trabalho", default=200
+    )
     words_per_work_max = models.IntegerField(
         "Número máximo de palavras por trabalho", default=500
     )
