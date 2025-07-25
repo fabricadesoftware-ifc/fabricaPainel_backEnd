@@ -88,6 +88,7 @@ REST_FRAMEWORK = {
     #     'user': '50/day'
     # },
     "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework.authentication.SessionAuthentication",
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
     "DEFAULT_PERMISSION_CLASSES": [
@@ -106,7 +107,7 @@ SIMPLE_JWT = {
 SPECTACULAR_SETTINGS = {
     "TITLE": "Fabrica Painel API",
     "DESCRIPTION": "API para gerenciamento do Fabrica Painel, incluindo endpoints e documentação.",
-    "VERSION": "1.0.0",
+    "VERSION": "1.0.0"
 }
 
 AUTHENTICATION_BACKENDS = [

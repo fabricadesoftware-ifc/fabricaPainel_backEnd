@@ -7,7 +7,7 @@ from core.user.domain.validations import (
     validate_user_advisor_status
 )
 
-from .models import User, Evaluator, Class, UserClass
+from .models import User, Evaluator, Class, UserClass, Specialty
 
 
 class UserViewSerializer(serializers.ModelSerializer):
@@ -22,9 +22,15 @@ class UserViewSerializer(serializers.ModelSerializer):
 class UserClassSerializer(serializers.Serializer):
     class_name = serializers.CharField(source='class_name.name')
     year = serializers.IntegerField()
+    
+class SpecialtySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Specialty
+        fields = ["id", "name"]
 
 class UserSerializer(serializers.ModelSerializer):
     user_classes = UserClassSerializer(many=True, read_only=True)
+    specialities = SpecialtySerializer(many=True, read_only=True)
     is_evaluator = serializers.SerializerMethodField()
 
     def get_is_evaluator(self, obj):
@@ -65,7 +71,8 @@ class UserSerializer(serializers.ModelSerializer):
             "registration",
             "is_evaluator",
             "is_advisor",
-            "is_collaborator"
+            "is_collaborator",
+            "specialities"
         ]
         depth=2
     def Create(self, validated_data):
