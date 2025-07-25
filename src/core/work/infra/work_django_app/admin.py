@@ -10,8 +10,12 @@ class WorkCollaboratorInline(admin.TabularInline):
 @admin.register(Work)
 class WorkAdmin(admin.ModelAdmin):
     inlines = [WorkCollaboratorInline]
-    list_display = ("title", "advisor", "status")  # ajuste conforme seu modelo
+    list_display = ("title", "advisor", "status")
+    search_fields = ("title", "advisor__name")  # busca por nome do orientador
+    list_filter = ("status", "advisor")   
 
 # Registro padrão dos outros modelos
 admin.site.register(Ods)
-admin.site.register(Team)
+@admin.register(Team)
+class TeamAdmin(admin.ModelAdmin):
+    autocomplete_fields = ["team_members"]

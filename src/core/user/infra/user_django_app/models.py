@@ -101,4 +101,9 @@ class Evaluator(models.Model):
         verbose_name_plural = "Avaliadores"
         ordering = ["-user__date_joined"]
         
-
+class Specialty(models.Model):
+    name = models.CharField(max_length=255)
+    user = models.ManyToManyField(User, related_name="specialities")
+    
+    def __str__(self):
+        return self.name
