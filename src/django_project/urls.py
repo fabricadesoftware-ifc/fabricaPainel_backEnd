@@ -48,17 +48,6 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/token/", CustomTokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
-    path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
-    path(
-        "api/swagger/",
-        SpectacularSwaggerView.as_view(url_name="schema"),
-        name="swagger-ui",
-    ),
-    path(
-        "api/redoc/",
-        SpectacularRedocView.as_view(url_name="schema"),
-        name="redoc",
-    ),
     path("api/generate-assessment-report/<str:year>/<str:class_name>/", generate_assessment_report, name="generate-assessment-report"),
     path("api/generate-assessment-report/<str:year>/", generate_assessment_report, name="generate-assessment-report-by-class"),
     path("api/accept-work/<str:verification_token>/", approve_work, name="accept-work"),
@@ -91,4 +80,11 @@ if settings.DEBUG:
 
     urlpatterns += [
         path("__debug__/", include(debug_toolbar.urls)),
+    ]
+
+if settings.DEBUG:
+    urlpatterns += [
+        path("api/swagger/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
+        path("api/redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"),
+        path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     ]

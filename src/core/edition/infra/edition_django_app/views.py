@@ -40,9 +40,17 @@ class EditionOpenViewSet(ModelViewSet):
     http_method_names = ["get"]
 
     def get_queryset(self):
-        now = datetime.now()
-        return Edition.objects.filter(
-            initial_submission_date__lte=now,
-            final_event_date__gte=now - timedelta(days=1)
-        )
+        try:
+            now = datetime.now()
+            if Edition.objects.filter(
+                initial_submission_date__lte=now,
+                final_event_date__gte=now - timedelta(days=1)
+            ).exists():
+                return Edition.objects.filter(
+                    initial_submission_date__lte=now,
+                    final_event_date__gte=now - timedelta(days=1)
+                )
+        except Exception as e:
+            print("Erro no get_queryset da EditionOpenViewSet:", e)
+            return Edition.objects.none()
 
