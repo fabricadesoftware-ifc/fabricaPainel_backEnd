@@ -79,14 +79,6 @@ MIDDLEWARE = [
 ROOT_URLCONF = "django_project.urls"
 
 REST_FRAMEWORK = {
-    # 'DEFAULT_THROTTLE_CLASSES': [
-    #     'rest_framework.throttling.AnonRateThrottle',
-    #     'rest_framework.throttling.UserRateThrottle'
-    # ],
-    # 'DEFAULT_THROTTLE_RATES': {
-    #     'anon': '5/min',
-    #     'user': '50/day'
-    # },
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework.authentication.SessionAuthentication",
         "rest_framework_simplejwt.authentication.JWTAuthentication",
@@ -96,6 +88,17 @@ REST_FRAMEWORK = {
     ],
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
+    # Configurações de template para o browsable API
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+        'rest_framework.renderers.BrowsableAPIRenderer',
+        'rest_framework.renderers.AdminRenderer',
+    ],
+    'DEFAULT_PARSER_CLASSES': [
+        'rest_framework.parsers.JSONParser',
+        'rest_framework.parsers.FormParser',
+        'rest_framework.parsers.MultiPartParser'
+    ],
 }
 
 
@@ -210,8 +213,6 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media/")
 FILE_UPLOAD_PERMISSIONS = 0o640
 
 # Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.0/howto/static-files/
-
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [
