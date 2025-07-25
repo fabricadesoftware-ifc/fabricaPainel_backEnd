@@ -77,4 +77,5 @@ vine==5.1.0
 wcwidth==0.2.13
 weasyprint==65.1
 webencodings==0.5.1
+whitenoise==6.9.0
 zopfli==0.2.3.post1
