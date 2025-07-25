@@ -55,6 +55,8 @@ class CustomUserAdmin(UserAdmin):
         "is_staff",
         "is_active",
         "is_advisor",
+        "is_collaborator",
+        "user_type",
    
     )
     fieldsets = (
