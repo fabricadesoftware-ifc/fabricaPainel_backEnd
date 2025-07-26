@@ -95,6 +95,8 @@ class CustomUserAdmin(UserAdmin):
                     "name",
                     "registration",
                     "is_advisor",
+                    "is_collaborator",
+                    "specialities",
                     "user_type",
                     "is_staff",
                     "is_active",
@@ -108,10 +110,7 @@ class CustomUserAdmin(UserAdmin):
     ordering = ("email",)
     readonly_fields = ["date_joined", "last_login", "is_evaluator_display"]
     
-@admin.register(Specialty)
-class SpecialityAdmin(admin.ModelAdmin):
-    autocomplete_fields = ["user"]
-    
 
+admin.site.register(Specialty)
 admin.site.register(Class)
 admin.site.register(UserClass)

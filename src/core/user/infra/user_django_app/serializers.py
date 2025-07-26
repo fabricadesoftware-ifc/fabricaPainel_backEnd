@@ -23,14 +23,10 @@ class UserClassSerializer(serializers.Serializer):
     class_name = serializers.CharField(source='class_name.name')
     year = serializers.IntegerField()
     
-class SpecialtySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Specialty
-        fields = ["id", "name"]
+
 
 class UserSerializer(serializers.ModelSerializer):
     user_classes = UserClassSerializer(many=True, read_only=True)
-    specialities = SpecialtySerializer(many=True, read_only=True)
     is_evaluator = serializers.SerializerMethodField()
 
     def get_is_evaluator(self, obj):
@@ -137,3 +133,8 @@ class ClassSerializer(serializers.ModelSerializer):
         fields = ["id", "name"]
         depth = 1
 
+class SpecialtySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Specialty
+        fields = ["id", "name"]
+        depth = 1

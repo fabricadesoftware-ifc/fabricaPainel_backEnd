@@ -54,6 +54,7 @@ class User(AbstractUser):
     user_type = models.CharField(max_length=10, choices=USER_TYPE_CHOICE, default=STUDENT, db_index=True)
     is_management = models.BooleanField(default=False)
     is_confirmed = models.BooleanField(default=False, db_index=True)
+    specialities = models.ManyToManyField('Specialty', blank=True, related_name="users")
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ['name']
@@ -103,7 +104,6 @@ class Evaluator(models.Model):
         
 class Specialty(models.Model):
     name = models.CharField(max_length=255)
-    user = models.ManyToManyField(User, related_name="specialities")
     
     def __str__(self):
         return self.name
