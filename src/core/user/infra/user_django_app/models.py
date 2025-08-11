@@ -84,7 +84,7 @@ class UserClass(models.Model):
     year = models.IntegerField("Ano da classe")
     
     def __str__(self):
-        return f"{self.class_name.name} - {self.year}"
+        return f"{self.user.name} - {self.class_name.name} - {self.year}"
 
     class Meta:
         verbose_name = "Classe do Usuário"

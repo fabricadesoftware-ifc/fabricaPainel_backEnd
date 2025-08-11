@@ -19,7 +19,7 @@ def populate_classes():
 def assign_students_to_classes():
     classes = list(Class.objects.all())
     students = list(User.objects.filter(user_type=User.STUDENT))
-    year = 2025
+    year = 2025 #rapaiz by: Peraza
 
     if UserClass.objects.filter(year=year).exists():
         print(f"❌ Alunos já atribuídos às turmas para o ano de {year}.")
