@@ -6,6 +6,7 @@ from core.populate.infra.resources.data_classes import classes
 from core.populate.infra.resources.data_advisor import advisors
 from core.populate.infra.resources.data_teams import student_team
 from core.populate.infra.resources.data_teachers import teachers
+from core.populate.infra.resources.data_tae import tae
 from collections import Counter
 import unicodedata
 
@@ -113,28 +114,97 @@ def populate_teacher():
 
     print("Professores populados com sucesso.")
     
+    
+#caso o professor exista verificar e o specialities está linkado
 def populate_teacher():
-    if User.objects.filter(is_advisor=True).exists():
-        return
+    # Remover a verificação de existência para permitir atualizações
+    # if User.objects.filter(is_advisor=True).exists():
+    #     return
 
-    teachers_to_create = []
+    # Importar o modelo Specialty
+    from core.user.infra.user_django_app.models import Specialty
 
     for teacher_data in teachers:
         name_search = remove_accent(teacher_data["name"].lower())
         print(teacher_data, "populando professores")
-        user = User(
-            email=teacher_data["email"].strip(),
-            name=teacher_data["name"],
-            registration=teacher_data["registration"],
-            is_advisor=True,
-            user_type=User.TEACHER,
-            password="teacher123",
-            name_search=name_search,
-            # password=User.set_password(teacher_data["password"])
+        
+        # Usar registration (único) como chave de busca para evitar conflito de unicidade
+        email = teacher_data["email"].strip().lower()
+        registration = teacher_data["registration"]
+        user, created = User.objects.update_or_create(
+            registration=registration,
+            defaults={
+                'email': email,
+                'name': teacher_data["name"],
+                'is_advisor': True,
+                'is_collaborator': True,
+                'user_type': User.TEACHER,
+                'password': "teacher123",
+                'name_search': name_search,
+            }
         )
-
-        teachers_to_create.append(user)
-
-    User.objects.bulk_create(teachers_to_create)
+        
+        if created:
+            print(f"Professor {email} criado com sucesso")
+        else:
+            print(f"Professor {email} já existe, atualizando especialidades")
+        
+        # Configurar specialities (sempre, independente se foi criado ou já existia)
+        if 'specialities' in teacher_data and teacher_data['specialities']:
+            specialty_objects = []
+            for specialty_name in teacher_data['specialities']:
+                # Criar ou buscar a especialidade
+                specialty, specialty_created = Specialty.objects.get_or_create(name=specialty_name)
+                specialty_objects.append(specialty)
+                if specialty_created:
+                    print(f"Especialidade '{specialty_name}' criada")
+            
+            # Associar as especialidades ao usuário (substitui as existentes)
+            user.specialities.set(specialty_objects)
+            print(f"Especialidades associadas ao professor {email}: {[s.name for s in specialty_objects]}")
 
     print("Professores populados com sucesso.")
+
+def populate_tae():
+    # Importar o modelo Specialty
+    from core.user.infra.user_django_app.models import Specialty
+    
+    for tae_data in tae:
+        name_search = remove_accent(tae_data["name"].lower())
+        print(tae_data, "populando tae")
+        
+        # Verificar se o usuário já existe pelo email
+        email = tae_data["email"].strip()
+        user, created = User.objects.get_or_create(
+            email=email,
+            defaults={
+                'name': tae_data["name"],
+                'registration': tae_data["registration"],
+                'is_collaborator': False,
+                'is_advisor': False,
+                'user_type': User.TAE,
+                'password': "tae123",
+                'name_search': name_search,
+            }
+        )
+        
+        if created:
+            print(f"Usuário {email} criado com sucesso")
+        else:
+            print(f"Usuário {email} já existe, atualizando especialidades")
+        
+        # Configurar specialities (sempre, independente se foi criado ou já existia)
+        if 'specialities' in tae_data and tae_data['specialities']:
+            specialty_objects = []
+            for specialty_name in tae_data['specialities']:
+                # Criar ou buscar a especialidade
+                specialty, specialty_created = Specialty.objects.get_or_create(name=specialty_name)
+                specialty_objects.append(specialty)
+                if specialty_created:
+                    print(f"Especialidade '{specialty_name}' criada")
+            
+            # Associar as especialidades ao usuário (substitui as existentes)
+            user.specialities.set(specialty_objects)
+            print(f"Especialidades associadas ao usuário {email}: {[s.name for s in specialty_objects]}")
+
+    print("TAE populados com sucesso.")

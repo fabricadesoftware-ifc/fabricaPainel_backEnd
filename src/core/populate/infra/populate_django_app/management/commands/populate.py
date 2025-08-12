@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand, CommandError, CommandParser
 from core.populate.infra.populate_django_app.management.commands._cross_cutting_themes import populate_cross_cutting_themes
 from core.populate.infra.populate_django_app.management.commands._ods import populate_ods
-from core.populate.infra.populate_django_app.management.commands._basic import populate_users, populate_team, populate_teacher
+from core.populate.infra.populate_django_app.management.commands._basic import populate_users, populate_team, populate_teacher, populate_tae
 from core.populate.infra.populate_django_app.management.commands._field import populate_fields
 from core.populate.infra.populate_django_app.management.commands._edition import populate_editions, populate_images
 from core.populate.infra.populate_django_app.management.commands._work import populate_works
@@ -63,6 +63,11 @@ class Command(BaseCommand):
             help="insert classes in database"
         )
         parser.add_argument(
+            "--tae",
+            action="store_true",
+            help="insert tae in database"
+        )
+        parser.add_argument(
             "--all",
             action="store_true",
             help="insert all in database"
@@ -88,7 +93,8 @@ class Command(BaseCommand):
                 self.__handle_prod()
             if options.get("all"):
                 self.__handle_all()
-
+            if options.get("tae"):
+                self.__handle_tae()
             self.stdout.write(
                     self.style.SUCCESS(  # pylint: disable=no-member
                         "\n Data successfully populated :D"
@@ -139,6 +145,11 @@ class Command(BaseCommand):
         self.stdout.write("Populating classes data in the database...", ending=" ")
         populate_classes()
         assign_students_to_classes()
+        self.stdout.write(self.style.SUCCESS("OK"))
+
+    def __handle_tae(self) -> None:
+        self.stdout.write("Populating tae data in the database...", ending=" ")
+        populate_tae()
         self.stdout.write(self.style.SUCCESS("OK"))
 
     def __handle_prod(self) -> None:

@@ -113,4 +113,9 @@ class CustomUserAdmin(UserAdmin):
 
 admin.site.register(Specialty)
 admin.site.register(Class)
-admin.site.register(UserClass)
+
+@admin.register(UserClass)
+class UserClassAdmin(admin.ModelAdmin):
+    list_display = ("user", "class_name")
+    search_fields = ("user__name", "user__email", "class_name__name")
+    list_filter = ("user", "class_name", "year")
