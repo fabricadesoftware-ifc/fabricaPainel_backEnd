@@ -10,9 +10,13 @@ class WorkCollaboratorInline(admin.TabularInline):
 @admin.register(Work)
 class WorkAdmin(admin.ModelAdmin):
     inlines = [WorkCollaboratorInline]
-    list_display = ("title", "advisor", "status")
+    list_display = ("title", "advisor", "status", "get_year")
     search_fields = ("title", "advisor__name")  # busca por nome do orientador
-    list_filter = ("status", "advisor")   
+    list_filter = ("status", "advisor", "edition__year")
+    
+    def get_year(self, obj):
+        return obj.edition.year
+    get_year.short_description = "Ano"
 
 # Registro padrão dos outros modelos
 admin.site.register(Ods)
