@@ -12,6 +12,7 @@ from core.work.domain.tasks import send_work_new_status_approve_email_to_student
 from core.work.infra.work_django_app.models import Edition
 from core.work.infra.work_django_app.models import Work, WorkStatusType
 
+
 @throttle_classes([UserRateThrottle])
 @api_view(["GET"])
 @permission_classes([IsAdvisor])
@@ -27,44 +28,40 @@ def approve_work(request, verification_token) -> Response:
     students_ids = []
     for s in student.all():
         students_ids.append(s.id)
-    
 
     from_email = EMAIL_HOST_USER
     edition = Edition.objects.get(id=work.edition.id)
 
-    if work.status == WorkStatusType.Type.NEEDS_CHANGES.value and edition.final_advisor_date > datetime.now().date():
+    def confirm_work():
         # work.final_submission_work_date = timezone.now()
         work.verification_token = None
         work.status = WorkStatusType.Type.APPROVED.value
-        #work.reject_submission_work_date = None
+        # work.reject_submission_work_date = None
         work.save()
-
 
         if edition.final_submission_date is not None:
-            send_work_new_status_approve_email_to_student.delay(from_email, students_ids)
+            send_work_new_status_approve_email_to_student.delay(
+                from_email, students_ids
+            )
             return Response(
-        {"message": "O trabalho que tinha sido recusado foi aceito."},
-        status=status.HTTP_200_OK,
-        )
+                {"message": "O trabalho que tinha sido recusado foi aceito."},
+                status=status.HTTP_200_OK,
+            )
 
-    elif edition.final_advisor_acceptance > datetime.now().date():
-        #work.final_submission_work_date = timezone.now()
-        work.verification_token = None
-        
-        work.status = WorkStatusType.Type.APPROVED.value
-        work.save()
-
-        advisor_id = work.advisor.id
-
-        if work.verification_token is None:
-            send_work_approve_email_to_student.delay(from_email, students_ids, advisor_id)
-            
-        return Response(
-        {"message": "Trabalho aceito."},
-        status=status.HTTP_200_OK,
-        )
+    # Se o trabalho estiver em NEEDS_CHANGES, ou se estiver no período de submissão, aprova o trabalho PS: No ano de 2025 o estado NEEDS_CHANGES não foi utilizado
+    # if work.status == WorkStatusType.Type.NEEDS_CHANGES.value and edition.final_advisor_date > datetime.now().date():
+    #     confirm_work()
+    if (
+        edition.initial_submission_date <= datetime.now().date()
+        and edition.final_advisor_acceptance >= datetime.now().date()
+    ):
+        confirm_work()
+    elif (
+        edition.initial_second_submission_date <= datetime.now().date()
+        and edition.final_second_advisor_date >= datetime.now().date()
+    ):
+        confirm_work()
 
     return Response(
-        {"error": "Data limite para aceitar o trabalho expirou."},
-        )
-   
+        {"error": "Fora do período de submissão."}, status=status.HTTP_401_UNAUTHORIZED
+    )
