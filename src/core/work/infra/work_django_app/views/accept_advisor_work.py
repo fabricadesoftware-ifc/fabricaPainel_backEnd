@@ -7,8 +7,12 @@ from django.utils import timezone
 from core.work.infra.work_django_app.models import Work, WorkAdvisorStatusType
 from django_project.settings import EMAIL_HOST_USER
 from django_project.permissions import IsAdvisor
-from core.work.domain.tasks.send_email_student.approve.send_work_approve_email_to_student import send_work_approve_email_to_student
+from core.work.domain.tasks.send_email_student.approve.send_work_approve_email_to_student import (
+    send_work_approve_email_to_student,
+)
 import uuid
+import datetime
+
 
 @throttle_classes([UserRateThrottle])
 @api_view(["GET"])
@@ -40,11 +44,24 @@ def accept_advisor_work(request, verification_token) -> Response:
     students_ids = [s.id for s in work.team.team_members.all()]
     from_email = EMAIL_HOST_USER
     advisor_id = work.advisor.id
+    edition = Edition.objects.get(id=work.edition.id)
+
+    def confirm_advisor():
+        work.advisor_status = WorkAdvisorStatusType.Type.APPROVED.value
+        work.verification_token = uuid.uuid4()  # Gera um novo token único
+        work.save()
 
     # Atualiza o status do orientador para APPROVED
-    work.advisor_status = WorkAdvisorStatusType.Type.APPROVED.value
-    work.verification_token = uuid.uuid4()  # Gera um novo token único
-    work.save()
+    if (
+        edition.initial_submission_date <= datetime.now().date()
+        and edition.final_advisor_acceptance >= datetime.now().date()
+    ):
+        confirm_advisor()
+    elif (
+        edition.initial_second_submission_date <= datetime.now().date()
+        and edition.final_second_advisor_date >= datetime.now().date()
+    ):
+        confirm_advisor()
 
     # Envia email para os estudantes
     send_work_approve_email_to_student.delay(from_email, students_ids, advisor_id)
@@ -52,4 +69,4 @@ def accept_advisor_work(request, verification_token) -> Response:
     return Response(
         {"message": "Orientação do trabalho aceita com sucesso."},
         status=status.HTTP_200_OK,
-    ) 
+    )
