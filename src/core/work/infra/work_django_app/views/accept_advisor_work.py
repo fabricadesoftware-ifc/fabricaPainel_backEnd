@@ -52,14 +52,15 @@ def accept_advisor_work(request, verification_token) -> Response:
         work.save()
 
     # Atualiza o status do orientador para APPROVED
+    current_date = timezone.now().date()
     if (
-        edition.initial_submission_date <= datetime.now().date()
-        and edition.final_advisor_acceptance >= datetime.now().date()
+        edition.initial_submission_date <= current_date
+        and edition.final_advisor_acceptance >= current_date
     ):
         confirm_advisor()
     elif (
-        edition.initial_second_submission_date <= datetime.now().date()
-        and edition.final_second_advisor_date >= datetime.now().date()
+        edition.initial_second_submission_date <= current_date
+        and edition.final_second_advisor_date >= current_date
     ):
         confirm_advisor()
 
