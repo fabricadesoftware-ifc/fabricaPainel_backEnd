@@ -4,7 +4,7 @@ from rest_framework.throttling import UserRateThrottle
 from rest_framework import status
 from django.utils import timezone
 
-from core.work.infra.work_django_app.models import Work, WorkAdvisorStatusType
+from core.work.infra.work_django_app.models import Work, WorkAdvisorStatusType, Edition
 from django_project.settings import EMAIL_HOST_USER
 from django_project.permissions import IsAdvisor
 from core.work.domain.tasks.send_email_student.approve.send_work_approve_email_to_student import (
