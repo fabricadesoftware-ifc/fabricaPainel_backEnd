@@ -51,14 +51,16 @@ def approve_work(request, verification_token) -> Response:
     # Se o trabalho estiver em NEEDS_CHANGES, ou se estiver no período de submissão, aprova o trabalho PS: No ano de 2025 o estado NEEDS_CHANGES não foi utilizado
     # if work.status == WorkStatusType.Type.NEEDS_CHANGES.value and edition.final_advisor_date > datetime.now().date():
     #     confirm_work()
+
+    current_date = timezone.now().date()
     if (
-        edition.initial_submission_date <= datetime.now().date()
-        and edition.final_advisor_acceptance >= datetime.now().date()
+        edition.initial_submission_date <= current_date
+        and edition.final_advisor_acceptance >= current_date
     ):
         confirm_work()
     elif (
-        edition.initial_second_submission_date <= datetime.now().date()
-        and edition.final_second_advisor_date >= datetime.now().date()
+        edition.initial_second_submission_date <= current_date
+        and edition.final_second_advisor_date >= current_date
     ):
         confirm_work()
 
