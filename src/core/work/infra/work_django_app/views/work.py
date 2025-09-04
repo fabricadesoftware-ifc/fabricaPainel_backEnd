@@ -129,7 +129,8 @@ class WorkViewSet(ModelViewSet):
                     logger.error(f"Erro ao enviar emails na criação do trabalho: {e}")
             
             transaction.on_commit(send_creation_emails)
-
+            
+        logger.info(f"Work created with ID: {response.data.get('id')}")
         return response
 
     def update(self, request, *args, **kwargs):

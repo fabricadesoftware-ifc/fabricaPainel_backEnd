@@ -11,8 +11,16 @@ class WorkCollaboratorInline(admin.TabularInline):
 class WorkAdmin(admin.ModelAdmin):
     inlines = [WorkCollaboratorInline]
     list_display = ("title", "advisor", "status", "get_year")
-    search_fields = ("title", "advisor__name")  # busca por nome do orientador
-    list_filter = ("status", "advisor", "edition__year")
+    search_fields = (
+        "title",
+        "advisor__name",
+        "=edition__year",  # busca exata por ano da edição
+    )
+    search_help_text = (
+        "Pesquise por: título, orientador ou ano da edição (exato). "
+        "Exemplos: 'robótica', 'maria', '2025'"
+    )
+    list_filter = ("status", "edition__year")
     
     def get_year(self, obj):
         return obj.edition.year
