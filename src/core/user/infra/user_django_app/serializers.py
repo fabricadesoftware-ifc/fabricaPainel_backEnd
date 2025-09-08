@@ -109,24 +109,29 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         if not email or not password:
             raise serializers.ValidationError('É necessário fornecer email e senha.')
 
-        # Otimização: Usar select_related para carregar dados relacionados em uma única query
-        try:
-            user = authenticate(request=self.context.get('request'), email=email, password=password)
-            if not user:
-                raise serializers.ValidationError('Email ou senha inválidos.')
-                
-            # Mover a atualização do is_confirmed para um processo assíncrono
-            if not user.is_confirmed:
-                from django.db import transaction
-                with transaction.atomic():
-                    User.objects.filter(id=user.id).update(is_confirmed=True)
-                    
-            data = super().validate(attrs)
-            return data
-            
-        except Exception as e:
-            raise serializers.ValidationError(f'Erro durante autenticação: {str(e)}')
-    
+
+        user = authenticate(request=self.context.get('request'), email=email, password=password)
+
+
+        if not user:
+            raise serializers.ValidationError('Email ou senha inválidos.')
+
+        # Marcar confirmação na primeira autenticação bem-sucedida (evita reautenticar)
+        if not user.is_confirmed:
+            from django.db import transaction
+            with transaction.atomic():
+                User.objects.filter(id=user.id).update(is_confirmed=True)
+
+        # Evita uma segunda chamada a authenticate feita por super().validate
+        # Geramos os tokens diretamente
+        self.user = user
+        refresh = self.get_token(user)
+        data = {
+            'refresh': str(refresh),
+            'access': str(refresh.access_token),
+        }
+
+        return data
 class ClassSerializer(serializers.ModelSerializer):
     class Meta:
         model = Class

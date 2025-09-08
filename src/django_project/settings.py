@@ -261,3 +261,28 @@ CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 TOKEN_EXPIRATION_SECONDS = 1200
 
 INTERNAL_IPS = ['*', 'localhost', '127.0.0.1', '172.17.0.1',]
+
+# ------------------------------
+# Password hashers customizados
+# ------------------------------
+
+if MODE == "DEVELOPMENT":
+    # Hasher mais rápido apenas para dev
+    from django.contrib.auth.hashers import PBKDF2PasswordHasher
+
+    class FastPBKDF2PasswordHasher(PBKDF2PasswordHasher):
+        iterations = 60000 
+
+    PASSWORD_HASHERS = [
+        "src.django_project.settings.FastPBKDF2PasswordHasher",
+    ]
+
+elif MODE == "PRODUCTION":
+    from django.contrib.auth.hashers import PBKDF2PasswordHasher
+
+    class ProductionPBKDF2PasswordHasher(PBKDF2PasswordHasher):
+        iterations = 200_000 
+
+    PASSWORD_HASHERS = [
+        "src.django_project.settings.ProductionPBKDF2PasswordHasher",
+    ]

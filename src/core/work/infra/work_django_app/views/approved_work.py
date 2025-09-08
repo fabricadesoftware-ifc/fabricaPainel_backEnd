@@ -2,15 +2,12 @@ from rest_framework.decorators import api_view, throttle_classes, permission_cla
 from rest_framework.response import Response
 from rest_framework.throttling import UserRateThrottle
 from rest_framework import status
-from datetime import datetime
 from django.utils import timezone
 
 from django_project.settings import EMAIL_HOST_USER
 from django_project.permissions import IsAdvisor
-from core.work.domain.tasks import send_work_approve_email_to_student
-from core.work.domain.tasks import send_work_new_status_approve_email_to_student
-from core.work.infra.work_django_app.models import Edition
-from core.work.infra.work_django_app.models import Work, WorkStatusType
+from core.work.infra.work_django_app.models import Work, WorkStatusType, Edition
+from core.work.domain.tasks import send_work_approve_email_to_student, send_work_new_status_approve_email_to_student
 
 
 @throttle_classes([UserRateThrottle])
@@ -20,50 +17,29 @@ def approve_work(request, verification_token) -> Response:
     try:
         work = Work.objects.get(verification_token=verification_token)
     except Work.DoesNotExist:
-        return Response(
-            {"error": "Trabalho não encontrado."},
-            status=status.HTTP_404_NOT_FOUND,
-        )
-    student = work.team.team_members
-    students_ids = []
-    for s in student.all():
-        students_ids.append(s.id)
+        return Response({"error": "Trabalho não encontrado."}, status=status.HTTP_404_NOT_FOUND)
 
-    from_email = EMAIL_HOST_USER
-    edition = Edition.objects.get(id=work.edition.id)
-
-    def confirm_work():
-        # work.final_submission_work_date = timezone.now()
-        work.verification_token = None
-        work.status = WorkStatusType.Type.APPROVED.value
-        # work.reject_submission_work_date = None
-        work.save()
-
-        if edition.final_submission_date is not None:
-            send_work_new_status_approve_email_to_student.delay(
-                from_email, students_ids
-            )
-            return Response(
-                {"message": "O trabalho que tinha sido recusado foi aceito."},
-                status=status.HTTP_200_OK,
-            )
-
-    # Se o trabalho estiver em NEEDS_CHANGES, ou se estiver no período de submissão, aprova o trabalho PS: No ano de 2025 o estado NEEDS_CHANGES não foi utilizado
-    # if work.status == WorkStatusType.Type.NEEDS_CHANGES.value and edition.final_advisor_date > datetime.now().date():
-    #     confirm_work()
-
+    students_ids = list(work.team.team_members.values_list("id", flat=True))
+    edition = work.edition
     current_date = timezone.now().date()
-    if (
-        edition.initial_submission_date <= current_date
-        and edition.final_advisor_acceptance >= current_date
-    ):
-        confirm_work()
-    elif (
-        edition.initial_second_submission_date <= current_date
-        and edition.final_second_advisor_date >= current_date
-    ):
-        confirm_work()
+    from_email = EMAIL_HOST_USER
 
-    return Response(
-        {"error": "Fora do período de submissão."}, status=status.HTTP_401_UNAUTHORIZED
-    )
+    def within_submission_period() -> bool:
+        return (
+            edition.initial_submission_date <= current_date <= edition.final_advisor_acceptance
+            or edition.initial_second_submission_date <= current_date <= edition.final_second_advisor_date
+        )
+
+    if not within_submission_period():
+        return Response({"error": "Fora do período de submissão."}, status=status.HTTP_401_UNAUTHORIZED)
+
+    # Aprova o trabalho
+    work.status = WorkStatusType.Type.APPROVED.value
+    work.verification_token = None
+    work.save()
+
+    # Envia email de status aprovado se houver final_submission_date definido
+    if edition.final_submission_date:
+        send_work_new_status_approve_email_to_student.delay(from_email, students_ids)
+
+    return Response({"message": "Trabalho aprovado com sucesso."}, status=status.HTTP_200_OK)
