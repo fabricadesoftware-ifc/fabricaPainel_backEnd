@@ -25,6 +25,13 @@ class UserClassSerializer(serializers.Serializer):
     
 
 
+class UserRetrieveSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    email = serializers.EmailField(read_only=True)
+    name = serializers.CharField(read_only=True)
+    user_type = serializers.CharField(read_only=True)
+    
+
 class UserSerializer(serializers.ModelSerializer):
     user_classes = UserClassSerializer(many=True, read_only=True)
     is_evaluator = serializers.SerializerMethodField()
