@@ -4,6 +4,7 @@ from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import ValidationError
 from core.field.infra.field_django_app.models import Field
 from core.user.domain.value_objects import UserType
+from core.work.infra.work_django_app.models import Work
 from .managers import CustomUserManager
 import unicodedata
 
@@ -107,3 +108,18 @@ class Specialty(models.Model):
     
     def __str__(self):
         return self.name
+    
+# Certificate
+
+class Certificate(models.Model):
+    user = ForeignKey(User, on_delete=models.CASCADE)
+    work = ForeignKey(Work, on_delete=models.CASCADE)
+    hash_validate = TextField()
+    created_at = DateTimeField(auto_now_add=True)
+    updated_at = DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"Certificate for {self.user.email} - Work: {self.work.title}"
+    
+    class Meta:
+        unique_together = (('user', 'work'),) 

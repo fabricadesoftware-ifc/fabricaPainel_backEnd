@@ -19,7 +19,7 @@ from core.work.infra.work_django_app.models import WorkCollaborator
 from core.work.domain.value_objects import WorkCollaboratorStatusType
 from core.work.infra.work_django_app.models import CrossCuttingTheme
 from core.work.infra.work_django_app.models import Field
-
+from core.user.infra.user_django_app.models import Certificate
 
 class MinimalUserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -293,3 +293,13 @@ class TeamWriteSerializer(serializers.ModelSerializer):
         except Exception as e:
             raise e
         return super().validate(attrs)
+
+# Certificate
+
+class CertificateSerializer(serializers.ModelSerializer):
+    User = MinimalUserSerializer(read_only=True)
+    
+    class Meta:
+        model = Certificate
+        fields = ['id','user_id','work_id', 'hash_validate', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'created_at', 'updated_at'] 
