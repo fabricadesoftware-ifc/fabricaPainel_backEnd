@@ -156,4 +156,5 @@ class CertificateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Certificate
         fields = ["id", "user_id", "work_id", "hash_validate", "created_at", "updated_at"]
-        read_only_fields = ["id", "created_at", "updated_at"]
+        read_only_fields = ["id", "hash_validate", "created_at", "updated_at"]
+
