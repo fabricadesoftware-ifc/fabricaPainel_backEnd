@@ -3,7 +3,7 @@ from django.contrib.auth.admin import UserAdmin
 from django.utils.translation import gettext_lazy as _
 
 from .forms import CustomUserChangeForm, CustomUserCreationForm
-from .models import User, Evaluator, Class, UserClass, Specialty
+from .models import User, Evaluator, Class, UserClass, Specialty, Certificate
 from core.work.infra.work_django_app.models import Team
 
 # class WithCrossCuttingTheme(admin.SimpleListFilter):
@@ -197,3 +197,12 @@ class UserClassAdmin(admin.ModelAdmin):
         "Exemplos: 'maria', '1info2', '2025'"
     )
     list_filter = ("class_name", "year")
+
+@admin.register(Certificate)
+class CertificateAdmin(admin.ModelAdmin):
+    list_display = ("user", "work", "created_at", "updated_at")
+    search_fields = ("user__name", "user__email", "work__title", "hash_validate")
+    list_filter = ("created_at", "updated_at")
+    raw_id_fields = ("user", "work")
+    readonly_fields = ("hash_validate", "created_at", "updated_at")
+    ordering = ("-created_at",)
