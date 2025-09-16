@@ -81,6 +81,7 @@ class ClassNameFilter(admin.SimpleListFilter):
             return queryset.filter(user_classes__class_name__id=value).distinct()
         return queryset
 
+
 @admin.register(User)
 class CustomUserAdmin(UserAdmin):
 
@@ -137,7 +138,16 @@ class CustomUserAdmin(UserAdmin):
         ),
         (
             _("Personal info"),
-            {"fields": (["user_type", "is_advisor", "is_collaborator", "is_evaluator_display" ])},
+            {
+                "fields": (
+                    [
+                        "user_type",
+                        "is_advisor",
+                        "is_collaborator",
+                        "is_evaluator_display",
+                    ]
+                )
+            },
         ),
         (
             _("Permissions"),
@@ -146,7 +156,6 @@ class CustomUserAdmin(UserAdmin):
         (_("Important dates"), {"fields": ("last_login", "date_joined")}),
     )
 
-  
     add_fieldsets = (
         (
             None,
@@ -183,10 +192,11 @@ class CustomUserAdmin(UserAdmin):
     )
     ordering = ("email",)
     readonly_fields = ["date_joined", "last_login", "is_evaluator_display"]
-    
+
 
 admin.site.register(Specialty)
 admin.site.register(Class)
+
 
 @admin.register(UserClass)
 class UserClassAdmin(admin.ModelAdmin):
@@ -198,10 +208,12 @@ class UserClassAdmin(admin.ModelAdmin):
     )
     list_filter = ("class_name", "year")
 
+
 @admin.register(Certificate)
 class CertificateAdmin(admin.ModelAdmin):
     list_display = ("user", "work", "created_at", "updated_at")
     search_fields = ("user__name", "user__email", "work__title", "hash_validate")
+    autocomplete_fields = ("user", "work")
     list_filter = ("created_at", "updated_at")
     raw_id_fields = ("user", "work")
     readonly_fields = ("hash_validate", "created_at", "updated_at")
