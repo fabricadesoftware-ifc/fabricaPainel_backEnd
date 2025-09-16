@@ -1,10 +1,10 @@
-from rest_framework.viewsets import ModelViewSet
+from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from drf_spectacular.utils import extend_schema
 from rest_framework_simplejwt.views import TokenObtainPairView
 from .serializers import CustomTokenObtainPairSerializer
 
-from .models import User, Evaluator, Class, UserClass, Specialty
-from .serializers import UserSerializer, UserRetrieveSerializer, EvaluatorSerializer, ClassSerializer, UserClassSerializer, UserViewSerializer, SpecialtySerializer
+from .models import User, Evaluator, Class, UserClass, Specialty, Certificate
+from .serializers import UserSerializer, UserRetrieveSerializer, EvaluatorSerializer, ClassSerializer, UserClassSerializer, UserViewSerializer, SpecialtySerializer, CertificateSerializer
 from .filters import UserFilter, EvaluatorFilter
 
 from django_project.permissions import IsUserOwnerOrReadOnly, IsAdminOrReadOnly
@@ -58,4 +58,9 @@ class SpecialtyViewSet(ModelViewSet):
     queryset = Specialty.objects.all()
     serializer_class = SpecialtySerializer
     permission_classes = [IsAdminOrReadOnly]
-
+    
+@extend_schema(tags=["certificate"])
+class CertificateViewSet(ReadOnlyModelViewSet):
+    queryset = Certificate.objects.all()
+    serializer_class = CertificateSerializer
+    filterset_fields = ["hash_validate"]

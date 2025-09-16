@@ -20,7 +20,6 @@ from core.work.domain.value_objects import WorkCollaboratorStatusType
 from core.work.infra.work_django_app.models import CrossCuttingTheme
 from core.work.infra.work_django_app.models import Field
 
-
 class MinimalUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -293,3 +292,4 @@ class TeamWriteSerializer(serializers.ModelSerializer):
         except Exception as e:
             raise e
         return super().validate(attrs)
+ 

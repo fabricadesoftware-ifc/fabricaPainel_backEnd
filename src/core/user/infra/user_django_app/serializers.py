@@ -7,7 +7,7 @@ from core.user.domain.validations import (
     validate_user_advisor_status
 )
 
-from .models import User, Evaluator, Class, UserClass, Specialty
+from .models import User, Evaluator, Class, UserClass, Specialty, Certificate
 
 
 class UserViewSerializer(serializers.ModelSerializer):
@@ -150,3 +150,11 @@ class SpecialtySerializer(serializers.ModelSerializer):
         model = Specialty
         fields = ["id", "name"]
         depth = 1
+        
+class CertificateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Certificate
+        fields = ["id", "user_id", "work_id", "hash_validate", "created_at", "updated_at"]
+        read_only_fields = ["id", "hash_validate", "created_at", "updated_at"]
+
