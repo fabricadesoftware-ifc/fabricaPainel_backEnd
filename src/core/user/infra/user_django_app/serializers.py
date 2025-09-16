@@ -7,7 +7,7 @@ from core.user.domain.validations import (
     validate_user_advisor_status
 )
 
-from .models import User, Evaluator, Class, UserClass, Specialty
+from .models import User, Evaluator, Class, UserClass, Specialty, Certificate
 
 
 class UserViewSerializer(serializers.ModelSerializer):
@@ -24,6 +24,13 @@ class UserClassSerializer(serializers.Serializer):
     year = serializers.IntegerField()
     
 
+
+class UserRetrieveSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    email = serializers.EmailField(read_only=True)
+    name = serializers.CharField(read_only=True)
+    user_type = serializers.CharField(read_only=True)
+    
 
 class UserSerializer(serializers.ModelSerializer):
     user_classes = UserClassSerializer(many=True, read_only=True)
@@ -143,3 +150,11 @@ class SpecialtySerializer(serializers.ModelSerializer):
         model = Specialty
         fields = ["id", "name"]
         depth = 1
+        
+class CertificateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Certificate
+        fields = ["id", "user_id", "work_id", "hash_validate", "created_at", "updated_at"]
+        read_only_fields = ["id", "hash_validate", "created_at", "updated_at"]
+

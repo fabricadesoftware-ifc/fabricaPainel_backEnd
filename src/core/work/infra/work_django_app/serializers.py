@@ -17,21 +17,45 @@ from core.user.infra.user_django_app.serializers import UserSerializer, Evaluato
 from core.user.infra.user_django_app.models import User
 from core.work.infra.work_django_app.models import WorkCollaborator
 from core.work.domain.value_objects import WorkCollaboratorStatusType
+from core.work.infra.work_django_app.models import CrossCuttingTheme
+from core.work.infra.work_django_app.models import Field
 
+class MinimalUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'name', 'email']
+
+class TeamDetailSerializer(serializers.ModelSerializer):
+    team_members = MinimalUserSerializer(many=True)
+    
+    class Meta:
+        model = Team
+        fields = ["id", "team_members"]
 
 class WorkCollaboratorSerializer(serializers.ModelSerializer):
+    collaborator = MinimalUserSerializer(read_only=True)
+    
     class Meta:
         model = WorkCollaborator
-        fields: list[str] = '__all__'
-        depth = 2
+        fields = ['id', 'collaborator', 'status']
 
 class OdsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ods
-        fields: list[str] = [
+        fields = [
             "id",
             "name",
         ]
+
+class CrossCuttingThemeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CrossCuttingTheme
+        fields = ["id", "name"]
+
+class FieldSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Field
+        fields = ["id", "name"]
 
 class WorkListSerializer(serializers.ModelSerializer):
     work_collaborator = WorkCollaboratorSerializer(many=True, read_only=True)
@@ -64,31 +88,36 @@ class WorkListSerializer(serializers.ModelSerializer):
         # alterado para depth=1 para evitar vulnerabilidades em listagens grandes
 
 class WorkDetailSerializer(serializers.ModelSerializer):
-    # team = serializers.StringRelatedField()
     work_collaborator = WorkCollaboratorSerializer(many=True, read_only=True)
-
+    advisor = MinimalUserSerializer(read_only=True)
+    team = TeamDetailSerializer(read_only=True)
+    evaluator = MinimalUserSerializer(many=True, read_only=True)
+    ods = OdsSerializer(many=True, read_only=True)
+    cross_cutting_theme = CrossCuttingThemeSerializer(read_only=True)
+    field = FieldSerializer(many=True, read_only=True)
+    
     class Meta:
         model = Work
-        fields: list[str] = [
+        fields = [
             "id",
             "title",
             "abstract",
-            "edition",
-            "field",
-            "evaluator",
-            "cross_cutting_theme",
-            "verification_token",
-            "team",
-            "ods",
-            "needs_changes_submission_work_date",
             "status",
-            "advisor",
             "advisor_status",
             "integrated_project",
             "feedback",
+            "needs_changes_submission_work_date",
+            # Relacionamentos com serializers específicos
+            "advisor",
+            "team",
             "work_collaborator",
+            "evaluator",
+            "ods",
+            "cross_cutting_theme",
+            "field",
+            # Relacionamentos simples (id, name)
+            "edition",
         ]
-        depth = 2
 
 
 class WorkWriteSerializer(serializers.ModelSerializer):
@@ -225,19 +254,11 @@ class TokenSerializer(serializers.ModelSerializer):
 
 
 class TeamDetailSerializer(serializers.ModelSerializer):
-    team_members = UserSerializer(many=True)
-    #tokens = TokenSerializer(many=True)
-    #accept_tokens = TokenSerializer(many=True)
-    #reject_tokens = TokenSerializer(many=True)
-
+    team_members = MinimalUserSerializer(many=True)
+    
     class Meta:
         model = Team
-        fields: list[str] = [
-            "id",
-            "team_members",
-            "edition"
-        ]
-        depth = 1
+        fields = ["id", "team_members"]
 
 
 class TeamWriteSerializer(serializers.ModelSerializer):
@@ -271,3 +292,4 @@ class TeamWriteSerializer(serializers.ModelSerializer):
         except Exception as e:
             raise e
         return super().validate(attrs)
+ 

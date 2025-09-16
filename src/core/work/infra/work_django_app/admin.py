@@ -31,3 +31,12 @@ admin.site.register(Ods)
 @admin.register(Team)
 class TeamAdmin(admin.ModelAdmin):
     autocomplete_fields = ["team_members"]
+    search_fields = (
+        "team_members__name",
+        "team_members__registration",
+    )
+    search_help_text = (
+        "Pesquise por: nome do membro ou matrícula. "
+        "Exemplos: 'joao', '12345'"
+    )
+    list_filter = ("edition__year",)

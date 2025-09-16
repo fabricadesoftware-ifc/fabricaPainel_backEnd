@@ -1,5 +1,6 @@
 import logging
 from django.db import transaction
+from django.db.models import Prefetch
 from rest_framework.viewsets import ModelViewSet
 from drf_spectacular.utils import extend_schema
 from rest_framework.throttling import UserRateThrottle
@@ -25,7 +26,29 @@ logger = logging.getLogger(__name__)
 
 @extend_schema(tags=["work"])
 class WorkViewSet(ModelViewSet):
-    queryset = Work.objects.all()
+    def get_queryset(self):
+        queryset = Work.objects.select_related(
+            'cross_cutting_theme',
+            'advisor',
+            'team',
+            'edition',
+        )
+        
+        if self.action == 'retrieve':
+            # Otimiza prefetch apenas para detail view
+            return queryset.prefetch_related(
+                'field',
+                'ods',
+                'evaluator',
+                'team__team_members',
+                Prefetch(
+                    'work_collaborator',
+                    queryset=WorkCollaborator.objects.select_related('collaborator')
+                )
+            )
+        
+        # Lista não precisa de tantos relacionamentos
+        return queryset.prefetch_related('field', 'ods')
     serializer_class = WorkDetailSerializer
     throttle_classes = [UserRateThrottle]
     filterset_class = WorkFilter

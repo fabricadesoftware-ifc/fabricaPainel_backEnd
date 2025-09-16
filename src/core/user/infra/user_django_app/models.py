@@ -107,3 +107,18 @@ class Specialty(models.Model):
     
     def __str__(self):
         return self.name
+    
+# Certificate
+
+class Certificate(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    work = models.ForeignKey("work_django_app.Work", on_delete=models.CASCADE)
+    hash_validate = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Certificate for {self.user.email} - Work: {self.work.title}"
+
+    class Meta:
+        unique_together = (("user", "work"),)
