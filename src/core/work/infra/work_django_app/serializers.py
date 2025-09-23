@@ -19,10 +19,20 @@ from core.work.infra.work_django_app.models import WorkCollaborator
 from core.work.domain.value_objects import WorkCollaboratorStatusType
 from core.work.infra.work_django_app.models import CrossCuttingTheme
 from core.work.infra.work_django_app.models import Field
+from core.user.infra.user_django_app.models import Evaluator
 
 class MinimalUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
+        fields = ['id', 'name', 'email']
+
+class EvaluatorLightSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(source='user.id')
+    name = serializers.CharField(source='user.name')
+    email = serializers.EmailField(source='user.email')
+
+    class Meta:
+        model = Evaluator
         fields = ['id', 'name', 'email']
 
 class TeamDetailSerializer(serializers.ModelSerializer):
@@ -91,7 +101,7 @@ class WorkDetailSerializer(serializers.ModelSerializer):
     work_collaborator = WorkCollaboratorSerializer(many=True, read_only=True)
     advisor = MinimalUserSerializer(read_only=True)
     team = TeamDetailSerializer(read_only=True)
-    evaluator = MinimalUserSerializer(many=True, read_only=True)
+    evaluator = EvaluatorLightSerializer(many=True, read_only=True)
     ods = OdsSerializer(many=True, read_only=True)
     cross_cutting_theme = CrossCuttingThemeSerializer(read_only=True)
     field = FieldSerializer(many=True, read_only=True)
