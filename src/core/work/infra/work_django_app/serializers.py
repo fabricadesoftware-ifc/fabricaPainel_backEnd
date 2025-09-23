@@ -27,9 +27,7 @@ class MinimalUserSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'email']
 
 class EvaluatorLightSerializer(serializers.ModelSerializer):
-    id = serializers.IntegerField(source='user.id')
-    name = serializers.CharField(source='user.name')
-    email = serializers.EmailField(source='user.email')
+    user = MinimalUserSerializer(read_only=True, source='evaluator')
 
     class Meta:
         model = Evaluator
