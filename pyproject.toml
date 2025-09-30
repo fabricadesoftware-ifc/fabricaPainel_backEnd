@@ -47,7 +47,7 @@ filename = "requirements.txt"
 without-hashes = "true"
 
 [tool.pdm.scripts]
-dev = "python src/manage.py runserver localhost:8000"
+dev = "python src/manage.py runserver"
 runserver = "python src/manage.py runserver"
 createsuperuser = "python src/manage.py createsuperuser"
 migrate = "python src/manage.py migrate"
