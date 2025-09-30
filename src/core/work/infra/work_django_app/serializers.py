@@ -31,7 +31,7 @@ class EvaluatorLightSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Evaluator
-        fields = ['id', 'name', 'email']
+        fields = ['id', 'name', 'email', 'user']
 
 class TeamDetailSerializer(serializers.ModelSerializer):
     team_members = MinimalUserSerializer(many=True)
