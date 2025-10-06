@@ -103,7 +103,8 @@ class WorkDetailSerializer(serializers.ModelSerializer):
     ods = OdsSerializer(many=True, read_only=True)
     cross_cutting_theme = CrossCuttingThemeSerializer(read_only=True)
     field = FieldSerializer(many=True, read_only=True)
-    
+    edition_year = serializers.ReadOnlyField(source='edition.year')
+
     class Meta:
         model = Work
         fields = [
@@ -124,6 +125,7 @@ class WorkDetailSerializer(serializers.ModelSerializer):
             "cross_cutting_theme",
             "field",
             # Relacionamentos simples (id, name)
+            "edition_year",
             "edition",
         ]
 
