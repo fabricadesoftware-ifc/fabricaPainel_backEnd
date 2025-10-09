@@ -19,11 +19,19 @@ from core.work.infra.work_django_app.models import WorkCollaborator
 from core.work.domain.value_objects import WorkCollaboratorStatusType
 from core.work.infra.work_django_app.models import CrossCuttingTheme
 from core.work.infra.work_django_app.models import Field
+from core.user.infra.user_django_app.models import Evaluator
 
 class MinimalUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'name', 'email']
+
+class EvaluatorLightSerializer(serializers.ModelSerializer):
+    user = MinimalUserSerializer(read_only=True)
+
+    class Meta:
+        model = Evaluator
+        fields = ['id', 'user']
 
 class TeamDetailSerializer(serializers.ModelSerializer):
     team_members = MinimalUserSerializer(many=True)
@@ -91,11 +99,12 @@ class WorkDetailSerializer(serializers.ModelSerializer):
     work_collaborator = WorkCollaboratorSerializer(many=True, read_only=True)
     advisor = MinimalUserSerializer(read_only=True)
     team = TeamDetailSerializer(read_only=True)
-    evaluator = MinimalUserSerializer(many=True, read_only=True)
+    evaluator = EvaluatorLightSerializer(many=True, read_only=True)
     ods = OdsSerializer(many=True, read_only=True)
     cross_cutting_theme = CrossCuttingThemeSerializer(read_only=True)
     field = FieldSerializer(many=True, read_only=True)
-    
+    edition_year = serializers.ReadOnlyField(source='edition.year')
+
     class Meta:
         model = Work
         fields = [
@@ -116,6 +125,7 @@ class WorkDetailSerializer(serializers.ModelSerializer):
             "cross_cutting_theme",
             "field",
             # Relacionamentos simples (id, name)
+            "edition_year",
             "edition",
         ]
 

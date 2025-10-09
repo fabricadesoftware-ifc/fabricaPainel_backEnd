@@ -36,6 +36,7 @@ dependencies = [
     "reportlab>=4.4.2",
     "django-debug-toolbar>=5.2.0",
     "whitenoise>=6.9.0",
+    "redis>=6.4.0",
 ]
 requires-python = "==3.12.*"
 readme = "README.md"
@@ -46,7 +47,7 @@ filename = "requirements.txt"
 without-hashes = "true"
 
 [tool.pdm.scripts]
-dev = "python src/manage.py runserver localhost:8000"
+dev = "python src/manage.py runserver"
 runserver = "python src/manage.py runserver"
 createsuperuser = "python src/manage.py createsuperuser"
 migrate = "python src/manage.py migrate"
