@@ -1,215 +1,117 @@
 import hashlib
-import logging
-from django.http import HttpResponse
-from django.template.loader import render_to_string
-from django.db.models import Prefetch
+import time
+from datetime import date
+
+from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.utils import timezone
-from rest_framework.viewsets import ModelViewSet
-from rest_framework.response import Response
-from rest_framework.throttling import UserRateThrottle
-from datetime import datetime
 
-from core.assessment.infra.assessment_django_app.models import Assessment, StudentAssessments
-from core.user.infra.user_django_app.models import User, UserClass, Certificate
-from core.work.infra.work_django_app.models import Work
-from core.work.domain.value_objects import WorkStatusType
-from core.edition.infra.edition_django_app.models import Edition
+# Ajuste o caminho de importação para seus modelos
+from your_app.models import Work, StudentAssessment, Assessment, Certificate, User
 
-logger = logging.getLogger(__name__)
+class Command(BaseCommand):
+    """
+    Verifica trabalhos concluídos e cria registros de certificados para alunos
+    aprovados. Esta tarefa é idempotente e projetada para ser executada
+    periodicamente.
+    """
+    help = 'Cria registros de certificados para alunos elegíveis.'
 
-
-def validate_final_evaluators_date():
-
-    # Busca edições onde o período de avaliação já passou
-    now = timezone.now().date()
-    editions_to_process = Edition.objects.filter(
-        final_evaluators_date__lt=now
-    ).select_related()
-
-    if not editions_to_process.exists():
-        logger.info("Nenhuma edição com período de avaliação finalizado encontrada.")
-        return {
-            "message": "Nenhuma edição para processar",
-            "certificates_created": 0,
-            "certificates_skipped": 0,
-        }
-
-    total_certificates_created = 0
-    processing_details = []
-
-    for edition in editions_to_process:
-        logger.info(f"Processando edição {edition.year}...")
-
-        # Busca trabalhos aprovados da edição com dados relacionados
-        approved_works = (
-            Work.objects.filter(
-                edition=edition, status=WorkStatusType.Type.APPROVED.value
-            )
-            .select_related("team")
-            .prefetch_related(
-                "team__team_members",
-                Prefetch("assessment_set", queryset=Assessment.objects.all()),
-                Prefetch(
-                    "studentassessments_set",
-                    queryset=StudentAssessments.objects.select_related("student"),
-                ),
-            )
+    def handle(self, *args, **options):
+        self.stdout.write(self.style.SUCCESS("Iniciando a tarefa de verificação e criação de certificados..."))
+        
+        # Busca apenas trabalhos que já terminaram e que
+        # ainda não tiveram seus certificados processados.
+        today = date.today()
+        works_to_process = Work.objects.filter(
+            final_evaluators_date__lt=today,
+            certificates_generated_at__isnull=True
         )
 
-        if not approved_works.exists():
-            logger.info(
-                f"Nenhum trabalho aprovado encontrado para edição {edition.year}"
-            )
-            continue
+        if not works_to_process.exists():
+            self.stdout.write(self.style.SUCCESS("Nenhum trabalho novo para processar."))
+            return
 
-        edition_details = {
-            "edition": edition.year,
-            "works_processed": 0,
-            "certificates_created": 0,
-        }
+        self.stdout.write(f"Encontrados {works_to_process.count()} trabalhos para processar.")
+        total_certificates_created = 0
 
-        for work in approved_works:
-            edition_details["works_processed"] += 1
+        # Loop principal: processa um trabalho de cada vez
+        for work in works_to_process:
+            self.stdout.write(self.style.NOTICE(f"\nProcessando trabalho: '{work.name}' (ID: {work.id})"))
 
-            # Verifica se o trabalho tem avaliação válida
-            work_assessment = work.assessment_set.first()
-            if not work_assessment or work_assessment.grade <= 0:
-                logger.warning(
-                    f"Trabalho {work.id} - {work.title} não tem avaliação válida."
-                )
-                continue
+            # ======================================================================
+            # PARTE 1: VERIFICAÇÃO DOS REQUISITOS (VALIDAÇÃO)
+            # ======================================================================
+            # Confirma se as condições para gerar o certificado foram atendidas.
 
-            # Processa cada membro da equipe
-            if work.team and work.team.team_members.exists():
-                team_members = work.team.team_members.filter(user_type=User.STUDENT)
+            #  1: O trabalho/grupo deve ter uma nota de avaliação válida.
+            has_valid_work_grade = Assessment.objects.filter(
+                work=work,
+                grade__isnull=False,
+                grade__gte=5.0  # Regra de negócio: Nota mínima de aprovação do grupo.
+            ).exists()
 
-                for student in team_members:
-                    if _process_student_certificate_validation(student, work, edition):
-                        total_certificates_created += 1
-                        edition_details["certificates_created"] += 1
+            if not has_valid_work_grade:
+                self.stdout.write(self.style.WARNING(f"  -> FALHA NA VERIFICAÇÃO: O trabalho não possui nota de grupo válida. Pulando."))
+                continue # Pula para o próximo trabalho
 
-        processing_details.append(edition_details)
+            # 2: Deve haver alunos com nota individual suficiente.
+            # Buscamos as avaliações que atendem ao critério.
+            eligible_students_assessments = StudentAssessment.objects.filter(
+                work=work,
+                grade__isnull=False,
+                grade__gte=5.0  
+            ).select_related('user') # Otimização para já buscar os dados do aluno.
 
-    logger.info(
-        f"Validação finalizada. Criados: {total_certificates_created} certificados"
-    )
+            if not eligible_students_assessments.exists():
+                self.stdout.write(self.style.WARNING(f"  -> FALHA NA VERIFICAÇÃO: Nenhum aluno atingiu a nota mínima individual. Pulando."))
+                continue # Pula para o próximo trabalho
 
-    return {
-        "message": "Validação e geração de certificados finalizada com sucesso",
-        "certificates_created": total_certificates_created,
-        "processing_details": processing_details,
-    }
+            self.stdout.write(self.style.SUCCESS(f"  -> VERIFICAÇÃO OK: {eligible_students_assessments.count()} aluno(s) são elegíveis."))
 
 
-def _process_student_certificate_validation(student, work, edition):
-    # Verifica se já existe certificado (idempotência)
-    existing_certificate = Certificate.objects.filter(user=student, work=work).first()
-    if existing_certificate:
-        logger.debug(f"Certificado já existe para {student.email} - Trabalho {work.id}")
-        return False
+            # 2: GERAÇÃO DOS REGISTROS DE CERTIFICADO (CRIAÇÃO)
 
-    # Verifica se o estudante tem avaliação individual
-    student_assessment = StudentAssessments.objects.filter(
-        student=student, work=work
-    ).first()
+            certificates_created_count = 0
+            try:
+                # Usar uma transação garante que ou todos os certificados de um
+                # trabalho são criados, ou nenhum é, mantendo a consistência.
+                with transaction.atomic():
+                    for student_assessment in eligible_students_assessments:
+                        student = student_assessment.user
 
-    if not student_assessment:
-        logger.warning(
-            f"Estudante {student.email} não tem avaliação individual para trabalho {work.id}"
-        )
-        return False
+                        # Gera um hash único para validação futura do certificado.
+                        hash_input = f"{student.id}-{work.id}-{time.time()}"
+                        hash_validate = hashlib.sha256(hash_input.encode('utf-8')).hexdigest()
 
-    # Verifica se as notas são válidas (maior que 0)
-    if student_assessment.grade <= 0:
-        logger.warning(
-            f"Estudante {student.email} tem nota inválida: {student_assessment.grade}"
-        )
-        return False
+                        # Ação de criação idempotente:
+                        # O Django tenta buscar um certificado para este usuário e trabalho.
+                        # Se não encontrar, ele cria um novo usando os valores de `defaults`.
+                        # Se já encontrar, não faz nada.
+                        certificate, created = Certificate.objects.get_or_create(
+                            user=student,
+                            work=work,
+                            defaults={'hash_validate': hash_validate}
+                        )
 
-    # Gera hash único para o certificado
-    hash_validate = _generate_certificate_hash_validation(student, work, edition)
+                        if created:
+                            certificates_created_count += 1
+                            self.stdout.write(f"    -> Registro de certificado CRIADO para o usuário: {student.username}")
+                        else:
+                            # Isso não deve acontecer se a lógica de `certificates_generated_at` estiver correta,
+                            # mas é uma segurança extra.
+                            self.stdout.write(f"    -> Registro para {student.username} já existia. Nenhuma ação tomada.")
+            
+            except Exception as e:
+                self.stdout.write(self.style.ERROR(f"  -> ERRO na criação de certificados para o trabalho {work.id}: {e}"))
+                continue # Pula para o próximo trabalho
 
-    # Cria o certificado
-    try:
-        with transaction.atomic():
-            certificate = Certificate.objects.create(
-                user=student, work=work, hash_validate=hash_validate
-            )
-            logger.info(
-                f"Certificado criado para {student.email} - Trabalho: {work.title}"
-            )
-            return True
+            if certificates_created_count > 0:
+                total_certificates_created += certificates_created_count
+                self.stdout.write(self.style.SUCCESS(f"  -> {certificates_created_count} novos registros de certificado foram criados com sucesso."))
 
-    except Exception as e:
-        logger.error(f"Erro ao criar certificado para {student.email}: {str(e)}")
-        return False
+            # Marca o trabalho como processado para não ser verificado novamente no futuro.
+            work.certificates_generated_at = timezone.now()
+            work.save(update_fields=['certificates_generated_at'])
 
-def _generate_certificate_hash_validation(student, work, edition):
-
-    hash_data = f"{student.id}-{work.id}-{edition.id}-{timezone.now().timestamp()}"
-    return hashlib.sha256(hash_data.encode()).hexdigest()
-
-
-def validate_final_evaluators_date_for_edition(edition_id):
-
-    try:
-        edition = Edition.objects.get(id=edition_id)
-
-        # Verifica se o período já passou
-        now = timezone.now().date()
-        if edition.final_evaluators_date >= now:
-            return {
-                "error": f"Período de avaliação da edição {edition.year} ainda não finalizou",
-                "final_evaluators_date": edition.final_evaluators_date.isoformat(),
-                "current_date": now.isoformat(),
-            }
-
-        # Processa apenas esta edição
-        approved_works = (
-            Work.objects.filter(
-                edition=edition, status=WorkStatusType.Type.APPROVED.value
-            )
-            .select_related("team")
-            .prefetch_related(
-                "team__team_members",
-                Prefetch("assessment_set", queryset=Assessment.objects.all()),
-                Prefetch(
-                    "studentassessments_set",
-                    queryset=StudentAssessments.objects.select_related("student"),
-                ),
-            )
-        )
-
-        if not approved_works.exists():
-            return {
-                "message": f"Nenhum trabalho aprovado encontrado para edição {edition.year}",
-                "certificates_created": 0,
-            }
-
-        total_created = 0
-
-        for work in approved_works:
-            work_assessment = work.assessment_set.first()
-            if not work_assessment or work_assessment.grade <= 0:
-                continue
-
-            if work.team and work.team.team_members.exists():
-                team_members = work.team.team_members.filter(user_type=User.STUDENT)
-
-                for student in team_members:
-                    if _process_student_certificate_validation(student, work, edition):
-                        total_created += 1
-
-        return {
-            "message": f"Certificados validados e gerados para edição {edition.year}",
-            "edition_year": edition.year,
-            "certificates_created": total_created,
-            "final_evaluators_date": edition.final_evaluators_date.isoformat(),
-        }
-
-    except Edition.DoesNotExist:
-        return {"error": f"Edição {edition_id} não encontrada"}
-    except Exception as e:
-        logger.error(f"Erro ao validar certificados para edição {edition_id}: {str(e)}")
-        return {"error": str(e)}
+        self.stdout.write(self.style.SUCCESS(f"\n[ Tarefa Finalizada ] Total de {total_certificates_created} novos registros de certificado criados na execução."))
