@@ -4,6 +4,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from .serializers import CustomTokenObtainPairSerializer
 
 from core.user.domain.tasks.generate_certificates import generate_certificate_hash, generate_certificate_pdf
+from core.user.domain.validations.validate_certificate_date import validate_certificate_date_is_valid
 from core.work.infra.work_django_app.models import Work
 
 from .models import User, Evaluator, Class, UserClass, Specialty, Certificate
@@ -76,6 +77,7 @@ class CertificateViewSet(ReadOnlyModelViewSet):
 @permission_classes([IsStudent])
 def create_certificate(request, year):
     print(year)
+    validate_certificate_date_is_valid(year)
     
     user = request.user
     work = Work.objects.filter(team__team_members=user, edition__year=year).first()

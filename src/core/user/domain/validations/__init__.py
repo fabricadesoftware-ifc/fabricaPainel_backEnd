@@ -3,3 +3,4 @@ from .validate_user_collaborator import validate_user_can_be_collaborator, valid
 from .validate_user_evaluator import validate_user_can_be_evaluator, validate_evaluator_creation
 from .validate_user_advisor import validate_user_can_be_advisor, validate_user_advisor_status, validate_advisor_work_assignment
 from .validate_certificates import CertificateValidations
+from .validate_certificate_date import validate_certificate_date_is_valid
