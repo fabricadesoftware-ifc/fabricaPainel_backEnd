@@ -3,41 +3,165 @@
 <head>
     <meta charset="utf-8">
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            padding: 60px;
+            font-family: 'Georgia', serif;
+            padding: 30px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
 
         .cert {
-            border: 5px solid #000;
-            padding: 40px;
+            background: white;
+            border: 12px solid #2c3e50;
+            padding: 50px 40px;
+            position: relative;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+
+        .cert::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            bottom: 20px;
+            border: 2px solid #e8b923;
+            pointer-events: none;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
         }
 
         h1 {
-            font-size: 42px;
+            font-size: 48px;
+            color: #2c3e50;
+            letter-spacing: 8px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        .subtitle {
+            font-size: 14px;
+            color: #7f8c8d;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .content {
+            text-align: center;
+            margin: 50px 0;
+        }
+
+        .intro {
+            font-size: 18px;
+            color: #555;
+            margin-bottom: 25px;
+        }
+
+        .user-name {
+            font-size: 36px;
+            color: #2c3e50;
+            font-weight: bold;
+            margin: 25px 0;
+            padding: 15px 10px;
+            border-bottom: 3px solid #e8b923;
+            border-top: 3px solid #e8b923;
+            display: inline-block;
+            min-width: 300px;
+            max-width: 90%;
+            word-wrap: break-word;
+        }
+
+        .participation {
+            font-size: 18px;
+            color: #555;
+            margin: 30px 0 20px 0;
+        }
+
+        .work-title {
+            font-size: 28px;
+            color: #667eea;
+            font-weight: bold;
+            font-style: italic;
+            margin: 20px 0;
+            max-width: 90%;
+            display: inline-block;
+            word-wrap: break-word;
+        }
+
+        .footer {
+            margin-top: 60px;
+            text-align: center;
         }
 
         .hash {
-            margin-top: 40px;
-            font-size: 12px;
+            font-size: 9px;
+            color: #95a5a6;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 0px;
+            padding: 10px 15px;
+            background: #ecf0f1;
+            border-radius: 4px;
+            max-width: 95%;
+            margin: 0 auto;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            line-height: 1.5;
+        }
+
+        .hash-label {
+            font-weight: bold;
+            color: #7f8c8d;
+        }
+
+        .decoration {
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .decoration::before,
+        .decoration::after {
+            content: '◆';
+            color: #e8b923;
+            font-size: 20px;
+            margin: 0 15px;
         }
     </style>
 </head>
 <body>
     <div class="cert">
-        <h1>CERTIFICADO</h1>
+        <div class="header">
+            <h1>Certificado</h1>
+            <p class="subtitle">de Participação</p>
+        </div>
 
-        <p>Certificamos que</p>
+        <div class="content">
+            <p class="intro">Certificamos que</p>
 
-        <h2>{{ user.name }}</h2>
+            <div class="user-name">nome</div>
 
-        <p>participou do projeto:</p>
+            <p class="participation">participou do projeto:</p>
 
-        <h3>{{ work.title }}</h3>
+            <div class="decoration"></div>
 
-        <div class="hash">
-            Código de validação: {{ certificate.hash_validate }}
+            <div class="work-title">titulo</div>
+
+            <div class="decoration"></div>
+        </div>
+
+        <div class="footer">
+            <div class="hash">
+                <span class="hash-label">Código de Validação:</span><br>
+                hash
+            </div>
         </div>
     </div>
 </body>

@@ -81,7 +81,7 @@ def create_certificate(request, year):
     work = Work.objects.filter(team__team_members=user, edition__year=year).first()
     
     if not work:
-        return Response({"error": "User has no associated work."}, status=400)
+        return Response({"error": "O usuário não possui trabalho associado para o ano especificado."}, status=400)
     
     certificate, created = Certificate.objects.get_or_create(
         user=user,

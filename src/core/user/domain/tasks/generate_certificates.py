@@ -1,6 +1,5 @@
 import hashlib
 from django.utils import timezone
-from django.template.loader import render_to_string
 from django.conf import settings
 from weasyprint import HTML
 from io import BytesIO
@@ -8,16 +7,13 @@ import os
 
 
 def generate_certificate_pdf(certificate, work, user):
-    """
-    Gera um PDF de certificado para o usuário e trabalho fornecidos.
-    """
-    html_string = render_to_string('certificate.html', {
-        'certificate': certificate,
-        'work': work,
-        'user': user,
-    })
+    with open(os.path.join(settings.BASE_DIR, 'templates/certificate.html'), 'r', encoding='utf-8') as f:
+        html_string = f.read()
 
-    # Gera o PDF a partir do HTML renderizado
+    html_string = html_string.replace("nome", user.name)
+    html_string = html_string.replace("titulo", work.title)
+    html_string = html_string.replace("hash", certificate.hash_validate)
+
     pdf_file_path = os.path.join(
         settings.MEDIA_ROOT,
         f"certificate_{certificate.id}.pdf"
@@ -25,7 +21,6 @@ def generate_certificate_pdf(certificate, work, user):
 
     HTML(string=html_string).write_pdf(pdf_file_path)
     return pdf_file_path
-
 
 def generate_certificate_hash(user_id: int, work_id: int) -> str:
     """
