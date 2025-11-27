@@ -61,6 +61,12 @@ class IsAdvisor(BasePermission):
         return bool(user.is_authenticated and
                     user.user_type == UserType.Type.TEACHER and
                     getattr(user, 'is_advisor', False))
+        
+class IsNotStudent(BasePermission):
+    def has_permission(self, request, view):
+        user = request.user
+        return bool(user.is_authenticated and
+                    user.user_type != UserType.Type.STUDENT)
 
 class IsCollaboratorOrReadOnly(BasePermission):
     def has_permission(self, request, view):

@@ -13,7 +13,7 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
 from core.user.infra.user_django_app.views import CustomTokenObtainPairView
-from core.user.infra.user_django_app.views import create_certificate
+from core.user.infra.user_django_app.views import create_certificate, verify_certificate
 from core.work.infra.work_django_app.views import (
     approve_work,
     needs_changes_work,
@@ -69,6 +69,7 @@ urlpatterns = [
     path("api/reject-submission/<str:verification_token>/", reject_submission,  name="reject-submission"),
     
     path("api/create-certificate/<str:year>/", create_certificate, name="create-certificate"),
+    path("api/verify-certificate/<str:hash_validate>/", verify_certificate, name="verify-certificate"),
     
     path('', lambda request: redirect('api/', permanent=True)),
 ]

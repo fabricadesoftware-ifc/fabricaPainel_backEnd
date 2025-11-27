@@ -13,7 +13,7 @@ from .filters import UserFilter, EvaluatorFilter
 
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
-from django_project.permissions import IsUserOwnerOrReadOnly, IsAdminOrReadOnly, IsStudent
+from django_project.permissions import IsNotStudent, IsAdminOrReadOnly, IsStudent
 from django.http import FileResponse
 
 @extend_schema(tags=["users"])
@@ -80,7 +80,7 @@ def create_certificate(request, year):
     validate_certificate_date_is_valid(year)
     
     user = request.user
-    work = Work.objects.filter(team__team_members=user, edition__year=year).first()
+    work = Work.objects.get(team__team_members=user, edition__year=year)
     
     if not work:
         return Response({"error": "O usuário não possui trabalho associado para o ano especificado."}, status=400)
@@ -101,3 +101,25 @@ def create_certificate(request, year):
         as_attachment=True,
         filename=f"certificado_{user.id}.pdf"
     )
+    
+    
+@extend_schema(tags=["certificate-verify"])
+@api_view(['GET'])
+@permission_classes([IsNotStudent])
+def verify_certificate(request, hash_validate):
+
+    
+    certificate = Certificate.objects.get(
+        hash_validate=hash_validate
+    )
+    
+    if not certificate:
+        return Response({"error": "Certificado não encontrado."}, status=404)
+    
+
+    return Response({
+        "year": certificate.work.edition.year,
+        "user": certificate.user.name,
+        "work": certificate.work.title,
+        "hash_validate": certificate.hash_validate
+    })
