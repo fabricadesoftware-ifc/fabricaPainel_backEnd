@@ -3,6 +3,11 @@
 <head>
     <meta charset="utf-8">
     <style>
+        @page {
+            size: A4 landscape;
+            margin: 0;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -11,135 +16,191 @@
 
         body {
             font-family: 'Georgia', serif;
-            padding: 30px 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: white;
+            width: 297mm;
+            height: 210mm;
+            padding: 0;
+            margin: 0;
         }
 
         .cert {
             background: white;
-            border: 12px solid #2c3e50;
-            padding: 50px 40px;
+            border: 15px solid #1a1a1a;
+            padding: 35px 60px 30px 60px;
             position: relative;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
         }
 
         .cert::before {
             content: '';
             position: absolute;
-            top: 20px;
-            left: 20px;
-            right: 20px;
-            bottom: 20px;
-            border: 2px solid #e8b923;
+            top: 25px;
+            left: 25px;
+            right: 25px;
+            bottom: 25px;
+            border: 1px solid #8b7355;
             pointer-events: none;
+        }
+
+        .logos {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .logo-ifc {
+            max-width: 125px;
+            height: auto;
+            opacity: 0.9;
+        }
+
+        .logo-fabrica {
+            max-width: 75px;
+            height: auto;
+            opacity: 0.9;
         }
 
         .header {
             text-align: center;
-            margin-bottom: 40px;
+            margin-bottom: 30px;
         }
 
         h1 {
-            font-size: 48px;
-            color: #2c3e50;
-            letter-spacing: 8px;
-            font-weight: bold;
-            margin-bottom: 10px;
+            font-size: 52px;
+            color: #1a1a1a;
+            letter-spacing: 12px;
+            font-weight: normal;
+            margin-bottom: 8px;
             text-transform: uppercase;
+            font-family: 'Times New Roman', serif;
         }
 
         .subtitle {
-            font-size: 14px;
-            color: #7f8c8d;
-            letter-spacing: 2px;
+            font-size: 13px;
+            color: #666;
+            letter-spacing: 3px;
             text-transform: uppercase;
+            font-weight: normal;
         }
 
         .content {
             text-align: center;
-            margin: 50px 0;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px 0;
         }
 
         .intro {
-            font-size: 18px;
-            color: #555;
-            margin-bottom: 25px;
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 20px;
+            font-style: italic;
         }
 
         .user-name {
-            font-size: 36px;
-            color: #2c3e50;
+            font-size: 32px;
+            color: #1a1a1a;
             font-weight: bold;
-            margin: 25px 0;
-            padding: 15px 10px;
-            border-bottom: 3px solid #e8b923;
-            border-top: 3px solid #e8b923;
-            display: inline-block;
-            min-width: 300px;
-            max-width: 90%;
+            margin: 20px 0;
+            padding: 12px 20px;
+            border-bottom: 2px solid #8b7355;
+            text-align: center;
+            min-width: 400px;
+            max-width: 700px;
             word-wrap: break-word;
         }
 
         .participation {
-            font-size: 18px;
-            color: #555;
-            margin: 30px 0 20px 0;
+            font-size: 16px;
+            color: #333;
+            margin: 25px 0 15px 0;
+            font-style: italic;
         }
 
         .work-title {
-            font-size: 28px;
-            color: #667eea;
+            font-size: 24px;
+            color: #1a1a1a;
             font-weight: bold;
-            font-style: italic;
-            margin: 20px 0;
-            max-width: 90%;
-            display: inline-block;
+            margin: 15px 0;
+            max-width: 700px;
+            text-align: center;
             word-wrap: break-word;
+            line-height: 1.4;
+        }
+
+        .workload {
+            font-size: 19px;
+            color: #333;
+            margin-top: 10px;
+            font-style: italic;
+        }
+
+        .workload-hours {
+            font-weight: bold;
+            color: #1a1a1a;
+            font-style: normal;
         }
 
         .footer {
-            margin-top: 60px;
+            margin-top: auto;
             text-align: center;
+            padding-top: 15px;
         }
 
         .hash {
-            font-size: 9px;
-            color: #95a5a6;
+            font-size: 7.5px;
+            color: #666;
             font-family: 'Courier New', monospace;
-            letter-spacing: 0px;
-            padding: 10px 15px;
-            background: #ecf0f1;
-            border-radius: 4px;
-            max-width: 95%;
+            letter-spacing: 0.3px;
+            padding: 6px 10px;
+            background: #f5f5f5;
+            border-radius: 3px;
+            max-width: 750px;
             margin: 0 auto;
             word-wrap: break-word;
             overflow-wrap: break-word;
-            line-height: 1.5;
+            line-height: 1.3;
+            border: 1px solid #ddd;
         }
 
         .hash-label {
             font-weight: bold;
-            color: #7f8c8d;
+            color: #333;
+            font-size: 9px;
         }
 
         .decoration {
             text-align: center;
-            margin: 30px 0;
+            margin: 15px 0;
+            color: #8b7355;
+            font-size: 12px;
+            width: 100%;
         }
 
         .decoration::before,
         .decoration::after {
-            content: '◆';
-            color: #e8b923;
-            font-size: 20px;
-            margin: 0 15px;
+            content: '—';
+            margin: 0 20px;
+            letter-spacing: 2px;
         }
     </style>
 </head>
 <body>
     <div class="cert">
+        <div class="logos">
+            <img src="logo_ifc" alt="IFC Campus Araquari" class="logo-ifc">
+            <img src="logo_fabrica" alt="Fábrica de Software" class="logo-fabrica">
+        </div>
+
         <div class="header">
-            <h1>Certificado</h1>
+            <h1>CERTIFICADO</h1>
             <p class="subtitle">de Participação</p>
         </div>
 
@@ -148,18 +209,20 @@
 
             <div class="user-name">nome</div>
 
-            <p class="participation">participou do projeto:</p>
+            <p class="participation">participou do projeto</p>
 
             <div class="decoration"></div>
 
             <div class="work-title">titulo</div>
+
+            <p class="workload">com carga horária de <span class="workload-hours">carga_horaria</span></p>
 
             <div class="decoration"></div>
         </div>
 
         <div class="footer">
             <div class="hash">
-                <span class="hash-label">Código de Validação:</span><br>
+                <span class="hash-label">CÓDIGO DE VALIDAÇÃO:</span><br>
                 hash
             </div>
         </div>
