@@ -3,11 +3,18 @@ from drf_spectacular.utils import extend_schema
 from rest_framework_simplejwt.views import TokenObtainPairView
 from .serializers import CustomTokenObtainPairSerializer
 
+from core.user.domain.tasks.generate_certificates import generate_certificate_hash, generate_certificate_pdf
+from core.user.domain.validations.validate_certificate_date import validate_certificate_date_is_valid
+from core.work.infra.work_django_app.models import Work
+
 from .models import User, Evaluator, Class, UserClass, Specialty, Certificate
 from .serializers import UserSerializer, UserRetrieveSerializer, EvaluatorSerializer, ClassSerializer, UserClassSerializer, UserViewSerializer, SpecialtySerializer, CertificateSerializer
 from .filters import UserFilter, EvaluatorFilter
 
-from django_project.permissions import IsUserOwnerOrReadOnly, IsAdminOrReadOnly
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.response import Response
+from django_project.permissions import IsNotStudent, IsAdminOrReadOnly, IsStudent
+from django.http import FileResponse
 
 @extend_schema(tags=["users"])
 class UserViewSet(ModelViewSet):
@@ -64,3 +71,55 @@ class CertificateViewSet(ReadOnlyModelViewSet):
     queryset = Certificate.objects.all()
     serializer_class = CertificateSerializer
     filterset_fields = ["hash_validate"]
+    
+@extend_schema(tags=["certificate-generate"])
+@api_view(['GET'])
+@permission_classes([IsStudent])
+def create_certificate(request, year):
+    print(year)
+    validate_certificate_date_is_valid(year)
+    
+    user = request.user
+    work = Work.objects.get(team__team_members=user, edition__year=year)
+    
+    if not work:
+        return Response({"error": "O usuário não possui trabalho associado para o ano especificado."}, status=400)
+    
+    certificate, created = Certificate.objects.get_or_create(
+        user=user,
+        work=work,
+        defaults={
+            "hash_validate": generate_certificate_hash(user.id, work.id)
+        }
+    )
+    
+    pdf_file_path = generate_certificate_pdf(certificate, work, user)
+    
+    return FileResponse(
+        open(pdf_file_path, 'rb'),
+        content_type='application/pdf',
+        as_attachment=True,
+        filename=f"certificado_{user.id}.pdf"
+    )
+    
+    
+@extend_schema(tags=["certificate-verify"])
+@api_view(['GET'])
+@permission_classes([IsNotStudent])
+def verify_certificate(request, hash_validate):
+
+    
+    certificate = Certificate.objects.get(
+        hash_validate=hash_validate
+    )
+    
+    if not certificate:
+        return Response({"error": "Certificado não encontrado."}, status=404)
+    
+
+    return Response({
+        "year": certificate.work.edition.year,
+        "user": certificate.user.name,
+        "work": certificate.work.title,
+        "hash_validate": certificate.hash_validate
+    })
