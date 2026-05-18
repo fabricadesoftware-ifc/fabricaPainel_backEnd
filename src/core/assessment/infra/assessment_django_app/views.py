@@ -30,7 +30,7 @@ from core.assessment.infra.assessment_django_app.serializers import (
     StudentAssessmentsWriteSerializer
 )
 from core.assessment.infra.assessment_django_app.filters import AssessmentFilterSet, StudentAssessmentFilterSet
-from django_project.permissions import IsAdvisorOrTeamMember, IsAdvisorOrEvaluatorOrTeamMember, IsTeacher, IsAdmin
+from django_project.permissions import IsAdvisorOrTeamMember, IsAdvisorOrEvaluatorOrTeamMember, IsTeacherOrAdmin
 
 @extend_schema(tags=["assessment"])
 class AssessmentViewSet(ModelViewSet):
@@ -81,9 +81,9 @@ class StudentAssessmentsViewSet(ModelViewSet):
             return StudentAssessmentsSerializer
         return StudentAssessmentsWriteSerializer
     
-@throttle_classes([UserRateThrottle])
 @api_view(["GET"])
-@permission_classes([IsTeacher, IsAdmin])
+@throttle_classes([UserRateThrottle])
+@permission_classes([IsTeacherOrAdmin])
 def generate_assessment_report(request, year, class_name=None):
     try:
         grades = prepare_grades(int(year), class_name)

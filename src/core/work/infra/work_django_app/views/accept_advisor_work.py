@@ -13,8 +13,8 @@ from core.work.domain.tasks.send_email_student.approve.send_work_approve_email_t
 import uuid
 
 
-@throttle_classes([UserRateThrottle])
 @api_view(["GET"])
+@throttle_classes([UserRateThrottle])
 @permission_classes([IsAdvisor])
 def accept_advisor_work(request, verification_token) -> Response:
     try:

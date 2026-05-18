@@ -42,10 +42,18 @@ class TeamDetailSerializer(serializers.ModelSerializer):
 
 class WorkCollaboratorSerializer(serializers.ModelSerializer):
     collaborator = MinimalUserSerializer(read_only=True)
+    verification_token = serializers.SerializerMethodField()
+
+    def get_verification_token(self, obj):
+        request = self.context.get("request")
+        user = getattr(request, "user", None)
+        if user and user.is_authenticated and obj.collaborator_id == user.id:
+            return obj.verification_token
+        return None
     
     class Meta:
         model = WorkCollaborator
-        fields = ['id', 'collaborator', 'status']
+        fields = ['id', 'collaborator', 'status', 'verification_token']
 
 class OdsSerializer(serializers.ModelSerializer):
     class Meta:
@@ -97,6 +105,7 @@ class WorkListSerializer(serializers.ModelSerializer):
 
 class WorkDetailSerializer(serializers.ModelSerializer):
     work_collaborator = WorkCollaboratorSerializer(many=True, read_only=True)
+    verification_token = serializers.SerializerMethodField()
     advisor = MinimalUserSerializer(read_only=True)
     team = TeamDetailSerializer(read_only=True)
     evaluator = EvaluatorLightSerializer(many=True, read_only=True)
@@ -111,6 +120,7 @@ class WorkDetailSerializer(serializers.ModelSerializer):
             "id",
             "title",
             "abstract",
+            "verification_token",
             "status",
             "advisor_status",
             "integrated_project",
@@ -128,6 +138,13 @@ class WorkDetailSerializer(serializers.ModelSerializer):
             "edition_year",
             "edition",
         ]
+
+    def get_verification_token(self, obj):
+        request = self.context.get("request")
+        user = getattr(request, "user", None)
+        if user and user.is_authenticated and obj.advisor_id == user.id:
+            return obj.verification_token
+        return None
 
 
 class WorkWriteSerializer(serializers.ModelSerializer):

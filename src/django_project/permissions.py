@@ -45,6 +45,14 @@ class IsStudentOrReadOnly(RolePermission):
 class IsTeacher(RolePermission):
     role = UserType.Type.TEACHER
     require_auth = True
+
+class IsTeacherOrAdmin(BasePermission):
+    def has_permission(self, request, view):
+        user = request.user
+        return bool(
+            user.is_authenticated and
+            user.user_type in [UserType.Type.TEACHER, UserType.Type.ADMIN]
+        )
     
 class IsAdvisorOrReadOnly(BasePermission):
     def has_permission(self, request, view):
@@ -118,21 +126,34 @@ class IsAdvisorOrEvaluatorOrTeamMember(BasePermission):
     def has_permission(self, request, view):
         user = request.user
 
-        if user.is_authenticated and Evaluator.objects.filter(user=user.id).exists():
+        if not user.is_authenticated:
+            return False
+
+        if Evaluator.objects.filter(user=user.id).exists():
+            return True
+
+        if getattr(user, 'is_advisor', False):
             return True
 
         if request.method in SAFE_METHODS:
-            return user.is_authenticated 
+            return True
 
         return False
 
     def has_object_permission(self, request, view, obj):    
         user = request.user
 
-        if request.method in SAFE_METHODS and user.is_authenticated and obj.work.team.team_members.filter(id=user.id).exists() or obj.work.advisor.filter(id=user.id).exists():
-            return True
+        if not user.is_authenticated:
+            return False
 
-        return user.is_authenticated and obj.work.evaluator == user
+        is_team_member = obj.work.team.team_members.filter(id=user.id).exists()
+        is_advisor = obj.work.advisor_id == user.id
+        is_evaluator = obj.work.evaluator.filter(user=user.id).exists()
+
+        if request.method in SAFE_METHODS:
+            return is_team_member or is_advisor or is_evaluator
+
+        return is_advisor or is_evaluator
     
 
     

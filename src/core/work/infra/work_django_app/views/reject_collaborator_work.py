@@ -11,8 +11,8 @@ from core.work.domain.tasks.send_email_student.send_collaborator_response_email_
 )
 
 
-@throttle_classes([UserRateThrottle])
 @api_view(["GET"])
+@throttle_classes([UserRateThrottle])
 @permission_classes([IsCollaborator])
 def reject_collaborator_work(request, verification_token) -> Response:
     try:

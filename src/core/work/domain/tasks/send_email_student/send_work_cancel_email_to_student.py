@@ -1,22 +1,29 @@
-from django.core.mail import send_mail
 from celery import shared_task
-from core.work.infra.work_django_app.models import Work
+from django.core.mail import send_mail
+from django.utils.html import strip_tags
 
+from core.work.domain.tasks.email_branding import build_panel_email
+from core.work.infra.work_django_app.models import Work
 
 
 @shared_task
 def send_work_cancel_email_to_student(work_id: str, from_email: str) -> None:
-    """
-    Sends an email to the student informing that the work was canceled.
-    """
-    work: object = Work.objects.get(id=work_id)
-    students = work.team.students.all()
+    work = Work.objects.get(id=work_id)
+    students = work.team.team_members.all()
     students_emails = [student.email for student in students]
-    
 
-    subject: str = 'Trabalho cancelado com sucesso.'
-    message : str = f'Olá {work.team}, o trabalho {work.title} foi cancelado com sucesso.'
+    html = build_panel_email(
+        "Trabalho cancelado",
+        f"""
+        <p style="margin:0 0 16px;">Olá, estudante!</p>
+        <p style="margin:0;">O trabalho <strong>{work.title}</strong> foi cancelado com sucesso.</p>
+        """,
+    )
 
-    email_student_recipient_list: list = [students_emails]
-
-    send_mail(subject, message, from_email, email_student_recipient_list)
+    send_mail(
+        "Trabalho cancelado com sucesso.",
+        strip_tags(html),
+        from_email,
+        students_emails,
+        html_message=html,
+    )

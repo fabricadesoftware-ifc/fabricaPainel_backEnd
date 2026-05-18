@@ -57,6 +57,7 @@ populate = "python src/manage.py populate"
 celery = "celery -A src.django_project worker --loglevel=INFO --concurrency=10 -n worker1.%h --pool=solo"
 beat = "celery -A src.django_project beat --loglevel=INFO"
 test = "python pop.py"
+tests = "python src/manage.py stage_data"
 
 [tool.pdm]
 distribution = false

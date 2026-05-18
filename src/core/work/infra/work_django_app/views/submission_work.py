@@ -11,8 +11,8 @@ from django_project.permissions import IsAdvisor
 from core.work.domain.tasks.send_email_student.approve.send_work_approve_email_to_student import send_work_approve_email_to_student
 from core.work.domain.tasks.send_email_student.needs_changes.send_work_needs_changes_email_to_student import send_work_needs_changes_email_to_student
 
-@throttle_classes([UserRateThrottle])
 @api_view(["GET"])
+@throttle_classes([UserRateThrottle])
 @permission_classes([IsAdvisor])
 def accept_submission(request, verification_token) -> Response:
     try:
@@ -41,8 +41,8 @@ def accept_submission(request, verification_token) -> Response:
         status=status.HTTP_200_OK,
     )
 
-@throttle_classes([UserRateThrottle])
 @api_view(["GET"])
+@throttle_classes([UserRateThrottle])
 @permission_classes([IsAdvisor])
 def reject_submission(request, verification_token) -> Response:
     try:

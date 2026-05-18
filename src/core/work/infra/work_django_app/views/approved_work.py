@@ -10,8 +10,8 @@ from core.work.infra.work_django_app.models import Work, WorkStatusType, Edition
 from core.work.domain.tasks import send_work_approve_email_to_student, send_work_new_status_approve_email_to_student
 
 
-@throttle_classes([UserRateThrottle])
 @api_view(["GET"])
+@throttle_classes([UserRateThrottle])
 @permission_classes([IsAdvisor])
 def approve_work(request, verification_token) -> Response:
     try:

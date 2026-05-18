@@ -2,6 +2,7 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import ValidationError
+from typing import Any
 from core.field.infra.field_django_app.models import Field
 from core.user.domain.value_objects import UserType
 from .managers import CustomUserManager
@@ -61,6 +62,9 @@ class User(AbstractUser):
     EMAIL_FIELD = "email"
 
     objects = CustomUserManager()
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
 
     def __str__(self):
         return self.email + " - " + (self.name or "No Name")

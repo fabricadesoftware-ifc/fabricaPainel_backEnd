@@ -13,8 +13,8 @@ from core.work.domain.tasks.send_email_student.reject.send_work_reject_advisor_e
 )
 
 
-@throttle_classes([UserRateThrottle])
 @api_view(["GET"])
+@throttle_classes([UserRateThrottle])
 @permission_classes([IsAdvisor])
 def reject_advisor_work(request, verification_token) -> Response:
     try:
