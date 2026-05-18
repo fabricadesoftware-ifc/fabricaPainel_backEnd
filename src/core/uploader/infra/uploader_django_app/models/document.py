@@ -1,5 +1,6 @@
 import mimetypes
 import uuid
+from typing import TYPE_CHECKING
 
 from django.db import models
 
@@ -13,6 +14,9 @@ def document_file_path(document, _):
 
 
 class Document(models.Model):
+    if TYPE_CHECKING:
+        id: int
+
     attachment_key = models.UUIDField(
         max_length=255,
         default=uuid.uuid4,

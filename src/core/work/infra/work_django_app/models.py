@@ -1,5 +1,6 @@
 from django.db import models
-from uuid import uuid4
+from typing import TYPE_CHECKING
+from uuid import UUID, uuid4
 
 
 from core.edition.infra.edition_django_app.models import Edition
@@ -9,12 +10,21 @@ from core.cross_cutting_themes.infra.cross_cutting_themes_django_app.models impo
 from core.work.domain.value_objects import WorkStatusType, WorkAdvisorStatusType, WorkCollaboratorStatusType
 
 class Token(models.Model):
+    if TYPE_CHECKING:
+        id: int
+        user_id: int
+        sender_id: int | None
+
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     token = models.CharField(max_length=100)
     sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name="sender", blank=True, null=True)
     created = models.DateTimeField(auto_now_add=True, blank=True, null=True)
     
 class Team(models.Model):
+    if TYPE_CHECKING:
+        id: int
+        edition_id: int
+
     team_members = models.ManyToManyField(User, related_name="team", blank=True)
     edition = models.ForeignKey(Edition, on_delete=models.PROTECT, related_name="team", blank=True)
     #tokens = models.ManyToManyField(Token, related_name="tokens", blank=True)
@@ -35,12 +45,22 @@ class Team(models.Model):
 
 
 class Ods(models.Model):
+    if TYPE_CHECKING:
+        id: int
+
     name = models.CharField(max_length=255, verbose_name="Sustainable Goal", unique=True)
 
     def __str__(self) -> str:
         return self.name
 
 class Work(models.Model):
+    if TYPE_CHECKING:
+        id: UUID
+        edition_id: int
+        cross_cutting_theme_id: int
+        team_id: int
+        advisor_id: int
+
     PENDING = WorkStatusType.Type.PENDING.value
     APPROVED = WorkStatusType.Type.APPROVED.value
     NEEDS_CHANGES = WorkStatusType.Type.NEEDS_CHANGES.value
@@ -95,6 +115,10 @@ class Work(models.Model):
         ordering = ["-title"]
 
 class Keyword(models.Model):
+    if TYPE_CHECKING:
+        id: int
+        work_id: UUID
+
     name = models.CharField(max_length=255)
     work = models.ForeignKey(Work, on_delete=models.PROTECT)
 
@@ -108,6 +132,11 @@ class Keyword(models.Model):
         
         
 class WorkCollaborator(models.Model):
+    if TYPE_CHECKING:
+        id: int
+        work_id: UUID
+        collaborator_id: int
+
     PENDING = WorkCollaboratorStatusType.Type.PENDING.value
     APPROVED = WorkCollaboratorStatusType.Type.APPROVED.value
     REJECTED = WorkCollaboratorStatusType.Type.REJECTED.value

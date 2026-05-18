@@ -2,7 +2,7 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import ValidationError
-from typing import Any
+from typing import Any, TYPE_CHECKING
 from core.field.infra.field_django_app.models import Field
 from core.user.domain.value_objects import UserType
 from .managers import CustomUserManager
@@ -14,6 +14,9 @@ def remove_accent(text):
     return text_without_accent
 
 class Class(models.Model):
+    if TYPE_CHECKING:
+        id: int
+
     name = models.CharField(max_length=20, help_text="Exemplo: 1info1")
 
     def __str__(self):
@@ -27,6 +30,10 @@ class Class(models.Model):
 
 
 class User(AbstractUser):
+    if TYPE_CHECKING:
+        id: int
+        field_id: int | None
+
     STUDENT = UserType.Type.STUDENT.value
     TEACHER = UserType.Type.TEACHER.value
     ADMIN = UserType.Type.ADMIN.value
@@ -83,6 +90,11 @@ class User(AbstractUser):
         ]
 
 class UserClass(models.Model):
+    if TYPE_CHECKING:
+        id: int
+        class_name_id: int
+        user_id: int | None
+
     class_name = models.ForeignKey(Class, on_delete=models.CASCADE, related_name="user_classes", help_text="turma do aluno")
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="user_classes")
     year = models.IntegerField("Ano da classe")
@@ -96,6 +108,10 @@ class UserClass(models.Model):
         ordering = ["-user__date_joined"]
 
 class Evaluator(models.Model):
+    if TYPE_CHECKING:
+        id: int
+        user_id: int
+
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="evaluator")
 
     def __str__(self):
@@ -107,6 +123,9 @@ class Evaluator(models.Model):
         ordering = ["-user__date_joined"]
         
 class Specialty(models.Model):
+    if TYPE_CHECKING:
+        id: int
+
     name = models.CharField(max_length=255)
     
     def __str__(self):
@@ -115,6 +134,11 @@ class Specialty(models.Model):
 # Certificate
 
 class Certificate(models.Model):
+    if TYPE_CHECKING:
+        id: int
+        user_id: int
+        work_id: str
+
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     work = models.ForeignKey("work_django_app.Work", on_delete=models.CASCADE)
     hash_validate = models.TextField()

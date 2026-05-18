@@ -1,9 +1,15 @@
 from django.db import models
 from core.uploader.infra.uploader_django_app.models import Image
 from datetime import datetime, timedelta, date
+from typing import TYPE_CHECKING
 
 
 class Edition(models.Model):
+    if TYPE_CHECKING:
+        id: int
+        banner_id: int | None
+        logo_id: int | None
+
     year = models.IntegerField("Ano da Edição")
     theme = models.CharField("Tema da Edição", max_length=255)
     edition_name = models.CharField("Nome da Edição", max_length=255)
