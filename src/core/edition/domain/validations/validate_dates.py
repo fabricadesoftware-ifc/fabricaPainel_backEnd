@@ -16,9 +16,6 @@ def validate_dates(attrs):
         raise ValueError("A data de início de submissão não pode ser maior que a data final de submissão")
     
     # 2. Primeira Orientação
-    if attrs['final_submission_date'] > attrs['initial_advisor_acceptance']:
-        raise ValueError("A data final da submissão não pode ser maior que a data de início de aceitação de orientadores")
-    
     if attrs['initial_advisor_acceptance'] > attrs['final_advisor_acceptance']:
         raise ValueError("A data de início de aceitação de orientadores não pode ser maior que a data final de aceitação de orientadores")
     
@@ -30,9 +27,6 @@ def validate_dates(attrs):
         raise ValueError("A data de início da segunda submissão não pode ser maior que a data final da segunda submissão")
     
     # 4. Segunda Orientação
-    if attrs['final_second_submission_date'] > attrs['initial_second_advisor_date']:
-        raise ValueError("A data final da segunda submissão não pode ser maior que a data de início da segunda aceitação de orientadores")
-    
     if attrs['initial_second_advisor_date'] > attrs['final_second_advisor_date']:
         raise ValueError("A data de início da segunda aceitação de orientadores não pode ser maior que a data final da segunda aceitação de orientadores")
     

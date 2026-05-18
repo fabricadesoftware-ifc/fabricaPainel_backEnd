@@ -193,6 +193,26 @@ class EditionFlowTestCase(APITransactionTestCase):
             ).exists()
         )
 
+    @patch("core.work.infra.work_django_app.views.accept_advisor_work.send_work_approve_email_to_student.delay")
+    def test_rejects_advisor_acceptance_before_advisor_window(self, advisor_accept_email_delay):
+        edition = self.create_edition(first_window_open=True)
+        edition.initial_advisor_acceptance = self.today + timedelta(days=1)
+        edition.final_advisor_acceptance = self.today + timedelta(days=3)
+        edition.save()
+        team = self.create_team_via_api(edition)
+        work = self.create_work_via_api(edition, team, title="Aceite Futuro")
+
+        self.client.force_authenticate(self.advisor)
+        advisor_detail = self.client.get(f"/api/work/{work.id}/")
+        response = self.client.get(
+            f"/api/accept-advisor-work/{advisor_detail.data['verification_token']}/"
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST, response.data)
+
+        work.refresh_from_db()
+        self.assertEqual(work.advisor_status, WorkAdvisorStatusType.Type.PENDING.value)
+
     @patch("core.work.infra.work_django_app.views.accept_collaborator_work.send_collaborator_accept_email_to_student.delay")
     @patch("core.work.infra.work_django_app.views.approved_work.send_work_new_status_approve_email_to_student.delay")
     @patch("core.work.infra.work_django_app.views.accept_advisor_work.send_work_approve_email_to_student.delay")

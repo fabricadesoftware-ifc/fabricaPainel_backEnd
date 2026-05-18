@@ -11,7 +11,7 @@ from django.core.management.base import BaseCommand, CommandError, CommandParser
 from django.db import transaction
 from django.utils import timezone
 
-from core.assessment.infra.assessment_django_app.models import Assessment, StudentAssessments
+from core.assessment.infra.assessment_django_app.models import Assessment, Assessments, StudentAssessments
 from core.cross_cutting_themes.infra.cross_cutting_themes_django_app.models import CrossCuttingTheme
 from core.edition.infra.edition_django_app.models import Edition
 from core.field.infra.field_django_app.models import Field
@@ -40,6 +40,11 @@ class StageInfo:
 
 
 STAGES = {
+    0: StageInfo(
+        "Apenas usuarios de teste, sem edicao guiada, para testar a criacao de edicao.",
+        "admin",
+        "/panel/editions/add/",
+    ),
     1: StageInfo(
         "Base pronta: usuarios, turma, area, tema, ODS e edicao com datas abertas.",
         "student",
@@ -100,16 +105,17 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args: Any, **options: Any) -> None:
-        if options["list"] or not options["stage"]:
+        stage = options["stage"]
+        if options["list"] or stage is None:
             self._print_stage_list(as_json=options["json"])
-            if not options["stage"]:
+            if stage is None:
                 return
 
         if not settings.DEBUG:
             raise CommandError("stage_data so pode rodar com DEBUG=True.")
 
         with transaction.atomic():
-            context = self._prepare_stage(options["stage"])
+            context = self._prepare_stage(stage)
 
         if options["json"]:
             self.stdout.write(json.dumps(context, indent=2, default=str))
@@ -138,6 +144,31 @@ class Command(BaseCommand):
     def _prepare_stage(self, stage: int) -> dict[str, Any]:
         today = timezone.localdate()
         accounts = self._create_accounts()
+
+        if stage == 0:
+            self._clear_guided_scenario(accounts)
+            stage_info = STAGES[stage]
+            return {
+                "stage": stage,
+                "description": stage_info.label,
+                "frontend_url": f"{settings.PAINEL_URL}{stage_info.route}",
+                "api_url": settings.API_URL,
+                "login_as": stage_info.route_owner,
+                "password": PASSWORD,
+                "accounts": {
+                    key: {
+                        "id": user.id,
+                        "email": user.email,
+                        "name": user.name,
+                    }
+                    for key, user in accounts.items()
+                    if isinstance(user, User)
+                },
+                "edition": None,
+                "team_id": None,
+                "work": None,
+            }
+
         edition = self._create_edition(today)
         field = self._first_or_create(Field, {"name": "[TESTE] Informatica"})
         theme = self._first_or_create(
@@ -329,6 +360,27 @@ class Command(BaseCommand):
             setattr(edition, attr, value)
         edition.save()
         return edition
+
+    def _clear_guided_scenario(self, accounts: dict[str, Any]) -> None:
+        for edition in Edition.objects.filter(edition_name=EDITION_NAME):
+            works = Work.objects.filter(edition=edition)
+            Assessment.objects.filter(work__in=works).delete()
+            Assessments.objects.filter(work__in=works).delete()
+            StudentAssessments.objects.filter(work__in=works).delete()
+            WorkCollaborator.objects.filter(work__in=works).delete()
+            works.delete()
+            Team.objects.filter(edition=edition).delete()
+            edition.delete()
+
+        stage_students = [accounts["student"], accounts["student_two"]]
+        UserClass.objects.filter(
+            user__in=stage_students,
+            class_name__name="TESTE1",
+        ).delete()
+        Class.objects.filter(name="TESTE1").delete()
+        CrossCuttingTheme.objects.filter(name="[TESTE] Sustentabilidade").delete()
+        Field.objects.filter(name="[TESTE] Informatica").delete()
+        Ods.objects.filter(name="[TESTE] ODS 4 - Educacao de Qualidade").delete()
 
     def _clear_stage_work(self, edition: Edition) -> None:
         works = Work.objects.filter(edition=edition, title=WORK_TITLE)

@@ -3,7 +3,9 @@ from django.test import TestCase, override_settings
 from django.utils import timezone
 
 from core.assessment.infra.assessment_django_app.models import Assessment, StudentAssessments
-from core.populate.infra.populate_django_app.management.commands.stage_data import WORK_TITLE
+from core.edition.infra.edition_django_app.models import Edition
+from core.populate.infra.populate_django_app.management.commands.stage_data import EDITION_NAME, WORK_TITLE
+from core.user.infra.user_django_app.models import User
 from core.work.domain.value_objects import (
     WorkAdvisorStatusType,
     WorkCollaboratorStatusType,
@@ -18,6 +20,18 @@ from core.work.infra.work_django_app.models import Team, Work
     API_URL="http://localhost:8000",
 )
 class StageDataCommandTest(TestCase):
+    def test_stage_zero_keeps_only_users_for_edition_creation(self):
+        call_command("stage_data", stage=4, quiet=True)
+        self.assertTrue(Edition.objects.filter(edition_name=EDITION_NAME).exists())
+        self.assertTrue(Work.objects.filter(title=WORK_TITLE).exists())
+
+        call_command("stage_data", stage=0, quiet=True)
+
+        self.assertFalse(Edition.objects.filter(edition_name=EDITION_NAME).exists())
+        self.assertFalse(Work.objects.filter(title=WORK_TITLE).exists())
+        self.assertEqual(Team.objects.count(), 0)
+        self.assertTrue(User.objects.filter(email="stage.admin@ifc.local").exists())
+
     def test_stage_four_prepares_approved_work_with_pending_collaborator(self):
         call_command("stage_data", stage=4, quiet=True)
 
