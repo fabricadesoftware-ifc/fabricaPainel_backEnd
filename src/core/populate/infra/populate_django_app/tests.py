@@ -70,3 +70,12 @@ class StageDataCommandTest(TestCase):
 
         self.assertFalse(Work.objects.filter(title=WORK_TITLE).exists())
         self.assertEqual(Team.objects.count(), 0)
+
+    def test_stage_users_have_ten_digit_registration_numbers(self):
+        call_command("stage_data", stage=1, quiet=True)
+
+        stage_users = User.objects.filter(email__endswith="@ifc.local", email__startswith="stage.")
+
+        self.assertEqual(stage_users.count(), 6)
+        for user in stage_users:
+            self.assertEqual(len(str(user.registration)), 10)
