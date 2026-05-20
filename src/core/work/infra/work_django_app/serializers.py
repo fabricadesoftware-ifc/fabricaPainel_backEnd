@@ -113,6 +113,10 @@ class WorkDetailSerializer(serializers.ModelSerializer):
     cross_cutting_theme = CrossCuttingThemeSerializer(read_only=True)
     field = FieldSerializer(many=True, read_only=True)
     edition_year = serializers.ReadOnlyField(source='edition.year')
+    edition_evaluation_criteria = serializers.ReadOnlyField(source='edition.evaluation_criteria')
+    edition_initial_evaluators_date = serializers.ReadOnlyField(source='edition.initial_evaluators_date')
+    edition_final_evaluators_date = serializers.ReadOnlyField(source='edition.final_evaluators_date')
+    edition_final_second_submission_date = serializers.ReadOnlyField(source='edition.final_second_submission_date')
 
     class Meta:
         model = Work
@@ -136,6 +140,10 @@ class WorkDetailSerializer(serializers.ModelSerializer):
             "field",
             # Relacionamentos simples (id, name)
             "edition_year",
+            "edition_evaluation_criteria",
+            "edition_initial_evaluators_date",
+            "edition_final_evaluators_date",
+            "edition_final_second_submission_date",
             "edition",
         ]
 

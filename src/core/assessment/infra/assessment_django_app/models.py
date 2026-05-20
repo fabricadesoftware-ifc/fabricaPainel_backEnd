@@ -12,6 +12,7 @@ class Assessment(models.Model):
 
     work = models.ForeignKey(Work, on_delete=models.PROTECT)
     grade = models.DecimalField(max_digits=4, decimal_places=2)
+    criterion_grades = models.JSONField(default=list, blank=True)
     evaluator = models.ForeignKey(
         Evaluator,
         on_delete=models.PROTECT,
@@ -45,6 +46,7 @@ class StudentAssessments(models.Model):
         student_id: int
 
     grade = models.DecimalField(max_digits=4, decimal_places=2)
+    criterion_grades = models.JSONField(default=list, blank=True)
     work = models.ForeignKey(Work, on_delete=models.PROTECT)
     date_time = models.DateTimeField()
     student = models.ForeignKey(

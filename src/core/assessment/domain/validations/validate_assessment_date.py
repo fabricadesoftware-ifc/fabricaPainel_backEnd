@@ -1,23 +1,35 @@
-from core.edition.infra.edition_django_app.models import Edition
 from django.utils import timezone
 from rest_framework import serializers
 
-def validate_assessment_date() -> bool:
+
+ASSESSMENT_PERIOD_FIELDS = {
+    "work": ("initial_evaluators_date", "final_evaluators_date"),
+    "student": ("initial_evaluators_date", "final_evaluators_date"),
+}
+
+
+def get_assessment_period(edition, target):
+    initial_field, final_field = ASSESSMENT_PERIOD_FIELDS[target]
+    return getattr(edition, initial_field, None), getattr(edition, final_field, None)
+
+
+def validate_assessment_date(work, target="work") -> bool:
     """
-    Valida se a data da avaliação está dentro do período permitido para avaliações na edição.
+    Valida se a data da avaliacao esta dentro do periodo permitido na edicao do trabalho.
     """
+    if not work:
+        raise serializers.ValidationError("Trabalho nao informado para avaliacao.")
+
+    edition = work.edition
+    initial_date, final_date = get_assessment_period(edition, target)
     today = timezone.localdate()
-    edition = Edition.objects.filter(
-        initial_evaluators_date__lte=today,
-        final_evaluators_date__gte=today,
-    ).first()
-    if not edition:
-        raise serializers.ValidationError("Nenhuma edição ativa encontrada.")
 
-    if not edition.initial_evaluators_date or not edition.final_evaluators_date:
-        raise serializers.ValidationError("Período de avaliação não definido para a edição ativa.")
+    if not initial_date or not final_date:
+        raise serializers.ValidationError("Periodo de avaliacao nao definido para a edicao do trabalho.")
 
-    if not (edition.initial_evaluators_date <= today <= edition.final_evaluators_date):
-        raise serializers.ValidationError(f"Avaliações só podem ser realizadas entre {edition.initial_evaluators_date} e {edition.final_evaluators_date}.")
+    if not (initial_date <= today <= final_date):
+        raise serializers.ValidationError(
+            f"Avaliacoes so podem ser realizadas entre {initial_date} e {final_date}."
+        )
 
     return True
