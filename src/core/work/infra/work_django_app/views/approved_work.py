@@ -21,7 +21,7 @@ def approve_work(request, verification_token) -> Response:
 
     students_ids = list(work.team.team_members.values_list("id", flat=True))
     edition = work.edition
-    current_date = timezone.now().date()
+    current_date = timezone.localdate()
     from_email = EMAIL_HOST_USER
 
     def within_submission_period() -> bool:

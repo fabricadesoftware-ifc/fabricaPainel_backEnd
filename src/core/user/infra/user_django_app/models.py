@@ -1,7 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-from django.core.exceptions import ValidationError
 from typing import Any, TYPE_CHECKING
 from core.field.infra.field_django_app.models import Field
 from core.user.domain.value_objects import UserType
@@ -21,12 +20,12 @@ class Class(models.Model):
 
     def __str__(self):
         return self.name
-    
+
     class Meta:
         verbose_name = "Classe"
         verbose_name_plural = "Classes"
         ordering = ["name"]
-    
+
 
 
 class User(AbstractUser):
@@ -38,7 +37,7 @@ class User(AbstractUser):
     TEACHER = UserType.Type.TEACHER.value
     ADMIN = UserType.Type.ADMIN.value
     TAE = UserType.Type.TAE.value
-    
+
     USER_TYPE_CHOICE = (
         (STUDENT, UserType.Type.STUDENT),
         (TEACHER, UserType.Type.TEACHER),
@@ -57,7 +56,7 @@ class User(AbstractUser):
     )
     password_reset_token_created = models.DateTimeField(
         _("Password Reset Token Created"), blank=True, null=True
-    )  
+    )
     field = models.ForeignKey(Field, on_delete=models.SET_NULL, null=True)
     user_type = models.CharField(max_length=10, choices=USER_TYPE_CHOICE, default=STUDENT, db_index=True)
     is_management = models.BooleanField(default=False)
@@ -68,7 +67,7 @@ class User(AbstractUser):
     REQUIRED_FIELDS = ['name']
     EMAIL_FIELD = "email"
 
-    objects = CustomUserManager()
+    objects: CustomUserManager = CustomUserManager()
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
@@ -79,7 +78,7 @@ class User(AbstractUser):
     def get_user_type_display(self):
         return dict(self.USER_TYPE_CHOICE).get(self.user_type, "Unknown")
 
-    class Meta:
+    class Meta(AbstractUser.Meta):
         verbose_name = "Usuário"
         verbose_name_plural = "Usuários"
         ordering = ["-date_joined"]
@@ -98,7 +97,7 @@ class UserClass(models.Model):
     class_name = models.ForeignKey(Class, on_delete=models.CASCADE, related_name="user_classes", help_text="turma do aluno")
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="user_classes")
     year = models.IntegerField("Ano da classe")
-    
+
     def __str__(self):
         return f"{self.user.name} - {self.class_name.name} - {self.year}"
 
@@ -121,16 +120,16 @@ class Evaluator(models.Model):
         verbose_name = "Avaliador"
         verbose_name_plural = "Avaliadores"
         ordering = ["-user__date_joined"]
-        
+
 class Specialty(models.Model):
     if TYPE_CHECKING:
         id: int
 
     name = models.CharField(max_length=255)
-    
+
     def __str__(self):
         return self.name
-    
+
 # Certificate
 
 class Certificate(models.Model):

@@ -29,7 +29,7 @@ def accept_advisor_work(request, verification_token) -> Response:
         )
 
     edition = work.edition
-    current_date = timezone.now().date()
+    current_date = timezone.localdate()
 
     def within_acceptance_period() -> bool:
         return (

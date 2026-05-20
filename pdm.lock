@@ -5,7 +5,7 @@
 groups = ["default"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:286d98fa70af23c04d16ff9dcfa1c2c1868df6c422dc7dc7baf8ce65a3735256"
+content_hash = "sha256:3e34e37e452228eb7efaf3ab3db22a1b48b1fdf8fa436ddc54de4f61b2827fd3"
 
 [[metadata.targets]]
 requires_python = "==3.12.*"
@@ -393,6 +393,39 @@ dependencies = [
 files = [
     {file = "django_filter-25.2-py3-none-any.whl", hash = "sha256:9c0f8609057309bba611062fe1b720b4a873652541192d232dd28970383633e3"},
     {file = "django_filter-25.2.tar.gz", hash = "sha256:760e984a931f4468d096f5541787efb8998c61217b73006163bf2f9523fe8f23"},
+]
+
+[[package]]
+name = "django-stubs"
+version = "6.0.4"
+requires_python = ">=3.10"
+summary = "Mypy stubs for Django"
+groups = ["default"]
+dependencies = [
+    "django",
+    "django-stubs-ext>=6.0.2",
+    "tomli; python_full_version < \"3.11\"",
+    "types-pyyaml",
+    "typing-extensions>=4.11.0",
+]
+files = [
+    {file = "django_stubs-6.0.4-py3-none-any.whl", hash = "sha256:e991c68f77239663577a5f4fc75e99c84f867f378cafc97cbf4acc5aff378279"},
+    {file = "django_stubs-6.0.4.tar.gz", hash = "sha256:7aee77e8de9c14c0d9cf84988befe826d93cbc15a87e0ade2943f14d553451cf"},
+]
+
+[[package]]
+name = "django-stubs-ext"
+version = "6.0.4"
+requires_python = ">=3.10"
+summary = "Monkey-patching and extensions for django-stubs"
+groups = ["default"]
+dependencies = [
+    "django",
+    "typing-extensions",
+]
+files = [
+    {file = "django_stubs_ext-6.0.4-py3-none-any.whl", hash = "sha256:0434a912bb08a370afcac9e90305c53e6f4eed3c1d1d46962559da5f8dbb8f27"},
+    {file = "django_stubs_ext-6.0.4.tar.gz", hash = "sha256:ff21f7b4362928b56e18cda0595f296e33c665f3019f4e3e4231977385e76cac"},
 ]
 
 [[package]]
@@ -1088,12 +1121,22 @@ files = [
 ]
 
 [[package]]
+name = "types-pyyaml"
+version = "6.0.12.20260518"
+requires_python = ">=3.10"
+summary = "Typing stubs for PyYAML"
+groups = ["default"]
+files = [
+    {file = "types_pyyaml-6.0.12.20260518-py3-none-any.whl", hash = "sha256:d2150f75a231c9fe9c7463bd29487d93e60bac90400287351384bc2284eba7cd"},
+    {file = "types_pyyaml-6.0.12.20260518.tar.gz", hash = "sha256:d917f83fb38462550338c1297faedd860b3ec83912b96b1e3d73255f7473e466"},
+]
+
+[[package]]
 name = "typing-extensions"
 version = "4.13.2"
 requires_python = ">=3.8"
 summary = "Backported and Experimental Type Hints for Python 3.8+"
 groups = ["default"]
-marker = "python_version < \"3.13\""
 files = [
     {file = "typing_extensions-4.13.2-py3-none-any.whl", hash = "sha256:a439e7c04b49fec3e5d3e2beaa21755cadbbdc391694e28ccdd36ca4a1408f8c"},
     {file = "typing_extensions-4.13.2.tar.gz", hash = "sha256:e6c81219bd689f51865d9e372991c540bda33a0379d5573cddb9a3a23f7caaef"},
