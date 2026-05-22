@@ -79,7 +79,7 @@ STAGES = {
     7: StageInfo(
         "Kanban administrativo com propostas em situacoes diferentes.",
         "admin",
-        "/panel/works/kanban/",
+        "/panel/admin/proposals/",
     ),
 }
 
