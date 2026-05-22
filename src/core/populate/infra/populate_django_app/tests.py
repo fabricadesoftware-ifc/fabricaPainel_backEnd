@@ -4,7 +4,11 @@ from django.utils import timezone
 
 from core.assessment.infra.assessment_django_app.models import Assessment, StudentAssessments
 from core.edition.infra.edition_django_app.models import Edition
-from core.populate.infra.populate_django_app.management.commands.stage_data import EDITION_NAME, WORK_TITLE
+from core.populate.infra.populate_django_app.management.commands.stage_data import (
+    EDITION_NAME,
+    KANBAN_WORK_PREFIX,
+    WORK_TITLE,
+)
 from core.user.infra.user_django_app.models import User
 from core.work.domain.value_objects import (
     WorkAdvisorStatusType,
@@ -79,3 +83,31 @@ class StageDataCommandTest(TestCase):
         self.assertEqual(stage_users.count(), 6)
         for user in stage_users:
             self.assertEqual(len(str(user.registration)), 10)
+
+    def test_stage_seven_prepares_admin_kanban_scenarios(self):
+        call_command("stage_data", stage=7, quiet=True)
+
+        works = Work.objects.filter(title__startswith=KANBAN_WORK_PREFIX)
+
+        self.assertEqual(works.count(), 7)
+        self.assertTrue(
+            works.filter(
+                status=WorkStatusType.Type.PENDING.value,
+                advisor_status=WorkAdvisorStatusType.Type.PENDING.value,
+                work_collaborator__isnull=True,
+            ).exists()
+        )
+        self.assertTrue(
+            works.filter(
+                status=WorkStatusType.Type.PENDING.value,
+                advisor_status=WorkAdvisorStatusType.Type.APPROVED.value,
+                work_collaborator__isnull=True,
+            ).exists()
+        )
+        self.assertTrue(
+            works.filter(
+                status=WorkStatusType.Type.APPROVED.value,
+                advisor_status=WorkAdvisorStatusType.Type.APPROVED.value,
+                work_collaborator__status=WorkCollaboratorStatusType.Type.APPROVED.value,
+            ).exists()
+        )

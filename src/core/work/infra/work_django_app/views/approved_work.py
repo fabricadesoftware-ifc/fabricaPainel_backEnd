@@ -36,6 +36,7 @@ def approve_work(request, verification_token) -> Response:
     # Aprova o trabalho
     work.status = WorkStatusType.Type.APPROVED.value
     work.verification_token = None
+    work._change_reason = "Trabalho aprovado"
     work.save()
 
     # Envia email de status aprovado se houver final_submission_date definido

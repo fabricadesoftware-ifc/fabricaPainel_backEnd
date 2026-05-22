@@ -31,6 +31,7 @@ def reject_advisor_work(request, verification_token) -> Response:
     # Atualiza o status do orientador e gera novo token
     work.advisor_status = WorkAdvisorStatusType.Type.REJECTED.value
     work.verification_token = uuid.uuid4()
+    work._change_reason = "Orientador recusou"
     work.save()
 
     students_ids = list(work.team.team_members.values_list("id", flat=True))

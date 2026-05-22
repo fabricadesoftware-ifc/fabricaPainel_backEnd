@@ -3,6 +3,8 @@ from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
 
+from simple_history.models import HistoricalRecords
+
 from core.edition.infra.edition_django_app.models import Edition
 from core.user.infra.user_django_app.models import User, Evaluator
 from core.field.infra.field_django_app.models import Field
@@ -105,6 +107,7 @@ class Work(models.Model):
     advisor_status = models.PositiveSmallIntegerField(choices=WORK_ADVISOR_STATUS_CHOICE, default=PENDING_ADVISOR)
     feedback = models.TextField(blank=True, null=True)
     integrated_project = models.BooleanField(default=False)
+    history = HistoricalRecords()
     
     def __str__(self) -> str:
         return f"{self.title} - {self.team} - {self.get_status_display()}"
@@ -153,6 +156,7 @@ class WorkCollaborator(models.Model):
     collaborator = models.ForeignKey(User, on_delete=models.CASCADE, limit_choices_to={"is_collaborator": True}, related_name="work_collaborator")
     status = models.PositiveSmallIntegerField(choices=WORK_COLLABORATOR_STATUS_CHOICE, default=PENDING)
     verification_token = models.CharField(max_length=100, blank=True, null=True)
+    history = HistoricalRecords()
     
     
     def __str__(self):

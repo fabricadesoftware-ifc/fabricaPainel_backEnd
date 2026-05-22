@@ -27,6 +27,7 @@ class CanceledWork(APIView):
         
         # Limpa o verification_token para impedir aceitações futuras
         work.verification_token = None
+        work._change_reason = "Trabalho rejeitado/cancelado"
         work.save()
         
         # Limpa os tokens dos colaboradores para impedir aceitações

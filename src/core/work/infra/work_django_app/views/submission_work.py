@@ -31,6 +31,7 @@ def accept_submission(request, verification_token) -> Response:
     # Atualiza o status do trabalho para APPROVED
     work.status = WorkStatusType.Type.APPROVED.value
     work.verification_token = None
+    work._change_reason = "Trabalho aprovado"
     work.save()
 
     # Envia email para os estudantes
@@ -61,6 +62,7 @@ def reject_submission(request, verification_token) -> Response:
     work.status = WorkStatusType.Type.NEEDS_CHANGES.value
     work.verification_token = None
     work.needs_changes_submission_work_date = timezone.now()
+    work._change_reason = "Solicitado ajuste"
     work.save()
 
     # Envia email para os estudantes
