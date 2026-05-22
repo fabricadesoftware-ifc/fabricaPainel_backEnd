@@ -30,9 +30,6 @@ def validate_dates(attrs):
     if attrs["initial_submission_date"] > attrs["initial_advisor_acceptance"]:
         raise ValueError("A primeira aceitacao nao pode iniciar antes da primeira submissao")
 
-    if attrs["initial_advisor_acceptance"] > attrs["final_submission_date"]:
-        raise ValueError("A primeira aceitacao deve iniciar antes do fim da primeira submissao")
-
     if attrs["final_submission_date"] > attrs["final_advisor_acceptance"]:
         raise ValueError("A primeira aceitacao deve terminar junto ou depois da primeira submissao")
 
@@ -47,9 +44,6 @@ def validate_dates(attrs):
 
     if attrs["initial_second_submission_date"] > attrs["initial_second_advisor_date"]:
         raise ValueError("A segunda aceitacao nao pode iniciar antes da segunda submissao")
-
-    if attrs["initial_second_advisor_date"] > attrs["final_second_submission_date"]:
-        raise ValueError("A segunda aceitacao deve iniciar antes do fim da segunda submissao")
 
     if attrs["final_second_submission_date"] > attrs["final_second_advisor_date"]:
         raise ValueError("A segunda aceitacao deve terminar junto ou depois da segunda submissao")

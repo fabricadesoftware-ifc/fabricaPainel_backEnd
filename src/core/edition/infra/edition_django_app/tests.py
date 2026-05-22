@@ -27,6 +27,24 @@ class ValidateEditionDatesTestCase(SimpleTestCase):
     def test_allows_submission_and_advisor_acceptance_overlap(self):
         self.assertFalse(validate_dates(self.valid_attrs()))
 
+    def test_accepts_commission_schedule_with_acceptance_after_submission(self):
+        attrs = {
+            "initial_submission_date": date(2026, 8, 3),
+            "final_submission_date": date(2026, 8, 17),
+            "initial_advisor_acceptance": date(2026, 8, 18),
+            "final_advisor_acceptance": date(2026, 8, 24),
+            "initial_second_submission_date": date(2026, 8, 25),
+            "final_second_submission_date": date(2026, 9, 4),
+            "initial_second_advisor_date": date(2026, 9, 8),
+            "final_second_advisor_date": date(2026, 9, 14),
+            "event_date": date(2026, 10, 8),
+            "final_event_date": date(2026, 10, 9),
+            "initial_evaluators_date": date(2026, 10, 8),
+            "final_evaluators_date": date(2026, 10, 9),
+        }
+
+        self.assertFalse(validate_dates(attrs))
+
     def test_allows_evaluation_to_end_after_event(self):
         attrs = self.valid_attrs()
         attrs["final_event_date"] = date(2026, 8, 24)
