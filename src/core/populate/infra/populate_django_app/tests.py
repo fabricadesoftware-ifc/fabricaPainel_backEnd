@@ -111,3 +111,5 @@ class StageDataCommandTest(TestCase):
                 work_collaborator__status=WorkCollaboratorStatusType.Type.APPROVED.value,
             ).exists()
         )
+        edition = Edition.objects.get(edition_name=EDITION_NAME)
+        self.assertLess(edition.final_second_advisor_date, timezone.localdate())

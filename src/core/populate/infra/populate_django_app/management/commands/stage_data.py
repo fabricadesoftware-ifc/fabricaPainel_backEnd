@@ -198,6 +198,7 @@ class Command(BaseCommand):
             self._clear_stage_team(edition, accounts)
 
         if stage == 7:
+            self._prepare_edition_for_admin_reports(edition, today)
             works = self._create_kanban_works(edition, accounts, field, theme, ods)
             stage_info = STAGES[stage]
             return {
@@ -220,7 +221,12 @@ class Command(BaseCommand):
                     "id": edition.id,
                     "year": edition.year,
                     "name": edition.edition_name,
+                    "final_second_advisor_date": edition.final_second_advisor_date.isoformat(),
+                    "report_available_after": (
+                        edition.final_second_advisor_date + timedelta(days=1)
+                    ).isoformat(),
                 },
+                "report_grouping": "orientadores",
                 "team_id": None,
                 "work": None,
                 "kanban_works": [self._serialize_kanban_work(work) for work in works],
@@ -395,6 +401,20 @@ class Command(BaseCommand):
             setattr(edition, attr, value)
         edition.save()
         return edition
+
+    def _prepare_edition_for_admin_reports(self, edition: Edition, today) -> None:
+        for attr, value in {
+            "initial_submission_date": today - timedelta(days=10),
+            "final_submission_date": today - timedelta(days=9),
+            "initial_advisor_acceptance": today - timedelta(days=8),
+            "final_advisor_acceptance": today - timedelta(days=7),
+            "initial_second_submission_date": today - timedelta(days=6),
+            "final_second_submission_date": today - timedelta(days=5),
+            "initial_second_advisor_date": today - timedelta(days=4),
+            "final_second_advisor_date": today - timedelta(days=1),
+        }.items():
+            setattr(edition, attr, value)
+        edition.save()
 
     def _clear_guided_scenario(self, accounts: dict[str, Any]) -> None:
         for edition in Edition.objects.filter(edition_name=EDITION_NAME):
@@ -631,3 +651,9 @@ class Command(BaseCommand):
         if context.get("kanban_works"):
             self.stdout.write("")
             self.stdout.write(f"Trabalhos no kanban: {len(context['kanban_works'])}")
+        if context.get("report_grouping"):
+            self.stdout.write("Relatorio agrupado por orientadores.")
+            self.stdout.write(
+                "Relatorio disponivel a partir de: "
+                f"{context['edition']['report_available_after']}"
+            )
