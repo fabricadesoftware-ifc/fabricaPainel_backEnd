@@ -217,9 +217,18 @@ class AdminAdvisorReportApiTest(APITestCase):
 
         self.assertIn(str(mixed_class_work.id), first_group_rows)
         self.assertIn(str(without_collaborator.id), first_group_rows)
-        self.assertIn("1INFO1", first_group_rows[str(mixed_class_work.id)]["classes_label"])
-        self.assertIn("2INFO1", first_group_rows[str(mixed_class_work.id)]["classes_label"])
-        self.assertEqual(first_group_rows[str(mixed_class_work.id)]["collaborators"][0]["id"], self.collaborator.id)
+        mixed_row = first_group_rows[str(mixed_class_work.id)]
+        members_by_id = {
+            member["id"]: member
+            for member in mixed_row["team_members"]
+        }
+        self.assertIn("1INFO1", mixed_row["classes_label"])
+        self.assertIn("2INFO1", mixed_row["classes_label"])
+        self.assertIn("1INFO1", mixed_row["team_members_label"])
+        self.assertIn("2INFO1", mixed_row["team_members_label"])
+        self.assertEqual(members_by_id[self.student.id]["classes_label"], "1INFO1")
+        self.assertEqual(members_by_id[self.other_student.id]["classes_label"], "2INFO1")
+        self.assertEqual(mixed_row["collaborators"][0]["id"], self.collaborator.id)
         self.assertEqual(first_group_rows[str(without_collaborator.id)]["collaborators"], [])
         self.assertEqual(first_group_rows[str(without_collaborator.id)]["collaborators_label"], "Sem colaborador")
         self.assertEqual(groups_by_advisor[self.advisor_two.id]["rows"][0]["id"], str(advisor_two_work.id))

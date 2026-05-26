@@ -20,7 +20,7 @@ from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
 from core.edition.infra.edition_django_app.models import Edition
-from core.user.infra.user_django_app.models import Class as StudentClass, UserClass
+from core.user.infra.user_django_app.models import UserClass
 from core.work.infra.work_django_app.models import Work, WorkCollaborator
 from core.work.infra.work_django_app.serializers import (
     WorkDetailSerializer,
@@ -98,7 +98,7 @@ def _report_release_date(edition):
     return edition.final_second_advisor_date + timedelta(days=1)
 
 
-def _class_report_availability(edition):
+def _proposal_report_availability(edition):
     release_date = _report_release_date(edition)
     if not release_date:
         return {
@@ -129,47 +129,6 @@ def _accepted_collaborators_for(work):
     ]
 
 
-def _serialize_work_for_class_report(work):
-    collaborators = [_serialize_user(collaborator) for collaborator in _accepted_collaborators_for(work)]
-
-    return {
-        "id": str(work.id),
-        "title": work.title,
-        "advisor": _serialize_user(work.advisor),
-        "collaborators": collaborators,
-        "collaborators_label": ", ".join(
-            collaborator["name"] or collaborator["email"]
-            for collaborator in collaborators
-            if collaborator
-        ) or "Sem colaborador",
-    }
-
-
-def _class_report_queryset(edition, student_class):
-    return (
-        Work.objects.filter(
-            edition=edition,
-            advisor_status=WorkAdvisorStatusType.Type.APPROVED.value,
-            status__in=[
-                WorkStatusType.Type.PENDING.value,
-                WorkStatusType.Type.APPROVED.value,
-            ],
-            team__team_members__user_classes__class_name=student_class,
-            team__team_members__user_classes__year=edition.year,
-        )
-        .select_related("advisor", "team", "edition")
-        .prefetch_related(
-            "team__team_members",
-            Prefetch(
-                "work_collaborator",
-                queryset=WorkCollaborator.objects.select_related("collaborator").order_by("collaborator__name"),
-            ),
-        )
-        .distinct()
-        .order_by("title")
-    )
-
-
 def _team_classes_label(work, edition):
     classes = sorted(
         {
@@ -182,12 +141,39 @@ def _team_classes_label(work, edition):
     return ", ".join(classes) or "-"
 
 
+def _member_classes_label(member, edition):
+    classes = sorted(
+        {
+            user_class.class_name.name
+            for user_class in member.user_classes.all()
+            if user_class.year == edition.year and user_class.class_name
+        }
+    )
+    return ", ".join(classes) or "Sem turma cadastrada"
+
+
+def _serialize_team_member_for_report(member, edition):
+    return {
+        "id": member.id,
+        "name": member.name,
+        "email": member.email,
+        "classes_label": _member_classes_label(member, edition),
+    }
+
+
 def _team_members_label(work):
     members = [
-        member.name or member.email
+        f"{member.name or member.email} ({_member_classes_label(member, work.edition)})"
         for member in work.team.team_members.all()
     ]
-    return ", ".join(members) or "-"
+    return "; ".join(members) or "-"
+
+
+def _team_members_for_report(work):
+    return [
+        _serialize_team_member_for_report(member, work.edition)
+        for member in work.team.team_members.all()
+    ]
 
 
 def _serialize_work_for_advisor_report(work):
@@ -196,6 +182,7 @@ def _serialize_work_for_advisor_report(work):
     return {
         "id": str(work.id),
         "title": work.title,
+        "team_members": _team_members_for_report(work),
         "team_members_label": _team_members_label(work),
         "classes_label": _team_classes_label(work, work.edition),
         "collaborators": collaborators,
@@ -295,7 +282,7 @@ def _build_advisor_report_pdf(*, edition, groups):
             elements.append(Paragraph(f"Orientador: {_advisor_label(group['advisor'])}", styles["Heading2"]))
             elements.append(Spacer(1, 6))
 
-            data = [["Titulo do trabalho", "Equipe", "Turmas", "Colaborador(es)"]]
+            data = [["Titulo do trabalho", "Equipe / turma", "Turmas", "Colaborador(es)"]]
             for row in group["rows"]:
                 data.append(
                     [
@@ -326,66 +313,6 @@ def _build_advisor_report_pdf(*, edition, groups):
             )
             elements.append(table)
             elements.append(Spacer(1, 14))
-
-    doc.build(elements)
-    buffer.seek(0)
-    return buffer
-
-
-def _build_class_report_pdf(*, edition, student_class, rows):
-    buffer = BytesIO()
-    doc = SimpleDocTemplate(
-        buffer,
-        pagesize=A4,
-        rightMargin=36,
-        leftMargin=36,
-        topMargin=36,
-        bottomMargin=36,
-    )
-    styles = getSampleStyleSheet()
-    normal = styles["BodyText"]
-
-    elements = [
-        Paragraph("Relatorio de propostas por turma", styles["Heading1"]),
-        Spacer(1, 8),
-        Paragraph(f"Edicao: {edition.edition_name} ({edition.year})", normal),
-        Paragraph(f"Turma: {student_class.name}", normal),
-        Spacer(1, 14),
-    ]
-
-    if not rows:
-        elements.append(Paragraph("Nenhum trabalho encontrado para esta turma.", normal))
-    else:
-        data = [["Titulo do trabalho", "Professor orientador", "Colaborador(es)"]]
-        for row in rows:
-            advisor = row["advisor"] or {}
-            data.append(
-                [
-                    Paragraph(row["title"] or "-", normal),
-                    Paragraph(advisor.get("name") or advisor.get("email") or "-", normal),
-                    Paragraph(row["collaborators_label"], normal),
-                ]
-            )
-
-        table = Table(
-            data,
-            colWidths=[doc.width * 0.45, doc.width * 0.27, doc.width * 0.28],
-            repeatRows=1,
-        )
-        table.setStyle(
-            TableStyle(
-                [
-                    ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#0f766e")),
-                    ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
-                    ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-                    ("BOTTOMPADDING", (0, 0), (-1, 0), 8),
-                    ("GRID", (0, 0), (-1, -1), 0.35, colors.HexColor("#cbd5e1")),
-                    ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#f8fafc")]),
-                    ("VALIGN", (0, 0), (-1, -1), "TOP"),
-                ]
-            )
-        )
-        elements.append(table)
 
     doc.build(elements)
     buffer.seek(0)
@@ -638,116 +565,6 @@ class WorkViewSet(ModelViewSet):
             }
         )
 
-    def _get_class_report_context(self, request):
-        edition_id = request.query_params.get("edition")
-        class_id = request.query_params.get("class")
-
-        if not edition_id:
-            return None, Response(
-                {"error": "Informe a edicao para gerar o relatorio."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        if not class_id:
-            return None, Response(
-                {"error": "Informe a turma para gerar o relatorio."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        try:
-            edition = Edition.objects.get(id=edition_id)
-        except Edition.DoesNotExist:
-            return None, Response(
-                {"error": "Edicao nao encontrada."},
-                status=status.HTTP_404_NOT_FOUND,
-            )
-
-        try:
-            student_class = StudentClass.objects.get(id=class_id)
-        except StudentClass.DoesNotExist:
-            return None, Response(
-                {"error": "Turma nao encontrada."},
-                status=status.HTTP_404_NOT_FOUND,
-            )
-
-        availability = _class_report_availability(edition)
-        queryset = _class_report_queryset(edition, student_class) if availability["available"] else []
-        rows = [_serialize_work_for_class_report(work) for work in queryset]
-
-        return {
-            "edition": edition,
-            "student_class": student_class,
-            "availability": availability,
-            "rows": rows,
-        }, None
-
-    @action(
-        detail=False,
-        methods=["get"],
-        url_path="admin-class-report-data",
-        permission_classes=[IsAdminOrManagement],
-    )
-    def admin_class_report_data(self, request):
-        context, error_response = self._get_class_report_context(request)
-        if error_response:
-            return error_response
-
-        edition = context["edition"]
-        student_class = context["student_class"]
-
-        return Response(
-            {
-                "edition": {
-                    "id": edition.id,
-                    "year": edition.year,
-                    "edition_name": edition.edition_name,
-                    "final_second_advisor_date": edition.final_second_advisor_date,
-                },
-                "class": {
-                    "id": student_class.id,
-                    "name": student_class.name,
-                },
-                "available": context["availability"]["available"],
-                "available_after": context["availability"]["available_after"],
-                "message": context["availability"]["message"],
-                "rows": context["rows"],
-            }
-        )
-
-    @action(
-        detail=False,
-        methods=["get"],
-        url_path="admin-class-report",
-        permission_classes=[IsAdminOrManagement],
-    )
-    def admin_class_report(self, request):
-        context, error_response = self._get_class_report_context(request)
-        if error_response:
-            return error_response
-
-        availability = context["availability"]
-        if not availability["available"]:
-            return Response(
-                {"error": availability["message"]},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        edition = context["edition"]
-        student_class = context["student_class"]
-        buffer = _build_class_report_pdf(
-            edition=edition,
-            student_class=student_class,
-            rows=context["rows"],
-        )
-        filename = f"relatorio_propostas_{edition.year}_{student_class.name}.pdf".replace(" ", "_")
-
-        return FileResponse(
-            buffer,
-            as_attachment=True,
-            filename=filename,
-            content_type="application/pdf",
-        )
-
     def _get_advisor_report_context(self, request):
         edition_id = request.query_params.get("edition")
 
@@ -765,7 +582,7 @@ class WorkViewSet(ModelViewSet):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        availability = _class_report_availability(edition)
+        availability = _proposal_report_availability(edition)
         groups = _group_works_by_advisor(_advisor_report_queryset(edition)) if availability["available"] else []
 
         return {
