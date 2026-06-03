@@ -13,8 +13,10 @@ from weasyprint import HTML
 import tempfile
 import os
 from datetime import datetime
+from decimal import Decimal
 
 from core.assessment.infra.assessment_django_app.models import Assessment, StudentAssessments
+from core.edition.domain.validations.validate_evaluation_criteria import get_evaluation_group_weight
 from core.user.infra.user_django_app.models import Class, UserClass
 from core.edition.infra.edition_django_app.models import Edition
 from core.work.infra.work_django_app.models import Work
@@ -76,6 +78,17 @@ def prepare_grades(year, class_name=None):
     work_assessment_map = {
         assess.work_id: assess for assess in assessments_qs
     }
+    work_grade_weight = get_evaluation_group_weight(
+        current_edition.evaluation_criteria,
+        "work",
+        Decimal("50"),
+    )
+    student_grade_weight = get_evaluation_group_weight(
+        current_edition.evaluation_criteria,
+        "student",
+        Decimal("50"),
+    )
+    configured_total_weight = work_grade_weight + student_grade_weight
 
     # Itera pelas classes
     for class_ in classes:
@@ -106,7 +119,10 @@ def prepare_grades(year, class_name=None):
             elif not wa:
                 entry['situation'] = 'Pendente. Falta Avaliação do Trabalho.'
             else:
-                avg = (sa.grade + wa.grade) / 2
+                avg = (
+                    (sa.grade * student_grade_weight)
+                    + (wa.grade * work_grade_weight)
+                ) / configured_total_weight
                 entry['average_score'] = avg
                 entry['situation'] = 'Aprovado' if avg >= 6 else 'Reprovado'
 

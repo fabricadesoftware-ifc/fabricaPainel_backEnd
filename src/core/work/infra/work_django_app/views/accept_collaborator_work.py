@@ -32,6 +32,7 @@ def accept_collaborator_work(request, verification_token) -> Response:
     # Atualiza o status e limpa o token
     work_collaborator.status = WorkCollaboratorStatusType.Type.APPROVED.value
     work_collaborator.verification_token = None
+    work_collaborator._change_reason = "Colaborador aceitou"
     work_collaborator.save()
 
     # Envia email para os estudantes

@@ -30,6 +30,16 @@ class IsAdmin(RolePermission):
     role = UserType.Type.ADMIN
     require_auth = True
 
+class IsAdminOrManagement(BasePermission):
+    def has_permission(self, request, view):
+        user = request.user
+        return bool(
+            user.is_authenticated and (
+                user.user_type == UserType.Type.ADMIN or
+                getattr(user, 'is_management', False)
+            )
+        )
+
 class IsAdminOrReadOnly(RolePermission):
     role = UserType.Type.ADMIN
     require_auth = False

@@ -213,6 +213,30 @@ class EditionFlowTestCase(APITransactionTestCase):
         work.refresh_from_db()
         self.assertEqual(work.advisor_status, WorkAdvisorStatusType.Type.PENDING.value)
 
+    def test_rejects_student_assessment_before_grade_period(self):
+        edition = self.create_edition(first_window_open=True)
+        edition.initial_evaluators_date = self.today + timedelta(days=2)
+        edition.final_evaluators_date = self.today + timedelta(days=4)
+        edition.save()
+
+        team = self.create_team_via_api(edition)
+        work = self.create_work_via_api(edition, team, title="Nota Antes do Periodo")
+
+        self.client.force_authenticate(self.advisor)
+        response = self.client.post(
+            "/api/student-assessments/",
+            {
+                "student": self.student.id,
+                "work": str(work.id),
+                "grade": "8.00",
+                "date_time": timezone.now().isoformat(),
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST, response.data)
+        self.assertIn("Avaliacoes so podem ser realizadas", str(response.data))
+
     @patch("core.work.infra.work_django_app.views.accept_collaborator_work.send_collaborator_accept_email_to_student.delay")
     @patch("core.work.infra.work_django_app.views.approved_work.send_work_new_status_approve_email_to_student.delay")
     @patch("core.work.infra.work_django_app.views.accept_advisor_work.send_work_approve_email_to_student.delay")
@@ -265,6 +289,30 @@ class EditionFlowTestCase(APITransactionTestCase):
         collaborator_link = WorkCollaborator.objects.get(work=work, collaborator=self.collaborator)
         self.assertEqual(collaborator_link.status, WorkCollaboratorStatusType.Type.APPROVED.value)
 
+        edition.evaluation_criteria = [
+            {
+                "key": "work",
+                "target": "work",
+                "label": "Nota do avaliador",
+                "weight": 70,
+                "criteria": [
+                    {"key": "work_general", "label": "Nota geral do trabalho", "weight": 30},
+                    {"key": "presentation", "label": "Nota de apresentacao", "weight": 40},
+                    {"key": "content_domain", "label": "Dominio de conteudo", "weight": 30},
+                ],
+            },
+            {
+                "key": "student",
+                "target": "student",
+                "label": "Nota do orientador",
+                "weight": 30,
+                "criteria": [
+                    {"key": "student_general", "label": "Nota geral do aluno", "weight": 100},
+                ],
+            },
+        ]
+        edition.save()
+
         work.evaluator.add(self.evaluator)
 
         self.client.force_authenticate(self.evaluator_user)
@@ -273,7 +321,11 @@ class EditionFlowTestCase(APITransactionTestCase):
             {
                 "evaluator": self.evaluator.id,
                 "work": str(work.id),
-                "grade": "8.50",
+                "criterion_grades": [
+                    {"key": "work_general", "grade": "8.00"},
+                    {"key": "presentation", "grade": "9.00"},
+                    {"key": "content_domain", "grade": "7.00"},
+                ],
                 "date_time": timezone.now().isoformat(),
                 "committee_feedback": "Avaliacao registrada.",
             },
@@ -281,7 +333,7 @@ class EditionFlowTestCase(APITransactionTestCase):
         )
         self.assertEqual(assessment_response.status_code, status.HTTP_201_CREATED, assessment_response.data)
         self.assertTrue(
-            Assessment.objects.filter(work=work, evaluator=self.evaluator, grade=Decimal("8.50")).exists()
+            Assessment.objects.filter(work=work, evaluator=self.evaluator, grade=Decimal("8.10")).exists()
         )
 
         self.client.force_authenticate(self.advisor)
@@ -290,7 +342,9 @@ class EditionFlowTestCase(APITransactionTestCase):
             {
                 "student": self.student.id,
                 "work": str(work.id),
-                "grade": "9.00",
+                "criterion_grades": [
+                    {"key": "student_general", "grade": "9.00"},
+                ],
                 "date_time": timezone.now().isoformat(),
             },
             format="json",

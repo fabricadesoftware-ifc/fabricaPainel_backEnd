@@ -29,7 +29,7 @@ def accept_advisor_work(request, verification_token) -> Response:
         )
 
     edition = work.edition
-    current_date = timezone.now().date()
+    current_date = timezone.localdate()
 
     def within_acceptance_period() -> bool:
         return (
@@ -40,6 +40,7 @@ def accept_advisor_work(request, verification_token) -> Response:
     if within_acceptance_period():
         work.advisor_status = WorkAdvisorStatusType.Type.APPROVED.value
         work.verification_token = uuid.uuid4()
+        work._change_reason = "Orientador aceitou"
         work.save()
 
         students_ids = [s.id for s in work.team.team_members.all()]

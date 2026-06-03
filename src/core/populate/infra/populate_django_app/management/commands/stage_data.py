@@ -27,6 +27,7 @@ from core.work.infra.work_django_app.models import Ods, Team, Work, WorkCollabor
 
 PASSWORD = "Painel@123"
 WORK_TITLE = "[TESTE GUIADO] Proposta de Integracao"
+KANBAN_WORK_PREFIX = "[TESTE GUIADO KANBAN]"
 EDITION_NAME = "[TESTE GUIADO] Painel de Integracao"
 ADVISOR_TOKEN = "stage-advisor-token"
 COLLABORATOR_TOKEN = "stage-collaborator-token"
@@ -74,6 +75,11 @@ STAGES = {
         "Avaliacoes lancadas e relatorio pronto para conferencia.",
         "advisor",
         "/panel/works/view/{work_id}",
+    ),
+    7: StageInfo(
+        "Kanban administrativo com propostas em situacoes diferentes.",
+        "admin",
+        "/panel/admin/proposals/",
     ),
 }
 
@@ -191,6 +197,41 @@ class Command(BaseCommand):
         if stage < 2:
             self._clear_stage_team(edition, accounts)
 
+        if stage == 7:
+            self._prepare_edition_for_admin_reports(edition, today)
+            works = self._create_kanban_works(edition, accounts, field, theme, ods)
+            stage_info = STAGES[stage]
+            return {
+                "stage": stage,
+                "description": stage_info.label,
+                "frontend_url": f"{settings.PAINEL_URL}{stage_info.route}",
+                "api_url": settings.API_URL,
+                "login_as": stage_info.route_owner,
+                "password": PASSWORD,
+                "accounts": {
+                    key: {
+                        "id": user.id,
+                        "email": user.email,
+                        "name": user.name,
+                    }
+                    for key, user in accounts.items()
+                    if isinstance(user, User)
+                },
+                "edition": {
+                    "id": edition.id,
+                    "year": edition.year,
+                    "name": edition.edition_name,
+                    "final_second_advisor_date": edition.final_second_advisor_date.isoformat(),
+                    "report_available_after": (
+                        edition.final_second_advisor_date + timedelta(days=1)
+                    ).isoformat(),
+                },
+                "report_grouping": "orientadores",
+                "team_id": None,
+                "work": None,
+                "kanban_works": [self._serialize_kanban_work(work) for work in works],
+            }
+
         team = None
         work = None
         collaborator_link = None
@@ -245,39 +286,39 @@ class Command(BaseCommand):
                 "stage.student@ifc.local",
                 "Aluno Stage",
                 UserType.Type.STUDENT.value,
-                990001,
+                2026000001,
             ),
             "student_two": self._upsert_user(
                 "stage.student2@ifc.local",
                 "Aluno Stage Dois",
                 UserType.Type.STUDENT.value,
-                990002,
+                2026000002,
             ),
             "advisor": self._upsert_user(
                 "stage.advisor@ifc.local",
                 "Orientador Stage",
                 UserType.Type.TEACHER.value,
-                990003,
+                2026000003,
                 is_advisor=True,
             ),
             "collaborator": self._upsert_user(
                 "stage.collaborator@ifc.local",
                 "Colaborador Stage",
                 UserType.Type.TEACHER.value,
-                990004,
+                2026000004,
                 is_collaborator=True,
             ),
             "evaluator_user": self._upsert_user(
                 "stage.evaluator@ifc.local",
                 "Avaliador Stage",
                 UserType.Type.TEACHER.value,
-                990005,
+                2026000005,
             ),
             "admin": self._upsert_user(
                 "stage.admin@ifc.local",
                 "Admin Stage",
                 UserType.Type.ADMIN.value,
-                990006,
+                2026000006,
                 is_staff=True,
                 is_superuser=True,
             ),
@@ -361,6 +402,20 @@ class Command(BaseCommand):
         edition.save()
         return edition
 
+    def _prepare_edition_for_admin_reports(self, edition: Edition, today) -> None:
+        for attr, value in {
+            "initial_submission_date": today - timedelta(days=10),
+            "final_submission_date": today - timedelta(days=9),
+            "initial_advisor_acceptance": today - timedelta(days=8),
+            "final_advisor_acceptance": today - timedelta(days=7),
+            "initial_second_submission_date": today - timedelta(days=6),
+            "final_second_submission_date": today - timedelta(days=5),
+            "initial_second_advisor_date": today - timedelta(days=4),
+            "final_second_advisor_date": today - timedelta(days=1),
+        }.items():
+            setattr(edition, attr, value)
+        edition.save()
+
     def _clear_guided_scenario(self, accounts: dict[str, Any]) -> None:
         for edition in Edition.objects.filter(edition_name=EDITION_NAME):
             works = Work.objects.filter(edition=edition)
@@ -383,7 +438,9 @@ class Command(BaseCommand):
         Ods.objects.filter(name="[TESTE] ODS 4 - Educacao de Qualidade").delete()
 
     def _clear_stage_work(self, edition: Edition) -> None:
-        works = Work.objects.filter(edition=edition, title=WORK_TITLE)
+        works = Work.objects.filter(edition=edition).filter(
+            title=WORK_TITLE
+        ) | Work.objects.filter(edition=edition, title__startswith=KANBAN_WORK_PREFIX)
         Assessment.objects.filter(work__in=works).delete()
         StudentAssessments.objects.filter(work__in=works).delete()
         WorkCollaborator.objects.filter(work__in=works).delete()
@@ -459,6 +516,56 @@ class Command(BaseCommand):
             verification_token=COLLABORATOR_TOKEN,
         )
 
+    def _create_kanban_works(
+        self,
+        edition: Edition,
+        accounts: dict[str, Any],
+        field: Field,
+        theme: CrossCuttingTheme,
+        ods: Ods,
+    ) -> list[Work]:
+        scenarios = [
+            ("Aguardando orientador", WorkStatusType.Type.PENDING.value, WorkAdvisorStatusType.Type.PENDING.value, None),
+            ("Orientador recusou", WorkStatusType.Type.PENDING.value, WorkAdvisorStatusType.Type.REJECTED.value, None),
+            ("Precisa de ajustes", WorkStatusType.Type.NEEDS_CHANGES.value, WorkAdvisorStatusType.Type.APPROVED.value, WorkCollaboratorStatusType.Type.PENDING.value),
+            ("Orientador aceitou", WorkStatusType.Type.PENDING.value, WorkAdvisorStatusType.Type.APPROVED.value, None),
+            ("Trabalho aprovado", WorkStatusType.Type.APPROVED.value, WorkAdvisorStatusType.Type.APPROVED.value, WorkCollaboratorStatusType.Type.APPROVED.value),
+            ("Trabalho rejeitado", WorkStatusType.Type.REJECTED.value, WorkAdvisorStatusType.Type.APPROVED.value, WorkCollaboratorStatusType.Type.REJECTED.value),
+            ("Expirado", WorkStatusType.Type.EXPIRED.value, WorkAdvisorStatusType.Type.EXPIRED.value, WorkCollaboratorStatusType.Type.EXPIRED.value),
+        ]
+        works = []
+
+        for index, (label, work_status, advisor_status, collaborator_status) in enumerate(scenarios, start=1):
+            team = Team.objects.create(edition=edition)
+            team.team_members.set([accounts["student"], accounts["student_two"]])
+            work = Work.objects.create(
+                title=f"{KANBAN_WORK_PREFIX} {label}",
+                abstract=f"Proposta de teste para a coluna {label.lower()}.",
+                edition=edition,
+                cross_cutting_theme=theme,
+                team=team,
+                advisor=accounts["advisor"],
+                advisor_status=advisor_status,
+                status=work_status,
+                feedback="Ajustes solicitados pelo orientador." if work_status == WorkStatusType.Type.NEEDS_CHANGES.value else "",
+                verification_token=f"{ADVISOR_TOKEN}-{index}",
+                integrated_project=False,
+            )
+            work.field.set([field])
+            work.ods.set([ods])
+
+            if collaborator_status is not None:
+                WorkCollaborator.objects.create(
+                    work=work,
+                    collaborator=accounts["collaborator"],
+                    status=collaborator_status,
+                    verification_token=f"{COLLABORATOR_TOKEN}-{index}",
+                )
+
+            works.append(work)
+
+        return works
+
     def _create_assessments(self, work: Work, accounts: dict[str, Any]) -> None:
         Assessment.objects.create(
             work=work,
@@ -495,6 +602,22 @@ class Command(BaseCommand):
             "collaborator_token": collaborator_link.verification_token if collaborator_link else None,
         }
 
+    def _serialize_kanban_work(self, work: Work) -> dict[str, Any]:
+        return {
+            "id": str(work.id),
+            "title": work.title,
+            "status": work.status,
+            "advisor_status": work.advisor_status,
+            "collaborators": [
+                {
+                    "id": link.id,
+                    "status": link.status,
+                    "email": link.collaborator.email,
+                }
+                for link in work.work_collaborator.select_related("collaborator")
+            ],
+        }
+
     def _first_or_create(
         self,
         model,
@@ -525,3 +648,12 @@ class Command(BaseCommand):
             self.stdout.write(f"Trabalho: {context['work']['id']}")
             self.stdout.write(f"Token orientador: {context['work']['advisor_token']}")
             self.stdout.write(f"Token colaborador: {context['work']['collaborator_token']}")
+        if context.get("kanban_works"):
+            self.stdout.write("")
+            self.stdout.write(f"Trabalhos no kanban: {len(context['kanban_works'])}")
+        if context.get("report_grouping"):
+            self.stdout.write("Relatorio agrupado por orientadores.")
+            self.stdout.write(
+                "Relatorio disponivel a partir de: "
+                f"{context['edition']['report_available_after']}"
+            )

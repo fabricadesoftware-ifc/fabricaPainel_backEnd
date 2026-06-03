@@ -25,6 +25,9 @@ django-cors-headers==4.9.0
 django-debug-toolbar==6.3.0
 django-extensions==4.1
 django-filter==25.2
+django-simple-history==3.11.0
+django-stubs==6.0.4
+django-stubs-ext==6.0.4
 django-timezone-field==7.1
 djangorestframework==3.17.1
 djangorestframework-simplejwt==5.5.1
@@ -70,7 +73,8 @@ six==1.17.0
 sqlparse==0.5.3
 tinycss2==1.5.1
 tinyhtml5==2.0.0
-typing-extensions==4.13.2; python_version < "3.13"
+types-pyyaml==6.0.12.20260518
+typing-extensions==4.13.2
 tzdata==2025.2
 tzlocal==5.3.1
 unidecode==1.4.0

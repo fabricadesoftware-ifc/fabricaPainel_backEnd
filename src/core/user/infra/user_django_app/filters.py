@@ -4,8 +4,8 @@ from django_filters.rest_framework import (
     BaseInFilter,
     NumberFilter,
 )
-from django_project.settings import MODE
 from core.user.infra.user_django_app.models import User, Evaluator
+from django.db import connection
 from django.db.models import Q
 from django.db.models import Func
 import unicodedata
@@ -24,14 +24,14 @@ class UserFilter(FilterSet):
     registration = CharFilter(field_name="registration", lookup_expr="icontains")
     
     def filter_name(self, queryset, name, value):
-        if MODE == "DEVELOPMENT":
+        if connection.vendor != "postgresql":
             value_normalized = remove_accents(value)
             return queryset.filter(
                 name__isnull=False
             ).filter(
                 pk__in=[
-                    user.pk for user in queryset
-                    if user.name and remove_accents(user.name).lower().find(value_normalized) != -1
+                    user.pk for user in queryset.only("pk", "name")
+                    if user.name and value_normalized in remove_accents(user.name)
                 ]
             )
 

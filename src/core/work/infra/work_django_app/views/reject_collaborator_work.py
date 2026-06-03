@@ -32,6 +32,7 @@ def reject_collaborator_work(request, verification_token) -> Response:
     # Atualiza o status e limpa o token
     work_collaborator.status = WorkCollaboratorStatusType.Type.REJECTED.value
     work_collaborator.verification_token = None
+    work_collaborator._change_reason = "Colaborador recusou"
     work_collaborator.save()
 
     students_ids = list(work_collaborator.work.team.team_members.values_list("id", flat=True))

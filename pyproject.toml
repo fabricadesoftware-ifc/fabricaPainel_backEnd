@@ -38,6 +38,8 @@ dependencies = [
     "whitenoise>=6.9.0",
     "redis>=6.4.0",
     "pytz>=2026.2",
+    "django-stubs>=6.0.4",
+    "django-simple-history>=3.7.0",
 ]
 requires-python = "==3.12.*"
 readme = "README.md"
@@ -62,3 +64,6 @@ tests = "python src/manage.py stage_data"
 
 [tool.pdm]
 distribution = false
+
+[tool.pyright]
+typeCheckingMode = "basic"
