@@ -27,14 +27,17 @@ def change_status_to_expired():
 
     for work in works_pending:
         work.status =  WorkStatusType.Type.EXPIRED.value
+        work._change_reason = "Expirado automaticamente"
         work.save()
         
     for collaborator in work_collaborators:
         collaborator.status = WorkCollaboratorStatusType.Type.EXPIRED.value
+        collaborator._change_reason = "Expirado automaticamente"
         collaborator.save()        
         
     for work in work_advisors:
         work.advisor_status = WorkAdvisorStatusType.Type.EXPIRED.value
+        work._change_reason = "Expirado automaticamente"
         work.save()
     
     works_expireds = Work.objects.filter(status=WorkStatusType.Type.EXPIRED.value)

@@ -1,74 +1,38 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        margin: 0;
-        padding: 0;
-      }
-      .header,
-      .footer {
-        background-color: #34a853; /* Verde escuro */
-        color: #ffffff;
-        padding: 10px 20px;
-        text-align: center;
-      }
-      .container {
-        width: 100%;
-        padding: 20px;
-        background-color: #ffffff; /* Branco */
-        color: #000000;
-        border-radius: 10px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      }
-      h2 {
-        color: #000000; /* Preto */
-      }
-      .title {
-        text-transform: capitalize;
-        font-size: 20px;
-        color: #000000;
-        padding-left: 10px;
-      }
-      .students-names {
-        margin: 10px 0;
-        color: #000000;
-        background-color: white;
-        padding-left: 10px;
-      }
-      .changes {
-        margin: 10px 0;
-        padding-left: 10px;
-        color: #000000;
-        background-color: white;
-        font-size: 16px;
-      }
-    </style>
-    <title>Work Changes</title>
-  </head>
-  <body>
-    <div class="header">
-      <h1>{{ title }}</h1>
-    </div>
-    <div class="container">
-      <h2>Título do Trabalho:</h2>
-      <h3 class="title">{{ work_title }}</h3>
-
-      <h2>Estudantes envolvidos:</h2>
-      <div class="students-names">
-        {{ students_names }}
-      </div>
-
-      <h2>Mudanças necessárias:</h2>
-      <div class="changes">
-        <p>{{ changes }}</p>
-      </div>
-    </div>
-    <div class="footer">
-      <p>Este é um email automático. Por favor, não responda.</p>
-    </div>
-  </body>
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ajustes solicitados</title>
+</head>
+<body style="margin:0;background:#f4f7fb;font-family:Poppins,Segoe UI,Arial,sans-serif;color:#243447;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f4f7fb;padding:24px 12px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:640px;background:#ffffff;border:1px solid #dfe7ef;border-radius:8px;overflow:hidden;">
+          <tr>
+            <td style="background:#1F8BDD;padding:22px 28px;color:#ffffff;">
+              <div style="font-size:13px;font-weight:600;letter-spacing:.2px;">Painel de Integração</div>
+              <div style="font-size:24px;font-weight:700;line-height:1.25;margin-top:4px;">{{ title }}</div>
+              <div style="font-size:14px;opacity:.9;margin-top:6px;">IFC Araquari</div>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:28px;">
+              <p style="margin:0 0 18px;font-size:16px;line-height:1.6;">A proposta abaixo precisa de ajustes antes de continuar no fluxo.</p>
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">
+                <tr><td style="padding:12px 0;border-top:1px solid #edf2f7;"><strong>Título</strong><br><span style="color:#465668;">{{ work_title }}</span></td></tr>
+                <tr><td style="padding:12px 0;border-top:1px solid #edf2f7;"><strong>Estudantes</strong><br><span style="color:#465668;">{{ students_names }}</span></td></tr>
+                <tr><td style="padding:12px 0;border-top:1px solid #edf2f7;border-bottom:1px solid #edf2f7;"><strong>Solicitação</strong><br><span style="color:#465668;">{{ changes }}</span></td></tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td style="background:#f8fafc;padding:18px 28px;color:#66788a;font-size:13px;line-height:1.5;border-top:1px solid #edf2f7;">Mensagem automática do Painel de Integração do IFC Araquari. Em caso de dúvidas, entre em contato com a equipe da Fábrica de Software.</td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
 </html>

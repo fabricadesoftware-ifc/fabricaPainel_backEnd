@@ -42,6 +42,7 @@ def needs_changes_work(request, *args, **kwargs) -> Response:
         work.verification_token = token
         work.status = WorkStatusType.Type.NEEDS_CHANGES.value
         work.needs_changes_submission_work_date = timezone.now()
+        work._change_reason = "Solicitado ajuste"
         work.save()
         
         send_work_new_status_needs_changes_email_to_student.delay(students_ids, message, work.title)
@@ -52,6 +53,7 @@ def needs_changes_work(request, *args, **kwargs) -> Response:
     elif edition.final_advisor_date > datetime.now().date():
         work.status = WorkStatusType.Type.NEEDS_CHANGES.value
         work.needs_changes_submission_work_date = timezone.now()
+        work._change_reason = "Solicitado ajuste"
         work.save()
         
         send_work_needs_changes_email_to_student.delay(students_ids, message, work.title)

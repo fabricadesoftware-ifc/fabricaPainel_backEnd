@@ -1,11 +1,36 @@
 from rest_framework import serializers
 
 from core.edition.infra.edition_django_app.models import Edition
-from core.edition.domain.validations import validate_dates, validate_year
+from core.edition.domain.validations import (
+    validate_dates,
+    validate_evaluation_criteria as validate_evaluation_criteria_config,
+    validate_year,
+)
+from core.uploader.infra.uploader_django_app.models import Image
+
+
+class ImageAttachmentKeyRelatedField(serializers.PrimaryKeyRelatedField):
+    default_error_messages = {
+        "does_not_exist": "Imagem nao encontrada para a chave informada.",
+        "incorrect_type": "Tipo incorreto. Esperava id ou attachment_key de imagem.",
+    }
+
+    def to_internal_value(self, data):
+        if isinstance(data, str):
+            try:
+                return self.get_queryset().get(attachment_key=data)
+            except (TypeError, ValueError, Image.DoesNotExist):
+                self.fail("does_not_exist")
+
+        return super().to_internal_value(data)
 
 
 class EditionDetailSerializer(serializers.ModelSerializer):
-    is_open = serializers.BooleanField(read_only=True)
+    is_active = serializers.BooleanField(read_only=True)
+    is_open_for_submissions = serializers.BooleanField(read_only=True)
+    is_open_for_advisors = serializers.BooleanField(read_only=True)
+    is_open_for_evaluators = serializers.BooleanField(read_only=True)
+    is_edition_running = serializers.BooleanField(read_only=True)
 
     class Meta:
         model = Edition
@@ -38,15 +63,31 @@ class EditionDetailSerializer(serializers.ModelSerializer):
             "works_per_advisor_max",
             "words_per_work_min",
             "words_per_work_max",
+            "evaluation_criteria",
             "workload",
             "banner",
             "logo",
-            "is_open",
+            "is_active",
+            "is_open_for_submissions",
+            "is_open_for_advisors",
+            "is_open_for_evaluators",
+            "is_edition_running",
         ]
         depth = 1
 
 
 class EditionWriteSerializer(serializers.ModelSerializer):
+    banner = ImageAttachmentKeyRelatedField(
+        queryset=Image.objects.all(),
+        required=False,
+        allow_null=True,
+    )
+    logo = ImageAttachmentKeyRelatedField(
+        queryset=Image.objects.all(),
+        required=False,
+        allow_null=True,
+    )
+
     class Meta:
         model = Edition
         fields: list[str] = [
@@ -77,10 +118,17 @@ class EditionWriteSerializer(serializers.ModelSerializer):
             "works_per_advisor_max",
             "words_per_work_min",
             "words_per_work_max",
+            "evaluation_criteria",
             "workload",
             "banner",
             "logo",
         ]
+
+    def validate_evaluation_criteria(self, value):
+        try:
+            return validate_evaluation_criteria_config(value)
+        except ValueError as e:
+            raise serializers.ValidationError(str(e))
 
     def validate(self, attrs):
         request = self.context.get("request")

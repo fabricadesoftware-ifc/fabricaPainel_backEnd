@@ -1,9 +1,17 @@
 from django.db import models
 from core.uploader.infra.uploader_django_app.models import Image
-from datetime import datetime, timedelta, date
+from datetime import datetime
+from typing import TYPE_CHECKING
+
+from core.edition.infra.edition_django_app.defaults import default_evaluation_criteria
 
 
 class Edition(models.Model):
+    if TYPE_CHECKING:
+        id: int
+        banner_id: int | None
+        logo_id: int | None
+
     year = models.IntegerField("Ano da Edição")
     theme = models.CharField("Tema da Edição", max_length=255)
     edition_name = models.CharField("Nome da Edição", max_length=255)
@@ -78,6 +86,13 @@ class Edition(models.Model):
     )
 
     workload = models.IntegerField("Carga horária")
+
+    evaluation_criteria = models.JSONField(
+        "Criterios de avaliacao",
+        default=default_evaluation_criteria,
+        blank=True,
+    )
+
     banner = models.ForeignKey(
         Image,
         related_name="+",
@@ -96,16 +111,65 @@ class Edition(models.Model):
     )
 
     @property
-    def is_open(self):
+    def is_active(self) -> bool:
         today = datetime.now().date()
-        print(today)
         if not self.initial_submission_date or not self.final_event_date:
             return False
+        return self.initial_submission_date <= today <= self.final_evaluators_date
+
+    @property
+    def is_open_for_submissions(self) -> bool:
+        today = datetime.now().date()
+        if (
+            not self.initial_submission_date
+            or not self.final_submission_date
+            or not self.initial_second_submission_date
+            or not self.final_second_submission_date
+        ):
+            return False
         return (
-            self.initial_submission_date
+            self.initial_submission_date <= today <= self.final_submission_date
+        ) or (
+            self.initial_second_submission_date
             <= today
-            <= (self.final_event_date + timedelta(days=1))
+            <= self.final_second_submission_date
         )
 
-    def __str__(self):
+    @property
+    def is_open_for_advisors(self) -> bool:
+        today = datetime.now().date()
+        if (
+            not self.initial_advisor_acceptance
+            or not self.final_advisor_acceptance
+            or not self.initial_second_advisor_date
+            or not self.final_second_advisor_date
+        ):
+            return False
+        return (
+            self.initial_advisor_acceptance <= today <= self.final_advisor_acceptance
+        ) or (
+            self.initial_second_advisor_date <= today <= self.final_second_advisor_date
+        )
+
+    @property
+    def is_open_for_evaluators(self) -> bool:
+        today = datetime.now().date()
+        if (
+            not self.initial_evaluators_date
+            or not self.final_evaluators_date
+            or not self.event_date
+        ):
+            return False
+        return (
+            self.initial_evaluators_date <= today <= self.final_evaluators_date
+        ) and (self.initial_evaluators_date >= self.event_date)
+
+    @property
+    def is_edition_running(self) -> bool:
+        today = datetime.now().date()
+        if not self.event_date or not self.final_event_date:
+            return False
+        return self.event_date <= today <= self.final_event_date
+
+    def __str__(self) -> str:
         return f"{self.edition_name} - {self.year}"

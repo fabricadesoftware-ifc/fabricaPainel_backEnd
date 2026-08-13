@@ -1,10 +1,18 @@
 from django.db import models
+from typing import TYPE_CHECKING
+
 from core.user.infra.user_django_app.models import Evaluator, User
 from core.work.infra.work_django_app.models import Work
 
 class Assessment(models.Model):
+    if TYPE_CHECKING:
+        id: int
+        work_id: str
+        evaluator_id: int
+
     work = models.ForeignKey(Work, on_delete=models.PROTECT)
     grade = models.DecimalField(max_digits=4, decimal_places=2)
+    criterion_grades = models.JSONField(default=list, blank=True)
     evaluator = models.ForeignKey(
         Evaluator,
         on_delete=models.PROTECT,
@@ -17,6 +25,11 @@ class Assessment(models.Model):
         return f"{self.evaluator} - {self.work.title} - {self.grade}"
     
 class Assessments(models.Model):
+    if TYPE_CHECKING:
+        id: int
+        evaluator_id: int
+        work_id: str
+
     evaluator =  models.ForeignKey(Evaluator,
         related_name="assessments",
         on_delete=models.PROTECT)
@@ -27,7 +40,13 @@ class Assessments(models.Model):
     
 
 class StudentAssessments(models.Model):
+    if TYPE_CHECKING:
+        id: int
+        work_id: str
+        student_id: int
+
     grade = models.DecimalField(max_digits=4, decimal_places=2)
+    criterion_grades = models.JSONField(default=list, blank=True)
     work = models.ForeignKey(Work, on_delete=models.PROTECT)
     date_time = models.DateTimeField()
     student = models.ForeignKey(

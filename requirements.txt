@@ -2,12 +2,12 @@
 # Please do not edit it manually.
 
 amqp==5.3.1
-asgiref==3.8.1
+asgiref==3.11.1
 attrs==25.3.0
 billiard==4.2.1
 brotli==1.1.0; platform_python_implementation == "CPython"
 brotlicffi==1.1.0.0; platform_python_implementation != "CPython"
-celery==5.5.3
+celery==5.6.3
 cffi==1.17.1
 charset-normalizer==3.4.2
 click==8.2.1
@@ -17,33 +17,36 @@ click-repl==0.3.0
 colorama==0.4.6; platform_system == "Windows"
 cron-descriptor==1.4.5
 cssselect2==0.8.0
-dj-database-url==3.0.0
-django==5.2.3
-django-celery-beat==2.8.1
+dj-database-url==3.1.2
+django==5.2.14
+django-celery-beat==2.9.0
 django-celery-results==2.6.0
-django-cors-headers==4.7.0
-django-debug-toolbar==5.2.0
+django-cors-headers==4.9.0
+django-debug-toolbar==6.3.0
 django-extensions==4.1
-django-filter==25.1
+django-filter==25.2
+django-simple-history==3.11.0
+django-stubs==6.0.4
+django-stubs-ext==6.0.4
 django-timezone-field==7.1
-djangorestframework==3.16.0
-djangorestframework-simplejwt==5.5.0
-drf-spectacular==0.28.0
-faker==37.4.0
-fonttools[woff]==4.58.4
-gunicorn==23.0.0
+djangorestframework==3.17.1
+djangorestframework-simplejwt==5.5.1
+drf-spectacular==0.29.0
+faker==40.18.0
+fonttools[woff]==4.63.0
+gunicorn==26.0.0
 inflection==0.5.1
 jsonschema==4.23.0
 jsonschema-specifications==2025.4.1
-kombu==5.5.3
+kombu==5.6.2
 lml==0.2.0
 lxml==5.4.0
-numpy==2.2.6; python_version >= "3.12"
+numpy==2.2.6; python_version < "3.14"
 packaging==25.0
-pandas==2.3.0
-pillow==11.2.1
+pandas==3.0.3
+pillow==12.2.0
 prompt-toolkit==3.0.51
-psycopg2-binary==2.9.10
+psycopg2-binary==2.9.12
 pycparser==2.22
 pydot==4.0.1
 pydyf==0.11.0
@@ -51,32 +54,34 @@ pyexcel-ezodf==0.3.4
 pyexcel-io==0.6.7
 pyexcel-ods3==0.6.1
 pyjwt==2.9.0
-pyparsing==3.2.3
+pyparsing==3.3.2
 pyphen==0.17.2
 python-crontab==3.2.0
 python-dateutil==2.9.0.post0
-python-dotenv==1.1.1
+python-dotenv==1.2.2
 python-magic==0.4.27; sys_platform != "win32"
 python-magic-bin==0.4.14; sys_platform == "win32"
-pytz==2025.2
+pytz==2026.2
 pyyaml==6.0.2
-redis==6.4.0
+redis==7.4.0
 referencing==0.36.2
-reportlab==4.4.2
+reportlab==4.5.1
 rpds-py==0.25.1
-setuptools==80.9.0
+setuptools==82.0.1
 shell==1.0.1
 six==1.17.0
 sqlparse==0.5.3
-tinycss2==1.4.0
+tinycss2==1.5.1
 tinyhtml5==2.0.0
+types-pyyaml==6.0.12.20260518
 typing-extensions==4.13.2
 tzdata==2025.2
+tzlocal==5.3.1
 unidecode==1.4.0
 uritemplate==4.1.1
 vine==5.1.0
 wcwidth==0.2.13
-weasyprint==65.1
+weasyprint==68.1
 webencodings==0.5.1
-whitenoise==6.9.0
+whitenoise==6.12.0
 zopfli==0.2.3.post1

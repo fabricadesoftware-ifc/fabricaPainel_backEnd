@@ -1,6 +1,7 @@
 from .send_email_advisor.send_work_update_to_advisor import notify_advisor_on_data_update
 from .send_email_advisor.send_work_reminder_email import remind_advisor_to_verify_invites
 from .send_email_advisor.send_work_email_to_advisor import send_work_email_to_advisor
+from .send_email_advisor.send_grade_period_opened import notify_advisors_grade_period_opened
 
 from .send_email_student.needs_changes.send_work_needs_changes_email_to_student import send_work_needs_changes_email_to_student
 from .send_email_student.needs_changes.send_work_new_status_needs_changes_email_to_student import send_work_new_status_needs_changes_email_to_student
@@ -11,3 +12,16 @@ from .send_email_student.approve.send_work_new_status_approve_email_to_student i
 from .send_email_student.send_work_cancel_email_to_student import send_work_cancel_email_to_student
 
 from .change_status.change_status_to_expired_works import change_status_to_expired
+
+__all__ = [
+    notify_advisor_on_data_update,
+    remind_advisor_to_verify_invites,
+    send_work_email_to_advisor,
+    notify_advisors_grade_period_opened,
+    send_work_needs_changes_email_to_student,
+    send_work_new_status_needs_changes_email_to_student,
+    send_work_approve_email_to_student,
+    send_work_new_status_approve_email_to_student,
+    send_work_cancel_email_to_student,
+    change_status_to_expired,
+]

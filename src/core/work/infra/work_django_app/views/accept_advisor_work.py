@@ -13,8 +13,8 @@ from core.work.domain.tasks.send_email_student.approve.send_work_approve_email_t
 import uuid
 
 
-@throttle_classes([UserRateThrottle])
 @api_view(["GET"])
+@throttle_classes([UserRateThrottle])
 @permission_classes([IsAdvisor])
 def accept_advisor_work(request, verification_token) -> Response:
     try:
@@ -29,17 +29,18 @@ def accept_advisor_work(request, verification_token) -> Response:
         )
 
     edition = work.edition
-    current_date = timezone.now().date()
+    current_date = timezone.localdate()
 
     def within_acceptance_period() -> bool:
         return (
-            edition.initial_submission_date <= current_date <= edition.final_advisor_acceptance
-            or edition.initial_second_submission_date <= current_date <= edition.final_second_advisor_date
+            edition.initial_advisor_acceptance <= current_date <= edition.final_advisor_acceptance
+            or edition.initial_second_advisor_date <= current_date <= edition.final_second_advisor_date
         )
 
     if within_acceptance_period():
         work.advisor_status = WorkAdvisorStatusType.Type.APPROVED.value
         work.verification_token = uuid.uuid4()
+        work._change_reason = "Orientador aceitou"
         work.save()
 
         students_ids = [s.id for s in work.team.team_members.all()]

@@ -10,8 +10,8 @@ from core.work.infra.work_django_app.models import Work, WorkStatusType, Edition
 from core.work.domain.tasks import send_work_approve_email_to_student, send_work_new_status_approve_email_to_student
 
 
-@throttle_classes([UserRateThrottle])
 @api_view(["GET"])
+@throttle_classes([UserRateThrottle])
 @permission_classes([IsAdvisor])
 def approve_work(request, verification_token) -> Response:
     try:
@@ -21,7 +21,7 @@ def approve_work(request, verification_token) -> Response:
 
     students_ids = list(work.team.team_members.values_list("id", flat=True))
     edition = work.edition
-    current_date = timezone.now().date()
+    current_date = timezone.localdate()
     from_email = EMAIL_HOST_USER
 
     def within_submission_period() -> bool:
@@ -36,6 +36,7 @@ def approve_work(request, verification_token) -> Response:
     # Aprova o trabalho
     work.status = WorkStatusType.Type.APPROVED.value
     work.verification_token = None
+    work._change_reason = "Trabalho aprovado"
     work.save()
 
     # Envia email de status aprovado se houver final_submission_date definido
