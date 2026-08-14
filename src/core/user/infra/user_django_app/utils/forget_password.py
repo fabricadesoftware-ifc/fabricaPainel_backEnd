@@ -23,14 +23,12 @@ def forget_password(request):
     try:
         user = User.objects.get(email=email)
 
-        if user.password_reset_token_created is not None:
-            user.password_reset_token = None
-            user.password_reset_token_created = None
-
+        # Gera novo token
         desired_length = 8
         token_size = (desired_length + 1) // 2
         token = secrets.token_hex(token_size)
 
+        # Salva token e timestamp (sobrescreve o antigo se existir)
         user.password_reset_token = token
         user.password_reset_token_created = pytz.utc.localize(datetime.datetime.now())
         user.save(update_fields=['password_reset_token', 'password_reset_token_created'])
