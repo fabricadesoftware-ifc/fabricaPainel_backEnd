@@ -23,6 +23,8 @@ from core.work.infra.work_django_app.models import Team
 @admin.register(Evaluator)
 class EvaluatorAdmin(admin.ModelAdmin):
     autocomplete_fields = ["user"]
+    # necessário para o WorkAdmin poder usar "evaluator" em autocomplete_fields
+    search_fields = ["user__name", "user__email"]
 
 
 class TeamEditionYearFilter(admin.SimpleListFilter):
