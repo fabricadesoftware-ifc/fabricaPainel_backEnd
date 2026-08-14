@@ -30,6 +30,7 @@ class UserRetrieveSerializer(serializers.Serializer):
     email = serializers.EmailField(read_only=True)
     name = serializers.CharField(read_only=True)
     user_type = serializers.CharField(read_only=True)
+    user_classes = UserClassSerializer(many=True, read_only=True)
     
 
 class UserSerializer(serializers.ModelSerializer):
