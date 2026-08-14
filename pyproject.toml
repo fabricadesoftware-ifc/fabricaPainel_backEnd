@@ -57,10 +57,11 @@ migrate = "python src/manage.py migrate"
 makemigrations = "python src/manage.py makemigrations"
 shell = "python src/manage.py shell"
 populate = "python src/manage.py populate"
-celery = "celery -A src.django_project worker --loglevel=INFO --concurrency=10 -n worker1.%h --pool=solo"
+celery = "celery -A src.django_project worker --loglevel=INFO --concurrency=10 -n worker1.%h --pool=solo --without-gossip"
 beat = "celery -A src.django_project beat --loglevel=INFO"
 test = "python pop.py"
 tests = "python src/manage.py stage_data"
+import_students = "python scripts/import_students_safe.py"
 
 [tool.pdm]
 distribution = false
