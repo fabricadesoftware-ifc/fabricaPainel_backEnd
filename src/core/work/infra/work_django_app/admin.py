@@ -11,6 +11,11 @@ class WorkCollaboratorInline(admin.TabularInline):
 class WorkAdmin(admin.ModelAdmin):
     inlines = [WorkCollaboratorInline]
     list_display = ("title", "advisor", "status", "get_year")
+    # Sem isso, esses campos viravam um <select> gigante com TODOS os registros
+    # (todas as equipes, todos os usuários, todas as disciplinas...), que
+    # estourava a tela e não dava pra pesquisar. Com autocomplete_fields vira
+    # um campo de busca (Select2) que carrega os resultados sob demanda.
+    autocomplete_fields = ["team", "advisor", "field", "evaluator"]
     search_fields = (
         "title",
         "advisor__name",

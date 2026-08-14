@@ -1,3 +1,5 @@
+import logging
+
 from rest_framework.decorators import api_view, throttle_classes, permission_classes
 from rest_framework.response import Response
 from rest_framework.throttling import UserRateThrottle
@@ -11,6 +13,8 @@ from django_project.permissions import IsAdvisor
 from core.work.domain.tasks.send_email_student.approve.send_work_approve_email_to_student import send_work_approve_email_to_student
 from core.work.domain.tasks.send_email_student.needs_changes.send_work_needs_changes_email_to_student import send_work_needs_changes_email_to_student
 
+logger = logging.getLogger("work_acceptance")
+
 @api_view(["GET"])
 @throttle_classes([UserRateThrottle])
 @permission_classes([IsAdvisor])
@@ -18,6 +22,7 @@ def accept_submission(request, verification_token) -> Response:
     try:
         work = Work.objects.get(verification_token=verification_token)
     except Work.DoesNotExist:
+        logger.warning(f"accept_submission: token não encontrado ({verification_token})")
         return Response(
             {"error": "Trabalho não encontrado."},
             status=status.HTTP_404_NOT_FOUND,
@@ -37,6 +42,10 @@ def accept_submission(request, verification_token) -> Response:
     # Envia email para os estudantes
     send_work_approve_email_to_student.delay(from_email, students_ids, advisor_id)
 
+    logger.info(
+        f"accept_submission: work {work.id} ('{work.title}') aprovado por {work.advisor.email} "
+        f"em {timezone.localdate()}"
+    )
     return Response(
         {"message": "Trabalho aprovado com sucesso."},
         status=status.HTTP_200_OK,
@@ -49,6 +58,7 @@ def reject_submission(request, verification_token) -> Response:
     try:
         work = Work.objects.get(verification_token=verification_token)
     except Work.DoesNotExist:
+        logger.warning(f"reject_submission: token não encontrado ({verification_token})")
         return Response(
             {"error": "Trabalho não encontrado."},
             status=status.HTTP_404_NOT_FOUND,
@@ -57,7 +67,7 @@ def reject_submission(request, verification_token) -> Response:
     # Pega os IDs dos estudantes
     students_ids = [s.id for s in work.team.team_members.all()]
     message = request.query_params.get("message", "")
-    
+
     # Atualiza o status do trabalho para NEEDS_CHANGES
     work.status = WorkStatusType.Type.NEEDS_CHANGES.value
     work.verification_token = None
@@ -68,7 +78,11 @@ def reject_submission(request, verification_token) -> Response:
     # Envia email para os estudantes
     send_work_needs_changes_email_to_student.delay(students_ids, message, work.title)
 
+    logger.info(
+        f"reject_submission: work {work.id} ('{work.title}') marcado como precisa-de-ajustes por "
+        f"{work.advisor.email} em {timezone.localdate()} — mensagem: {message!r}"
+    )
     return Response(
         {"message": "Trabalho rejeitado com sucesso. Os alunos serão notificados para fazer as alterações necessárias."},
         status=status.HTTP_200_OK,
-    ) 
+    )

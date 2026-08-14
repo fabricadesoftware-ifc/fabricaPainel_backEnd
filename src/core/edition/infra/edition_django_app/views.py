@@ -42,14 +42,15 @@ class EditionOpenViewSet(ModelViewSet):
     def get_queryset(self):
         try:
             now = datetime.now()
-            if Edition.objects.filter(
+            open_editions = Edition.objects.filter(
                 initial_submission_date__lte=now,
                 final_event_date__gte=now - timedelta(days=1)
-            ).exists():
-                return Edition.objects.filter(
-                    initial_submission_date__lte=now,
-                    final_event_date__gte=now - timedelta(days=1)
-                )
+            )
+            if open_editions.exists():
+                return open_editions
+            # Sem edicao "aberta" no momento: retorna queryset vazio em vez de
+            # None, que faria o DRF quebrar com erro 500 ao tentar filtrar/listar.
+            return Edition.objects.none()
         except Exception as e:
             print("Erro no get_queryset da EditionOpenViewSet:", e)
             return Edition.objects.none()
