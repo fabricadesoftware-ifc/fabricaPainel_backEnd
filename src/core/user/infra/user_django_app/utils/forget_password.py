@@ -1,6 +1,5 @@
-import datetime
 import secrets
-import pytz
+from django.utils import timezone
 
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes, authentication_classes, throttle_classes
@@ -30,8 +29,8 @@ def forget_password(request):
 
         # Salva token e timestamp (sobrescreve o antigo se existir)
         user.password_reset_token = token
-        user.password_reset_token_created = pytz.utc.localize(datetime.datetime.now())
-        user.save(update_fields=['password_reset_token', 'password_reset_token_created'])
+        user.password_reset_token_created = timezone.now()
+        user.save()  # Save completo - update_fields causava problema em produção
 
         send_forget_password_email.delay(email, token)
 
