@@ -265,6 +265,67 @@ TOKEN_EXPIRATION_SECONDS = 1200
 INTERNAL_IPS = ['*', 'localhost', '127.0.0.1', '172.17.0.1',]
 
 # ------------------------------
+# Logging
+# ------------------------------
+# Sem isso, os logger.info/logger.error já espalhados pelo código (ex.: envio
+# de email, aceite/recusa de orientação e colaboração) não iam pra lugar
+# nenhum de forma persistente — só o handler padrão do Django, que não fica
+# gravado em disco. "work_acceptance" é um logger dedicado ao fluxo de
+# aceite/recusa de orientador e colaborador, gravado em logs/work_acceptance.log,
+# pra facilitar achar rápido por que um clique no link do email foi negado
+# (ex.: fora do período de aceitação).
+LOG_DIR = BASE_DIR.parent / "logs"
+LOG_DIR.mkdir(exist_ok=True)
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+        },
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "verbose",
+        },
+        "app_file": {
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": str(LOG_DIR / "django.log"),
+            "maxBytes": 5 * 1024 * 1024,
+            "backupCount": 5,
+            "formatter": "verbose",
+            "encoding": "utf-8",
+        },
+        "work_acceptance_file": {
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": str(LOG_DIR / "work_acceptance.log"),
+            "maxBytes": 5 * 1024 * 1024,
+            "backupCount": 5,
+            "formatter": "verbose",
+            "encoding": "utf-8",
+        },
+    },
+    "root": {
+        "handlers": ["console", "app_file"],
+        "level": "INFO",
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["console", "app_file"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "work_acceptance": {
+            "handlers": ["console", "work_acceptance_file", "app_file"],
+            "level": "INFO",
+            "propagate": False,
+        },
+    },
+}
+
+# ------------------------------
 # Password hashers customizados
 # ------------------------------
 
