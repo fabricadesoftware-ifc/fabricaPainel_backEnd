@@ -169,3 +169,7 @@ cython_debug/
 #.idea/
 
 *.jpg
+
+# Test and debug scripts
+scripts/
+corrigidos/

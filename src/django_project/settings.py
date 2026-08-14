@@ -273,7 +273,7 @@ if MODE == "DEVELOPMENT":
     from django.contrib.auth.hashers import PBKDF2PasswordHasher
 
     class FastPBKDF2PasswordHasher(PBKDF2PasswordHasher):
-        iterations = 60000 
+        iterations = 60000
 
     PASSWORD_HASHERS = [
         "src.django_project.settings.FastPBKDF2PasswordHasher",
@@ -283,8 +283,12 @@ elif MODE == "PRODUCTION":
     from django.contrib.auth.hashers import PBKDF2PasswordHasher
 
     class ProductionPBKDF2PasswordHasher(PBKDF2PasswordHasher):
-        iterations = 200_000 
+        iterations = 200_000
 
     PASSWORD_HASHERS = [
         "src.django_project.settings.ProductionPBKDF2PasswordHasher",
     ]
+
+
+CELERY_CONTROL_QUEUE_EXCLUSIVE = True
+CELERY_TASK_TRACK_STARTED = True
