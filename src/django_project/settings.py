@@ -337,7 +337,7 @@ if MODE == "DEVELOPMENT":
         iterations = 60000
 
     PASSWORD_HASHERS = [
-        "src.django_project.settings.FastPBKDF2PasswordHasher",
+        "django_project.settings.FastPBKDF2PasswordHasher",
     ]
 
 elif MODE == "PRODUCTION":
@@ -347,7 +347,7 @@ elif MODE == "PRODUCTION":
         iterations = 200_000
 
     PASSWORD_HASHERS = [
-        "src.django_project.settings.ProductionPBKDF2PasswordHasher",
+        "django_project.settings.ProductionPBKDF2PasswordHasher",
     ]
 
 

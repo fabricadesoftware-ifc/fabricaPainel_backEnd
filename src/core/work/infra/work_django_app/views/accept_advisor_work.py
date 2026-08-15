@@ -12,6 +12,7 @@ from core.work.infra.work_django_app.models import Work, WorkAdvisorStatusType, 
 from core.work.domain.tasks.send_email_student.approve.send_work_approve_email_to_student import (
     send_work_approve_email_to_student,
 )
+from core.__seedwork.domain.actions.acceptance_window import is_within_window
 import uuid
 
 logger = logging.getLogger("work_acceptance")
@@ -36,14 +37,12 @@ def accept_advisor_work(request, verification_token) -> Response:
 
     edition = work.edition
     current_date = timezone.localdate()
+    windows = [
+        (edition.initial_advisor_acceptance, edition.final_advisor_acceptance),
+        (edition.initial_second_advisor_date, edition.final_second_advisor_date),
+    ]
 
-    def within_acceptance_period() -> bool:
-        return (
-            edition.initial_advisor_acceptance <= current_date <= edition.final_advisor_acceptance
-            or edition.initial_second_advisor_date <= current_date <= edition.final_second_advisor_date
-        )
-
-    if within_acceptance_period():
+    if is_within_window(current_date, windows):
         work.advisor_status = WorkAdvisorStatusType.Type.APPROVED.value
         work.verification_token = uuid.uuid4()
         work._change_reason = "Orientador aceitou"

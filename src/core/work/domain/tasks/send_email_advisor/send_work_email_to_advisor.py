@@ -1,10 +1,12 @@
 import os
 import logging
 from django.core.mail import send_mail
+from django.utils import timezone
 from django.utils.html import strip_tags
 from core.work.infra.work_django_app.models import Work
 from celery import shared_task
 from django_project.settings import BASE_DIR
+from core.__seedwork.domain.actions.acceptance_window import acceptance_window_notice
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +31,14 @@ def send_work_email_to_advisor(work_id, email_subject, from_email, email_recipie
         html = html.replace("{{ work_cross_cutting_themes }}", cross_theme_name)
         html = html.replace("{{ accept_work_link }}", accept_work_link)
         html = html.replace("{{ reject_work_link }}", reject_work_link)
-        
+
+        windows = [
+            (work.edition.initial_advisor_acceptance, work.edition.final_advisor_acceptance),
+            (work.edition.initial_second_advisor_date, work.edition.final_second_advisor_date),
+        ]
+        notice_html = acceptance_window_notice(timezone.localdate(), windows)
+        html = html.replace("{{ acceptance_period_notice }}", notice_html)
+
         students_emails = [member.email for member in work.team.team_members.all()]
         if students_emails:
             students_emails_list = ', '.join(students_emails)
