@@ -12,6 +12,7 @@ from core.work.domain.validations import (
     validate_work_advisor,
     validate_work_team_members,
     validate_work_collaborators,
+    validate_work_evaluator_limits,
 )
 from core.user.infra.user_django_app.serializers import UserSerializer, EvaluatorSerializer
 from core.user.infra.user_django_app.models import User
@@ -250,7 +251,15 @@ class WorkWriteSerializer(serializers.ModelSerializer):
                     validate_work_collaborators(attrs)
                 except ValidationError as e:
                     raise ValidationError({"collaborators": str(e)})
-                
+
+        if attrs.get('evaluator'):
+            edition = attrs.get('edition') or (self.instance.edition if self.instance else None)
+            current_work_id = self.instance.id if self.instance else None
+            try:
+                validate_work_evaluator_limits(edition, attrs.get('evaluator'), current_work_id)
+            except ValidationError as e:
+                raise ValidationError({"evaluator": str(e)})
+
         return super().validate(attrs)
 
 

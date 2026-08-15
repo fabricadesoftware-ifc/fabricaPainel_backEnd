@@ -213,7 +213,11 @@ class EditionFlowTestCase(APITransactionTestCase):
         work.refresh_from_db()
         self.assertEqual(work.advisor_status, WorkAdvisorStatusType.Type.PENDING.value)
 
-    def test_rejects_student_assessment_before_grade_period(self):
+    @patch("core.work.infra.work_django_app.views.submission_work.send_work_approve_email_to_student.delay")
+    @patch("core.work.infra.work_django_app.views.accept_advisor_work.send_work_approve_email_to_student.delay")
+    def test_rejects_student_assessment_before_grade_period(
+        self, advisor_accept_email_delay, work_approved_email_delay
+    ):
         edition = self.create_edition(first_window_open=True)
         edition.initial_evaluators_date = self.today + timedelta(days=2)
         edition.final_evaluators_date = self.today + timedelta(days=4)
@@ -222,7 +226,25 @@ class EditionFlowTestCase(APITransactionTestCase):
         team = self.create_team_via_api(edition)
         work = self.create_work_via_api(edition, team, title="Nota Antes do Periodo")
 
+        # Leva o trabalho ate o status APPROVED, para isolar o teste na
+        # checagem de data (o trabalho precisa estar aprovado para que a
+        # tentativa de nota chegue ate a validacao de periodo de avaliacao).
         self.client.force_authenticate(self.advisor)
+        advisor_detail = self.client.get(f"/api/work/{work.id}/")
+        accept_advisor = self.client.get(
+            f"/api/accept-advisor-work/{advisor_detail.data['verification_token']}/"
+        )
+        self.assertEqual(accept_advisor.status_code, status.HTTP_200_OK, accept_advisor.data)
+
+        advisor_detail = self.client.get(f"/api/work/{work.id}/")
+        approve_work = self.client.get(
+            f"/api/accept-submission/{advisor_detail.data['verification_token']}/"
+        )
+        self.assertEqual(approve_work.status_code, status.HTTP_200_OK, approve_work.data)
+
+        work.refresh_from_db()
+        self.assertEqual(work.status, WorkStatusType.Type.APPROVED.value)
+
         response = self.client.post(
             "/api/student-assessments/",
             {
@@ -238,7 +260,7 @@ class EditionFlowTestCase(APITransactionTestCase):
         self.assertIn("Avaliacoes so podem ser realizadas", str(response.data))
 
     @patch("core.work.infra.work_django_app.views.accept_collaborator_work.send_collaborator_accept_email_to_student.delay")
-    @patch("core.work.infra.work_django_app.views.approved_work.send_work_new_status_approve_email_to_student.delay")
+    @patch("core.work.infra.work_django_app.views.submission_work.send_work_approve_email_to_student.delay")
     @patch("core.work.infra.work_django_app.views.accept_advisor_work.send_work_approve_email_to_student.delay")
     def test_complete_edition_flow_from_submission_to_report(
         self,
@@ -269,7 +291,7 @@ class EditionFlowTestCase(APITransactionTestCase):
 
         advisor_detail = self.client.get(f"/api/work/{work.id}/")
         approve_work = self.client.get(
-            f"/api/accept-work/{advisor_detail.data['verification_token']}/"
+            f"/api/accept-submission/{advisor_detail.data['verification_token']}/"
         )
         self.assertEqual(approve_work.status_code, status.HTTP_200_OK, approve_work.data)
 

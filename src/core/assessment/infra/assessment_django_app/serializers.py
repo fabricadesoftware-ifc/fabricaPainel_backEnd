@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 
-from core.assessment.domain.validations import validate_grade_range, validate_assessment_creator, validate_assessment_evaluator, validate_assessment_date
+from core.assessment.domain.validations import validate_grade_range, validate_assessment_creator, validate_assessment_evaluator, validate_assessment_date, validate_work_is_approved
 from core.assessment.infra.assessment_django_app.models import Assessment, StudentAssessments
 
 
@@ -131,6 +131,7 @@ class AssessmentWriteSerializer(serializers.ModelSerializer):
         _apply_criterion_grades(attrs, "work")
 
         try:
+            validate_work_is_approved(attrs.get("work"))
             validate_assessment_date(attrs.get("work"), "work")
             validate_assessment_evaluator(self.context["request"].user, attrs)
         except serializers.ValidationError as e:
@@ -170,6 +171,7 @@ class StudentAssessmentsWriteSerializer(serializers.ModelSerializer):
         _apply_criterion_grades(attrs, "student")
 
         try:
+            validate_work_is_approved(attrs.get("work"))
             validate_assessment_date(attrs.get("work"), "student")
             validate_assessment_creator(self.context["request"].user, attrs)
 
