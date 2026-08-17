@@ -11,6 +11,7 @@ from drf_spectacular.views import (
 
 from rest_framework_simplejwt.views import (
     TokenRefreshView,
+    TokenBlacklistView,
 )
 from core.user.infra.user_django_app.views import CustomTokenObtainPairView
 from core.user.infra.user_django_app.views import create_certificate, verify_certificate
@@ -48,6 +49,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/token/", CustomTokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
+    path("api/token/logout/", TokenBlacklistView.as_view(), name="token_logout"),
     path("api/generate-assessment-report/<str:year>/<str:class_name>/", generate_assessment_report, name="generate-assessment-report"),
     path("api/generate-assessment-report/<str:year>/", generate_assessment_report, name="generate-assessment-report-by-class"),
     path(
