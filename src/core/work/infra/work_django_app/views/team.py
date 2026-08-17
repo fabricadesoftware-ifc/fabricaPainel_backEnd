@@ -37,30 +37,30 @@ class TeamViewSet(ModelViewSet):
         team_members = request.data.get('team_members', [])
         sender_id = request.data.get('sender_id')
         if not team_members:
-            return Response({"error": "Você deve fornecer membros para o time."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Você deve fornecer membros para o equipe."}, status=status.HTTP_400_BAD_REQUEST)
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         team: Team = serializer.save()
-        
+
         if sender_id:
             get_sender_team = Team.objects.filter(team_members__id=sender_id).filter(~Q(id=team.id)).exclude(work__status=4)
-            
+
             if get_sender_team:
                 team.delete()
                 return Response({"error": "Voce já está em um time."}, status=status.HTTP_400_BAD_REQUEST)
-            
+
             for member_id in team_members:
                 try:
                     member = User.objects.get(id=member_id)
                     get_member_team = Team.objects.filter(team_members__id=member_id).filter(~Q(id=team.id)).exclude(work__status=4)
-                    
+
                     if get_member_team:
                         team.delete()
                         return Response({"error": f"{member.name.upper()} já está em um time."}, status=status.HTTP_400_BAD_REQUEST)
                 except User.DoesNotExist:
                     continue
-            
+
             sender_user = User.objects.get(id=sender_id)
             team.team_members.set([sender_user])
             team.save()
@@ -69,13 +69,13 @@ class TeamViewSet(ModelViewSet):
 
     def partial_update(self, request, *args, **kwargs):
         team: Team = self.get_object()
-        
+
         if hasattr(team, 'work') and team.work.status == 4:  # REJECTED
             return Response(
                 {"error": "Este time está associado a um trabalho rejeitado e não pode ser alterado."},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        
+
         action = request.data.get('action')
         user_id = request.data.get('user_id', '')
         new_members = request.data.get('new_members', [])
@@ -86,14 +86,14 @@ class TeamViewSet(ModelViewSet):
                 if team_user:
                     return Response({"error": f"{member.name} já está em um time."}, status=status.HTTP_400_BAD_REQUEST)
                 team.team_members.add(member)
-                
+
             return Response({"message": "Usuário adicionado ao time."}, status=status.HTTP_200_OK)
-        
+
         if action == 'remove':
             user = User.objects.get(id=user_id)
             team.team_members.remove(user)
             return Response({"message": "Usuário removido do time."}, status=status.HTTP_200_OK)
-        
+
         if action == 'leave':
             user = User.objects.get(id=user_id)
             team.team_members.remove(user)
