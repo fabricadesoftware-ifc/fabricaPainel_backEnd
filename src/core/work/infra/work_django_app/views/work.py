@@ -349,7 +349,6 @@ def _team_report_queryset(edition):
         .select_related("advisor", "team", "edition")
         .prefetch_related(
             "team__team_members",
-            "history",
             Prefetch(
                 "team__team_members__user_classes",
                 queryset=UserClass.objects.select_related("class_name").filter(year=edition.year),
