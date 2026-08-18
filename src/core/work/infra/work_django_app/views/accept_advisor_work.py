@@ -12,7 +12,7 @@ from core.work.infra.work_django_app.models import Work, WorkAdvisorStatusType, 
 from core.work.domain.tasks.send_email_student.approve.send_work_approve_email_to_student import (
     send_work_approve_email_to_student,
 )
-from core.__seedwork.domain.actions.acceptance_window import is_within_window
+from core.__seedwork.domain.actions.acceptance_window import advisor_decision_windows, is_within_window
 import uuid
 
 logger = logging.getLogger("work_acceptance")
@@ -37,10 +37,7 @@ def accept_advisor_work(request, verification_token) -> Response:
 
     edition = work.edition
     current_date = timezone.localdate()
-    windows = [
-        (edition.initial_advisor_acceptance, edition.final_advisor_acceptance),
-        (edition.initial_second_advisor_date, edition.final_second_advisor_date),
-    ]
+    windows = advisor_decision_windows(edition)
 
     if is_within_window(current_date, windows):
         work.advisor_status = WorkAdvisorStatusType.Type.APPROVED.value
@@ -49,7 +46,18 @@ def accept_advisor_work(request, verification_token) -> Response:
         work.save()
 
         students_ids = [s.id for s in work.team.team_members.all()]
-        send_work_approve_email_to_student.delay(EMAIL_HOST_USER, students_ids, work.advisor.id)
+        # O aceite já foi gravado e o token já foi rotacionado neste ponto. Se o
+        # broker do Celery estiver indisponível, o .delay() estoura e devolve 500
+        # pro orientador mesmo com a aceitação persistida — e a segunda tentativa
+        # falha com "Trabalho não encontrado", porque o link do email carrega o
+        # token antigo. Por isso a notificação aos alunos não pode derrubar a resposta.
+        try:
+            send_work_approve_email_to_student.delay(EMAIL_HOST_USER, students_ids, work.advisor.id)
+        except Exception as exc:
+            logger.error(
+                f"accept_advisor_work: work {work.id} aceito, mas falhou ao enfileirar "
+                f"o email de aviso aos alunos: {exc}"
+            )
 
         logger.info(
             f"accept_advisor_work: work {work.id} ('{work.title}') aceito por {work.advisor.email} "

@@ -46,7 +46,15 @@ def accept_collaborator_work(request, verification_token) -> Response:
 
     # Envia email para os estudantes
     students_ids = [s.id for s in work_collaborator.work.team.team_members.all()]
-    send_collaborator_accept_email_to_student.delay(students_ids, work_collaborator.collaborator.id)
+    # Mesma proteção do aceite de orientação: a aceitação já foi gravada e o token já
+    # foi limpo, então uma falha no broker não pode virar 500 pro colaborador.
+    try:
+        send_collaborator_accept_email_to_student.delay(students_ids, work_collaborator.collaborator.id)
+    except Exception as exc:
+        logger.error(
+            f"accept_collaborator_work: work {work_collaborator.work.id} com colaboração aceita, "
+            f"mas falhou ao enfileirar o email de aviso aos alunos: {exc}"
+        )
 
     logger.info(
         f"accept_collaborator_work: work {work_collaborator.work.id} ('{work_collaborator.work.title}') "

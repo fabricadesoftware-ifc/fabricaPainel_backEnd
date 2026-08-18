@@ -12,7 +12,7 @@ from django_project.settings import EMAIL_HOST_USER
 from django_project.permissions import IsAdvisor
 from core.work.domain.tasks.send_email_student.approve.send_work_approve_email_to_student import send_work_approve_email_to_student
 from core.work.domain.tasks.send_email_student.needs_changes.send_work_needs_changes_email_to_student import send_work_needs_changes_email_to_student
-from core.__seedwork.domain.actions.acceptance_window import is_within_window
+from core.__seedwork.domain.actions.acceptance_window import advisor_decision_windows, is_within_window
 
 logger = logging.getLogger("work_acceptance")
 
@@ -40,19 +40,18 @@ def accept_submission(request, verification_token) -> Response:
 
     edition = work.edition
     current_date = timezone.localdate()
-    windows = [
-        (edition.initial_submission_date, edition.final_submission_date),
-        (edition.initial_second_submission_date, edition.final_second_submission_date),
-    ]
+    # Mesma janela usada em accept_advisor_work: aprovar o trabalho é uma decisão do
+    # orientador, então segue o prazo dele, e não o prazo de envio dos alunos.
+    windows = advisor_decision_windows(edition)
 
     if not is_within_window(current_date, windows):
         logger.warning(
-            f"accept_submission: work {work.id} ('{work.title}') NEGADO — fora do período de submissão. "
-            f"hoje={current_date} 1a_janela=[{edition.initial_submission_date}, {edition.final_submission_date}] "
-            f"2a_janela=[{edition.initial_second_submission_date}, {edition.final_second_submission_date}]"
+            f"accept_submission: work {work.id} ('{work.title}') NEGADO — fora do período de decisão do orientador. "
+            f"hoje={current_date} 1a_janela=[{edition.initial_advisor_acceptance}, {edition.final_advisor_acceptance}] "
+            f"2a_janela=[{edition.initial_second_advisor_date}, {edition.final_second_advisor_date}]"
         )
         return Response(
-            {"error": "O trabalho não está dentro do período de aprovação de submissão."},
+            {"error": "O trabalho não está dentro do período de aprovação pelo orientador."},
             status=status.HTTP_400_BAD_REQUEST,
         )
 
