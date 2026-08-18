@@ -41,7 +41,15 @@ def reject_advisor_work(request, verification_token) -> Response:
     work.save()
 
     students_ids = list(work.team.team_members.values_list("id", flat=True))
-    send_work_reject_advisor_email_to_student.delay(EMAIL_HOST_USER, students_ids)
+    # Mesma proteção do aceite: a recusa já foi gravada e o token já foi rotacionado,
+    # então uma falha no broker não pode virar 500 e impedir uma segunda tentativa.
+    try:
+        send_work_reject_advisor_email_to_student.delay(EMAIL_HOST_USER, students_ids)
+    except Exception as exc:
+        logger.error(
+            f"reject_advisor_work: work {work.id} recusado, mas falhou ao enfileirar "
+            f"o email de aviso aos alunos: {exc}"
+        )
 
     logger.info(
         f"reject_advisor_work: work {work.id} ('{work.title}') recusado por {work.advisor.email} "
