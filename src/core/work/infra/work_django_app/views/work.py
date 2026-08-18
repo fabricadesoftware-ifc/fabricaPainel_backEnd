@@ -18,6 +18,9 @@ from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+from openpyxl import Workbook
+from openpyxl.styles import Alignment, Font, PatternFill
+from openpyxl.utils import get_column_letter
 
 from core.edition.infra.edition_django_app.models import Edition
 from core.user.infra.user_django_app.models import UserClass
@@ -315,6 +318,123 @@ def _build_advisor_report_pdf(*, edition, groups):
             elements.append(Spacer(1, 14))
 
     doc.build(elements)
+    buffer.seek(0)
+    return buffer
+
+
+def _work_submission_date(work):
+    first_record = work.history.order_by("history_date").first()
+    return first_record.history_date if first_record else None
+
+
+def _serialize_work_for_team_report(work):
+    advisor = _serialize_user(work.advisor)
+
+    return {
+        "id": str(work.id),
+        "title": work.title or "-",
+        "status": work.status,
+        "status_label": _choice_label(WorkStatusType.Type, work.status),
+        "advisor_status": work.advisor_status,
+        "advisor_status_label": _choice_label(WorkAdvisorStatusType.Type, work.advisor_status),
+        "advisor": advisor,
+        "advisor_label": _advisor_label(advisor),
+        "submitted_at": _format_date(_work_submission_date(work)),
+    }
+
+
+def _team_report_queryset(edition):
+    return (
+        Work.objects.filter(edition=edition)
+        .select_related("advisor", "team", "edition")
+        .prefetch_related(
+            "team__team_members",
+            "history",
+            Prefetch(
+                "team__team_members__user_classes",
+                queryset=UserClass.objects.select_related("class_name").filter(year=edition.year),
+            ),
+        )
+        .order_by("team_id", "title")
+    )
+
+
+def _group_works_by_team(works, edition):
+    groups = {}
+
+    for work in works:
+        team_key = work.team_id
+        if team_key not in groups:
+            groups[team_key] = {
+                "team_id": team_key,
+                "team_members": _team_members_for_report(work),
+                "team_members_label": _team_members_label(work),
+                "classes_label": _team_classes_label(work, edition),
+                "rows": [],
+            }
+        groups[team_key]["rows"].append(_serialize_work_for_team_report(work))
+
+    grouped = list(groups.values())
+    grouped.sort(key=lambda group: group["team_members_label"].lower())
+
+    for group in grouped:
+        group["count"] = len(group["rows"])
+
+    return grouped
+
+
+def _build_team_report_xlsx(*, edition, groups):
+    workbook = Workbook()
+    sheet = workbook.active
+    sheet.title = "Propostas por equipe"
+
+    headers = [
+        "Equipe",
+        "Turmas da equipe",
+        "Aluno",
+        "Turma do aluno",
+        "Trabalho",
+        "Status do trabalho",
+        "Orientador",
+        "Status do orientador",
+        "Data da submissao",
+    ]
+    sheet.append(headers)
+
+    header_font = Font(bold=True, color="FFFFFF")
+    header_fill = PatternFill(start_color="0F766E", end_color="0F766E", fill_type="solid")
+    for column_index in range(1, len(headers) + 1):
+        cell = sheet.cell(row=1, column=column_index)
+        cell.font = header_font
+        cell.fill = header_fill
+        cell.alignment = Alignment(vertical="center")
+
+    for group in groups:
+        for row in group["rows"]:
+            members = group["team_members"] or [{"name": None, "email": None, "classes_label": "-"}]
+            for member in members:
+                sheet.append(
+                    [
+                        group["team_members_label"],
+                        group["classes_label"],
+                        member["name"] or member["email"] or "Nao informado",
+                        member["classes_label"],
+                        row["title"],
+                        row["status_label"],
+                        row["advisor_label"],
+                        row["advisor_status_label"],
+                        row["submitted_at"] or "-",
+                    ]
+                )
+
+    column_widths = [34, 18, 28, 18, 32, 22, 28, 22, 18]
+    for index, width in enumerate(column_widths, start=1):
+        sheet.column_dimensions[get_column_letter(index)].width = width
+
+    sheet.freeze_panes = "A2"
+
+    buffer = BytesIO()
+    workbook.save(buffer)
     buffer.seek(0)
     return buffer
 
@@ -651,6 +771,78 @@ class WorkViewSet(ModelViewSet):
             as_attachment=True,
             filename=filename,
             content_type="application/pdf",
+        )
+
+    def _get_team_report_context(self, request):
+        edition_id = request.query_params.get("edition")
+
+        if not edition_id:
+            return None, Response(
+                {"error": "Informe a edicao para gerar o relatorio."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            edition = Edition.objects.get(id=edition_id)
+        except Edition.DoesNotExist:
+            return None, Response(
+                {"error": "Edicao nao encontrada."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        groups = _group_works_by_team(_team_report_queryset(edition), edition)
+
+        return {
+            "edition": edition,
+            "groups": groups,
+            "total_works": sum(group["count"] for group in groups),
+        }, None
+
+    @action(
+        detail=False,
+        methods=["get"],
+        url_path="admin-team-report-data",
+        permission_classes=[IsAdminOrManagement],
+    )
+    def admin_team_report_data(self, request):
+        context, error_response = self._get_team_report_context(request)
+        if error_response:
+            return error_response
+
+        edition = context["edition"]
+
+        return Response(
+            {
+                "edition": {
+                    "id": edition.id,
+                    "year": edition.year,
+                    "edition_name": edition.edition_name,
+                },
+                "total_works": context["total_works"],
+                "groups": context["groups"],
+            }
+        )
+
+    @action(
+        detail=False,
+        methods=["get"],
+        url_path="admin-team-report",
+        permission_classes=[IsAdminOrManagement],
+    )
+    def admin_team_report(self, request):
+        context, error_response = self._get_team_report_context(request)
+        if error_response:
+            return error_response
+
+        edition = context["edition"]
+        buffer = _build_team_report_xlsx(edition=edition, groups=context["groups"])
+        filename = f"relatorio_propostas_equipes_{edition.year}.xlsx".replace(" ", "_")
+
+        return FileResponse(
+            buffer,
+            as_attachment=True,
+            filename=filename,
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         )
 
     def _normalize_collaborators_data(self, collaborators_data):
