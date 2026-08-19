@@ -22,6 +22,7 @@ from core.work.infra.work_django_app.views import (
     WorkViewSet,
     accept_advisor_work,
     reject_advisor_work,
+    advisor_work_limit_status,
     accept_submission,
     reject_submission,
     accept_collaborator_work,
@@ -61,6 +62,7 @@ urlpatterns = [
     #orientador
     path("api/accept-advisor-work/<str:verification_token>/", accept_advisor_work, name="accept-advisor-work"),
     path("api/reject-advisor-work/<str:verification_token>/", reject_advisor_work, name="reject-advisor-work"),
+    path("api/advisor-work-limit/<str:verification_token>/", advisor_work_limit_status, name="advisor-work-limit"),
     #colaborador
     path("api/accept-collaborator-work/<str:verification_token>/", accept_collaborator_work, name="accept-collaborator-work"),
     path("api/reject-collaborator-work/<str:verification_token>/", reject_collaborator_work, name="reject-collaborator-work"),
