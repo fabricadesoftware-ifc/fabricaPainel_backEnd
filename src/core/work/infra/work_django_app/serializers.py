@@ -260,6 +260,20 @@ class WorkWriteSerializer(serializers.ModelSerializer):
             except ValidationError as e:
                 raise ValidationError({"evaluator": str(e)})
 
+        # Vale tanto na criação quanto na troca de orientador via PATCH. É só uma
+        # antecipação do erro: a vaga só é de fato ocupada no aceite, então quem
+        # garante o limite é a checagem em accept_advisor_work.
+        if attrs.get('advisor'):
+            edition = attrs.get('edition') or (self.instance.edition if self.instance else None)
+            current_work_id = self.instance.id if self.instance else None
+            try:
+                validate_work_advisor(
+                    {**attrs, 'edition': edition},
+                    current_work_id=current_work_id,
+                )
+            except ValidationError as e:
+                raise ValidationError({"advisor": str(e)})
+
         return super().validate(attrs)
 
 

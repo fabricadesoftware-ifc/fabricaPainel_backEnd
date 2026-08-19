@@ -13,6 +13,7 @@ from core.work.domain.tasks.send_email_student.approve.send_work_approve_email_t
     send_work_approve_email_to_student,
 )
 from core.__seedwork.domain.actions.acceptance_window import advisor_decision_windows, is_within_window
+from core.work.domain.validations.validate_advisor_work_limit import count_advisor_accepted_works
 import uuid
 
 logger = logging.getLogger("work_acceptance")
@@ -38,6 +39,30 @@ def accept_advisor_work(request, verification_token) -> Response:
     edition = work.edition
     current_date = timezone.localdate()
     windows = advisor_decision_windows(edition)
+
+    # O limite de orientações só era conferido no front, na hora de escolher o
+    # orientador, e contando apenas os aceites já confirmados. Enquanto o professor
+    # não respondia nada ele aparecia com todas as vagas livres, então várias equipes
+    # conseguiam convidá-lo e ele aceitava todas. A vaga é ocupada aqui, no aceite,
+    # e é aqui que o limite precisa valer.
+    limit = edition.works_per_advisor_max
+    if limit:
+        accepted_works = count_advisor_accepted_works(work.advisor, edition, current_work_id=work.id)
+        if accepted_works >= limit:
+            logger.warning(
+                f"accept_advisor_work: work {work.id} ('{work.title}') NEGADO — limite de orientações "
+                f"atingido. advisor={work.advisor.email} aceitos={accepted_works} limite={limit} "
+                f"edicao={edition.id}"
+            )
+            return Response(
+                {
+                    "error": (
+                        f"Você já atingiu o limite de {limit} trabalho(s) orientados nesta edição "
+                        f"e não pode aceitar esta orientação."
+                    )
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
     if is_within_window(current_date, windows):
         work.advisor_status = WorkAdvisorStatusType.Type.APPROVED.value
