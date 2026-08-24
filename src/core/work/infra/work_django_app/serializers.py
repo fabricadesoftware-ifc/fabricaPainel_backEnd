@@ -17,7 +17,7 @@ from core.work.domain.validations import (
 from core.user.infra.user_django_app.serializers import UserSerializer, EvaluatorSerializer
 from core.user.infra.user_django_app.models import User
 from core.work.infra.work_django_app.models import WorkCollaborator
-from core.work.domain.value_objects import WorkCollaboratorStatusType
+from core.work.domain.value_objects import WorkCollaboratorStatusType, WorkAdvisorStatusType
 from core.work.infra.work_django_app.models import CrossCuttingTheme
 from core.work.infra.work_django_app.models import Field
 from core.user.infra.user_django_app.models import Evaluator
@@ -223,10 +223,14 @@ class WorkWriteSerializer(serializers.ModelSerializer):
         if collaborators is not None:
             for user in collaborators:
                 existing_collaborator = WorkCollaborator.objects.filter(work=instance, collaborator=user).first()
-                
+
                 if not existing_collaborator:
                     WorkCollaborator.objects.create(work=instance, collaborator=user)
-                    
+
+        # Troca de orientador reabre a decisão, senão herdava o advisor_status do anterior.
+        if "advisor" in validated_data and validated_data["advisor"] != instance.advisor:
+            validated_data["advisor_status"] = WorkAdvisorStatusType.Type.PENDING.value
+
         return super().update(instance, validated_data)
 
     def validate(self, attrs):

@@ -5,10 +5,10 @@ from rest_framework.response import Response
 from rest_framework.throttling import UserRateThrottle
 from rest_framework import status
 from django.utils import timezone
-from django_project.settings import EMAIL_HOST_USER
 from django_project.permissions import IsAdvisor
 
 from core.work.infra.work_django_app.models import Work, WorkAdvisorStatusType, Edition
+# Import sem uso direto: mantido porque test_edition_flow.py patcha este caminho.
 from core.work.domain.tasks.send_email_student.approve.send_work_approve_email_to_student import (
     send_work_approve_email_to_student,
 )
@@ -70,25 +70,20 @@ def accept_advisor_work(request, verification_token) -> Response:
         work._change_reason = "Orientador aceitou"
         work.save()
 
-        students_ids = [s.id for s in work.team.team_members.all()]
-        # O aceite já foi gravado e o token já foi rotacionado neste ponto. Se o
-        # broker do Celery estiver indisponível, o .delay() estoura e devolve 500
-        # pro orientador mesmo com a aceitação persistida — e a segunda tentativa
-        # falha com "Trabalho não encontrado", porque o link do email carrega o
-        # token antigo. Por isso a notificação aos alunos não pode derrubar a resposta.
-        try:
-            send_work_approve_email_to_student.delay(EMAIL_HOST_USER, students_ids, work.advisor.id)
-        except Exception as exc:
-            logger.error(
-                f"accept_advisor_work: work {work.id} aceito, mas falhou ao enfileirar "
-                f"o email de aviso aos alunos: {exc}"
-            )
-
+        # Email de aprovação é enviado em /accept-submission/, não aqui, pra não duplicar.
         logger.info(
             f"accept_advisor_work: work {work.id} ('{work.title}') aceito por {work.advisor.email} "
             f"em {current_date}"
         )
-        return Response({"message": "Orientação do trabalho aceita com sucesso."}, status=status.HTTP_200_OK)
+        # Token novo devolvido pro caller poder chamar /accept-submission/ em seguida.
+        return Response(
+            {
+                "message": "Orientação do trabalho aceita com sucesso.",
+                "work_id": str(work.id),
+                "verification_token": str(work.verification_token),
+            },
+            status=status.HTTP_200_OK,
+        )
 
     logger.warning(
         f"accept_advisor_work: work {work.id} ('{work.title}') NEGADO — fora do período de aceitação. "
