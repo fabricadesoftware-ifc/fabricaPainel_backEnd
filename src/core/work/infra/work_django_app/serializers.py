@@ -14,7 +14,7 @@ from core.work.domain.validations import (
     validate_work_collaborators,
     validate_work_evaluator_limits,
 )
-from core.user.infra.user_django_app.serializers import UserSerializer, EvaluatorSerializer
+from core.user.infra.user_django_app.serializers import UserSerializer, EvaluatorSerializer, UserClassSerializer
 from core.user.infra.user_django_app.models import User
 from core.work.infra.work_django_app.models import WorkCollaborator
 from core.work.domain.value_objects import WorkCollaboratorStatusType, WorkAdvisorStatusType
@@ -23,9 +23,11 @@ from core.work.infra.work_django_app.models import Field
 from core.user.infra.user_django_app.models import Evaluator
 
 class MinimalUserSerializer(serializers.ModelSerializer):
+    user_classes = UserClassSerializer(many=True, read_only=True)
+
     class Meta:
         model = User
-        fields = ['id', 'name', 'email']
+        fields = ['id', 'name', 'email', 'user_classes']
 
 class EvaluatorLightSerializer(serializers.ModelSerializer):
     user = MinimalUserSerializer(read_only=True)
