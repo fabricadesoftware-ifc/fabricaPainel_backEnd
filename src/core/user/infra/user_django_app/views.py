@@ -12,8 +12,9 @@ from .serializers import UserSerializer, UserRetrieveSerializer, EvaluatorSerial
 from .filters import UserFilter, EvaluatorFilter
 
 from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
-from django_project.permissions import IsNotStudent, IsAdminOrReadOnly, IsStudent
+from django_project.permissions import IsAdminOrReadOnly, IsStudent
 from django.http import FileResponse
 
 @extend_schema(tags=["users"])
@@ -105,17 +106,14 @@ def create_certificate(request, year):
     
 @extend_schema(tags=["certificate-verify"])
 @api_view(['GET'])
-@permission_classes([IsNotStudent])
+@permission_classes([AllowAny])
 def verify_certificate(request, hash_validate):
-
-    
-    certificate = Certificate.objects.get(
-        hash_validate=hash_validate
-    )
-    
-    if not certificate:
+    try:
+        certificate = Certificate.objects.get(
+            hash_validate=hash_validate
+        )
+    except Certificate.DoesNotExist:
         return Response({"error": "Certificado não encontrado."}, status=404)
-    
 
     return Response({
         "year": certificate.work.edition.year,
