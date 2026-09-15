@@ -52,10 +52,10 @@ KANBAN_COLUMNS = [
 
 
 def _choice_label(enum_cls, value):
-    try:
-        return enum_cls(value).label
-    except ValueError:
-        return "Nao informado"
+    for member in enum_cls:
+        if member.value == value:
+            return member.label
+    return "Nao informado"
 
 
 def _serialize_user(user):
