@@ -438,6 +438,109 @@ def _build_team_report_xlsx(*, edition, groups):
     return buffer
 
 
+def _teacher_workload_report_queryset(edition):
+    return (
+        Work.objects.filter(edition=edition)
+        .select_related("advisor", "edition")
+        .prefetch_related(
+            Prefetch(
+                "work_collaborator",
+                queryset=WorkCollaborator.objects.select_related("collaborator"),
+            ),
+        )
+        .order_by("title")
+    )
+
+
+def _group_works_by_teacher_workload(works):
+    teachers = {}
+
+    def _teacher_entry(user):
+        key = user.id
+        if key not in teachers:
+            teachers[key] = {
+                "teacher": _serialize_user(user),
+                "advising_titles": [],
+                "collaboration_titles": [],
+            }
+        return teachers[key]
+
+    for work in works:
+        if work.advisor and work.advisor_status == WorkAdvisorStatusType.Type.APPROVED.value:
+            entry = _teacher_entry(work.advisor)
+            entry["advising_titles"].append(work.title or "-")
+
+        for collaborator in _accepted_collaborators_for(work):
+            entry = _teacher_entry(collaborator)
+            entry["collaboration_titles"].append(work.title or "-")
+
+    grouped = list(teachers.values())
+    for entry in grouped:
+        entry["advising_count"] = len(entry["advising_titles"])
+        entry["collaboration_count"] = len(entry["collaboration_titles"])
+        entry["total_count"] = entry["advising_count"] + entry["collaboration_count"]
+
+    grouped.sort(
+        key=lambda entry: (
+            (entry["teacher"] or {}).get("name")
+            or (entry["teacher"] or {}).get("email")
+            or ""
+        ).lower()
+    )
+
+    return grouped
+
+
+def _build_teacher_workload_report_xlsx(*, edition, groups):
+    workbook = Workbook()
+    sheet = workbook.active
+    sheet.title = "Orientacao e colaboracao"
+
+    headers = [
+        "Professor",
+        "E-mail",
+        "Qtd. orientacoes",
+        "Trabalhos orientados",
+        "Qtd. colaboracoes",
+        "Trabalhos em colaboracao",
+        "Total de trabalhos",
+    ]
+    sheet.append(headers)
+
+    header_font = Font(bold=True, color="FFFFFF")
+    header_fill = PatternFill(start_color="0F766E", end_color="0F766E", fill_type="solid")
+    for column_index in range(1, len(headers) + 1):
+        cell = sheet.cell(row=1, column=column_index)
+        cell.font = header_font
+        cell.fill = header_fill
+        cell.alignment = Alignment(vertical="center")
+
+    for entry in groups:
+        teacher = entry["teacher"] or {}
+        sheet.append(
+            [
+                teacher.get("name") or teacher.get("email") or "Nao informado",
+                teacher.get("email") or "-",
+                entry["advising_count"],
+                "; ".join(entry["advising_titles"]) or "-",
+                entry["collaboration_count"],
+                "; ".join(entry["collaboration_titles"]) or "-",
+                entry["total_count"],
+            ]
+        )
+
+    column_widths = [28, 30, 16, 40, 16, 40, 16]
+    for index, width in enumerate(column_widths, start=1):
+        sheet.column_dimensions[get_column_letter(index)].width = width
+
+    sheet.freeze_panes = "A2"
+
+    buffer = BytesIO()
+    workbook.save(buffer)
+    buffer.seek(0)
+    return buffer
+
+
 def _kanban_column_for(work):
     if (
         work.status == WorkStatusType.Type.EXPIRED.value
@@ -836,6 +939,78 @@ class WorkViewSet(ModelViewSet):
         edition = context["edition"]
         buffer = _build_team_report_xlsx(edition=edition, groups=context["groups"])
         filename = f"relatorio_propostas_equipes_{edition.year}.xlsx".replace(" ", "_")
+
+        return FileResponse(
+            buffer,
+            as_attachment=True,
+            filename=filename,
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+
+    def _get_teacher_workload_report_context(self, request):
+        edition_id = request.query_params.get("edition")
+
+        if not edition_id:
+            return None, Response(
+                {"error": "Informe a edicao para gerar o relatorio."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            edition = Edition.objects.get(id=edition_id)
+        except Edition.DoesNotExist:
+            return None, Response(
+                {"error": "Edicao nao encontrada."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        groups = _group_works_by_teacher_workload(_teacher_workload_report_queryset(edition))
+
+        return {
+            "edition": edition,
+            "groups": groups,
+            "total_teachers": len(groups),
+        }, None
+
+    @action(
+        detail=False,
+        methods=["get"],
+        url_path="admin-teacher-workload-report-data",
+        permission_classes=[IsAdminOrManagement],
+    )
+    def admin_teacher_workload_report_data(self, request):
+        context, error_response = self._get_teacher_workload_report_context(request)
+        if error_response:
+            return error_response
+
+        edition = context["edition"]
+
+        return Response(
+            {
+                "edition": {
+                    "id": edition.id,
+                    "year": edition.year,
+                    "edition_name": edition.edition_name,
+                },
+                "total_teachers": context["total_teachers"],
+                "groups": context["groups"],
+            }
+        )
+
+    @action(
+        detail=False,
+        methods=["get"],
+        url_path="admin-teacher-workload-report",
+        permission_classes=[IsAdminOrManagement],
+    )
+    def admin_teacher_workload_report(self, request):
+        context, error_response = self._get_teacher_workload_report_context(request)
+        if error_response:
+            return error_response
+
+        edition = context["edition"]
+        buffer = _build_teacher_workload_report_xlsx(edition=edition, groups=context["groups"])
+        filename = f"relatorio_orientacao_colaboracao_{edition.year}.xlsx".replace(" ", "_")
 
         return FileResponse(
             buffer,
