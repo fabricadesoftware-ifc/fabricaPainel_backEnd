@@ -23,7 +23,7 @@ from openpyxl.styles import Alignment, Font, PatternFill
 from openpyxl.utils import get_column_letter
 
 from core.edition.infra.edition_django_app.models import Edition
-from core.user.infra.user_django_app.models import UserClass
+from core.user.infra.user_django_app.models import User, UserClass
 from core.work.infra.work_django_app.models import Work, WorkCollaborator
 from core.work.infra.work_django_app.serializers import (
     WorkDetailSerializer,
@@ -464,6 +464,9 @@ def _group_works_by_teacher_workload(works):
                 "collaboration_titles": [],
             }
         return teachers[key]
+
+    for teacher in User.objects.filter(user_type=User.TEACHER).order_by("name"):
+        _teacher_entry(teacher)
 
     for work in works:
         if work.advisor and work.advisor_status == WorkAdvisorStatusType.Type.APPROVED.value:
