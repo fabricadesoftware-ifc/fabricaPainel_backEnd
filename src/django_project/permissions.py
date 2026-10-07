@@ -167,13 +167,22 @@ class IsAdvisorOrEvaluatorOrTeamMember(BasePermission):
     
 
     
-class IsWorkOwnerOrReadOnly(BasePermission):
+class IsAuthenticatedReadAdminManagementWrite(BasePermission):
     def has_permission(self, request, view):
+        user = request.user
+        if not user.is_authenticated:
+            return False
         if request.method in SAFE_METHODS:
             return True
+        return user.user_type == UserType.Type.ADMIN or getattr(user, 'is_management', False)
 
+class IsWorkOwnerOrReadOnly(BasePermission):
+    def has_permission(self, request, view):
         if not request.user.is_authenticated:
             return False
+
+        if request.method in SAFE_METHODS:
+            return True
 
         return request.user.user_type == UserType.Type.STUDENT
 

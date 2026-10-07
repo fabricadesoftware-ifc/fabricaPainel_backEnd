@@ -24,6 +24,7 @@ class UserFilterTest(TestCase):
         )
 
     def test_user_name_filter_does_not_require_database_unaccent_function(self):
+        self.client.force_authenticate(user=self.teacher)
         response = self.client.get("/api/users/", {"name": "eduardo", "type": "TEACHER"})
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)

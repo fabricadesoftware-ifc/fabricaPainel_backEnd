@@ -1167,13 +1167,16 @@ class WorkViewSet(ModelViewSet):
                     )
                 except Exception as e:
                     logger.error(f"Erro ao enviar email de submissão: {e}")
-            
+
             transaction.on_commit(send_submission_email)
             return Response(
-                {"message": "Abstract enviado para o orientador"}, 
+                {"message": "Abstract enviado para o orientador"},
                 status=status.HTTP_200_OK
             )
-            
+
+        if set(request.data.keys()) - {'abstract', 'action'}:
+            return super().partial_update(request, *args, **kwargs)
+
         return Response(
             {"message": "Atualização realizada"}, 
             status=status.HTTP_200_OK

@@ -109,6 +109,21 @@ class EvaluatorSerializer(serializers.ModelSerializer):
         model = Evaluator
         fields = ["id", "user", "user_id"]
 
+class UserPublicSerializer(UserSerializer):
+    class Meta(UserSerializer.Meta):
+        fields = [
+            "id",
+            "email",
+            "name",
+            "user_type",
+            "user_classes",
+            "is_evaluator",
+            "is_advisor",
+            "is_collaborator",
+            "specialities",
+        ]
+
+
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
         email = attrs.get('email')
