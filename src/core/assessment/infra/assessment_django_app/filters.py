@@ -22,7 +22,7 @@ class AssessmentFilterSet(FilterSet):
 class StudentAssessmentFilterSet(FilterSet):
     work = CharFilter(field_name="work__id", lookup_expr="icontains")
     grade = NumberFilter()
-    student = CharFilter(field_name="student__name", lookup_expr="icontains")
+    student = NumberFilter(field_name="student__id")
 
     class Meta:
         model = StudentAssessments

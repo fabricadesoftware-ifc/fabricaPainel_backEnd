@@ -135,7 +135,7 @@ class AssessmentWriteSerializer(serializers.ModelSerializer):
             validate_assessment_date(attrs.get("work"), "work")
             validate_assessment_evaluator(self.context["request"].user, attrs)
         except serializers.ValidationError as e:
-            raise serializers.ValidationError({"detail": str(e)})
+            raise serializers.ValidationError({"detail": str(e.detail[0])})
 
         return attrs
 
@@ -176,6 +176,6 @@ class StudentAssessmentsWriteSerializer(serializers.ModelSerializer):
             validate_assessment_creator(self.context["request"].user, attrs)
 
         except serializers.ValidationError as e:
-            raise serializers.ValidationError({"detail": str(e)})
+            raise serializers.ValidationError({"detail": str(e.detail[0])})
 
         return attrs
