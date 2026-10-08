@@ -101,6 +101,7 @@ class CustomUserAdmin(UserAdmin):
         "is_staff",
         "is_active",
         "is_advisor",
+        "is_management",
         "is_evaluator_display",
         "classes_display",
     )
@@ -120,6 +121,7 @@ class CustomUserAdmin(UserAdmin):
         "is_active",
         "is_advisor",
         "is_collaborator",
+        "is_management",
         "user_type",
         TeamEditionYearFilter,
         HasClassFilter,
@@ -152,6 +154,19 @@ class CustomUserAdmin(UserAdmin):
             },
         ),
         (
+            _("Gestão do painel"),
+            {
+                "description": (
+                    "Gestão: professor que coordena o Painel de Integração. Mantenha o tipo "
+                    "'Professor' e marque aqui — ele continua usando o painel como professor "
+                    "(propostas, aceite, avaliação) e ganha o Administrativo (kanban, relatórios, "
+                    "usuários) e a criação/edição de edições. Não use o tipo 'Admin' para isso: "
+                    "o admin deixa de ver e aceitar trabalhos como professor."
+                ),
+                "fields": ("is_management",),
+            },
+        ),
+        (
             _("Permissions"),
             {"fields": ("is_staff", "is_active", "groups", "user_permissions")},
         ),
@@ -171,6 +186,7 @@ class CustomUserAdmin(UserAdmin):
                     "registration",
                     "is_advisor",
                     "is_collaborator",
+                    "is_management",
                     "specialities",
                     "user_type",
                     "is_staff",

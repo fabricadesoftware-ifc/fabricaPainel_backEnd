@@ -210,3 +210,101 @@ class AdminGradingOverviewApiTest(APITestCase):
             5,
             "numero de queries cresceu junto com a quantidade de trabalhos (N+1)",
         )
+
+    # ---- popup de detalhe (admin-detail) ----
+
+    def set_weights(self, work_weight, student_weight):
+        def block(key, target, label, weight, criterion_key):
+            return {
+                "key": key,
+                "target": target,
+                "label": label,
+                "weight": weight,
+                "criteria": [{"key": criterion_key, "label": "Nota geral", "weight": 100, "description": ""}],
+            }
+
+        self.edition.evaluation_criteria = [
+            block("work", "work", "Nota do avaliador", work_weight, "work_general"),
+            block("student", "student", "Nota do orientador", student_weight, "student_general"),
+        ]
+        self.edition.save()
+
+    def detail_url(self, work):
+        return f"/api/work/{work.id}/admin-detail/"
+
+    def test_admin_detail_is_restricted_to_admin_and_management(self):
+        work = self.create_work("Detalhe permissao")
+
+        for user in (self.admin, self.manager):
+            self.client.force_authenticate(user)
+            self.assertEqual(self.client.get(self.detail_url(work)).status_code, status.HTTP_200_OK)
+
+        for user in (self.teacher, self.student, self.advisor, self.evaluator_user):
+            self.client.force_authenticate(user)
+            self.assertEqual(
+                self.client.get(self.detail_url(work)).status_code, status.HTTP_403_FORBIDDEN
+            )
+
+    def test_admin_detail_returns_404_for_unknown_or_invalid_id(self):
+        self.client.force_authenticate(self.admin)
+
+        self.assertEqual(
+            self.client.get("/api/work/00000000-0000-0000-0000-000000000000/admin-detail/").status_code,
+            status.HTTP_404_NOT_FOUND,
+        )
+        self.assertEqual(
+            self.client.get("/api/work/nao-e-uuid/admin-detail/").status_code,
+            status.HTTP_404_NOT_FOUND,
+        )
+
+    def test_admin_detail_shows_everything_with_weighted_final_grade(self):
+        self.set_weights(40, 60)
+        work = self.create_work("Detalhe completo")
+        self.grade_by_advisor(work, self.student)  # nota do orientador: 8.00
+        self.grade_by_evaluator(work)  # nota da banca: 9.00
+
+        self.client.force_authenticate(self.admin)
+        data = self.client.get(self.detail_url(work)).data
+
+        self.assertEqual(data["title"], "Detalhe completo")
+        self.assertEqual(data["advisor"]["email"], self.advisor.email)
+        self.assertEqual(data["weights"], {"work": 40.0, "student": 60.0})
+        self.assertEqual(data["evaluators"][0]["assessment"]["grade"], "9.00")
+        self.assertEqual(data["work_grade_average"], "9.00")
+
+        member = data["team_members"][0]
+        self.assertEqual(member["email"], self.student.email)
+        self.assertEqual(member["advisor_assessment"]["grade"], "8.00")
+        # (8.00 * 60 + 9.00 * 40) / 100 = 8.40, mesma formula do relatorio de notas
+        self.assertEqual(member["final_grade"], "8.40")
+        self.assertEqual(member["situation"], "Aprovado")
+
+    def test_admin_detail_marks_failing_final_grade(self):
+        self.set_weights(50, 50)
+        work = self.create_work("Detalhe reprovado")
+        StudentAssessments.objects.create(
+            work=work, student=self.student, grade=Decimal("4.00"), date_time=timezone.now()
+        )
+        Assessment.objects.create(
+            work=work, evaluator=self.evaluator, grade=Decimal("6.00"), date_time=timezone.now()
+        )
+
+        self.client.force_authenticate(self.admin)
+        member = self.client.get(self.detail_url(work)).data["team_members"][0]
+
+        self.assertEqual(member["final_grade"], "5.00")
+        self.assertEqual(member["situation"], "Reprovado")
+
+    def test_admin_detail_has_no_final_grade_while_something_is_pending(self):
+        work = self.create_work("Detalhe pendente")
+        self.grade_by_advisor(work, self.student)  # banca ainda nao avaliou
+
+        self.client.force_authenticate(self.admin)
+        data = self.client.get(self.detail_url(work)).data
+
+        self.assertIsNone(data["work_grade_average"])
+        self.assertIsNone(data["evaluators"][0]["assessment"])
+        self.assertIsNone(data["team_members"][0]["final_grade"])
+        self.assertIsNone(data["team_members"][0]["situation"])
+        self.assertEqual(data["team_members"][0]["advisor_assessment"]["grade"], "8.00")
+
