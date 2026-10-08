@@ -1,11 +1,15 @@
 from datetime import date, datetime, time
 
 from django.test import SimpleTestCase, TestCase
+from rest_framework import status
+from rest_framework.test import APIClient, APITestCase
 from django.utils import timezone
 
 from core.edition.domain.validations import validate_dates, validate_evaluation_criteria
 from core.edition.infra.edition_django_app.models import Edition, EvaluationDailyWindow
 from core.edition.infra.edition_django_app.serializers import EditionWriteSerializer
+from core.user.domain.value_objects import UserType
+from core.user.infra.user_django_app.models import User
 from core.uploader.infra.uploader_django_app.models import Image
 
 
@@ -285,3 +289,75 @@ class EvaluatorWindowStatusTestCase(TestCase):
 
         self.assertFalse(status["is_open_now"])
         self.assertEqual(status["next_open_at"], timezone.make_aware(datetime(2026, 10, 11, 9, 0)))
+
+
+class EditionWritePermissionTestCase(APITestCase):
+    """Todo usuario autenticado le edicoes; criar/editar so admin ou gestao
+    (professor com is_management, que continua professor no painel)."""
+
+    def setUp(self):
+        self.client = APIClient()
+        self.registration = 2026030000
+        self.admin = self.make_user("admin.edition@test.local", UserType.Type.ADMIN.value)
+        self.manager = self.make_user(
+            "manager.edition@test.local", UserType.Type.TEACHER.value, is_management=True
+        )
+        self.teacher = self.make_user("teacher.edition@test.local", UserType.Type.TEACHER.value)
+        self.student = self.make_user("student.edition@test.local", UserType.Type.STUDENT.value)
+        self.edition = Edition.objects.create(
+            year=2026, theme="Tema", edition_name="Edicao permissao", workload=10
+        )
+
+    def make_user(self, email, user_type, **flags):
+        self.registration += 1
+        user = User.objects.create_user(
+            email=email, password="test-password-123", name=email.split("@")[0], registration=self.registration
+        )
+        user.user_type = user_type
+        for field, value in flags.items():
+            setattr(user, field, value)
+        user.save()
+        return user
+
+    def test_any_authenticated_user_can_read_editions(self):
+        for user in (self.admin, self.manager, self.teacher, self.student):
+            self.client.force_authenticate(user)
+            self.assertEqual(self.client.get("/api/edition/").status_code, status.HTTP_200_OK)
+
+    def test_anonymous_cannot_read_editions(self):
+        self.client.force_authenticate(None)
+        self.assertIn(
+            self.client.get("/api/edition/").status_code,
+            (status.HTTP_401_UNAUTHORIZED, status.HTTP_403_FORBIDDEN),
+        )
+
+    def test_admin_and_management_can_edit_edition(self):
+        for index, user in enumerate((self.admin, self.manager)):
+            self.client.force_authenticate(user)
+            response = self.client.patch(
+                f"/api/edition/{self.edition.id}/", {"theme": f"Novo tema {index}"}, format="json"
+            )
+
+            self.assertEqual(response.status_code, status.HTTP_200_OK, response.data)
+            self.edition.refresh_from_db()
+            self.assertEqual(self.edition.theme, f"Novo tema {index}")
+
+    def test_plain_teacher_and_student_cannot_edit_edition(self):
+        for user in (self.teacher, self.student):
+            self.client.force_authenticate(user)
+            response = self.client.patch(
+                f"/api/edition/{self.edition.id}/", {"theme": "Invasao"}, format="json"
+            )
+
+            self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+            self.edition.refresh_from_db()
+            self.assertEqual(self.edition.theme, "Tema")
+
+    def test_management_passes_create_permission_but_plain_teacher_does_not(self):
+        self.client.force_authenticate(self.teacher)
+        self.assertEqual(self.client.post("/api/edition/", {}, format="json").status_code, status.HTTP_403_FORBIDDEN)
+
+        # Gestao passa da permissao (o corpo vazio so falha na validacao, nao com 403).
+        self.client.force_authenticate(self.manager)
+        self.assertNotEqual(self.client.post("/api/edition/", {}, format="json").status_code, status.HTTP_403_FORBIDDEN)
+

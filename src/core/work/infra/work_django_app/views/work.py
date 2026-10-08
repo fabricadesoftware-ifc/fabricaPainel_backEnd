@@ -1,8 +1,10 @@
 import logging
 from collections import defaultdict
 from datetime import timedelta
+from decimal import Decimal, ROUND_HALF_UP
 from io import BytesIO
 
+from django.core.exceptions import ValidationError as DjangoValidationError
 from django.http import FileResponse
 from django.db import transaction
 from django.db.models import Prefetch, Q
@@ -24,6 +26,7 @@ from openpyxl.styles import Alignment, Font, PatternFill
 from openpyxl.utils import get_column_letter
 
 from core.assessment.infra.assessment_django_app.models import Assessment, StudentAssessments
+from core.edition.domain.validations.validate_evaluation_criteria import get_evaluation_group_weight
 from core.edition.infra.edition_django_app.models import Edition
 from core.user.infra.user_django_app.models import Evaluator, User, UserClass
 from core.work.infra.work_django_app.models import Work, WorkCollaborator
@@ -745,6 +748,103 @@ def _serialize_work_for_grading_overview(work, student_grades, evaluator_grades)
     return item, advisor_done, evaluator_done
 
 
+def _money(value):
+    return str(Decimal(value).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
+
+
+def _serialize_assessment_for_admin(assessment):
+    if not assessment:
+        return None
+
+    return {
+        "grade": _money(assessment.grade),
+        "criterion_grades": assessment.criterion_grades or [],
+        "date_time": assessment.date_time.isoformat() if assessment.date_time else None,
+    }
+
+
+def _serialize_work_for_admin_detail(work, assessments, student_assessments):
+    """
+    Visao completa do trabalho pro admin/gestao: tudo que orientador, colaborador,
+    avaliador e aluno enxergam, mais todas as notas. A nota final usa a mesma
+    formula do relatorio de notas (pesos da edicao, aprovado com >= 6).
+    """
+    edition = work.edition
+    work_weight = get_evaluation_group_weight(edition.evaluation_criteria, "work", Decimal("50"))
+    student_weight = get_evaluation_group_weight(edition.evaluation_criteria, "student", Decimal("50"))
+    total_weight = work_weight + student_weight
+
+    assessment_by_evaluator = {assessment.evaluator_id: assessment for assessment in assessments}
+    student_assessment_by_student = {sa.student_id: sa for sa in student_assessments}
+
+    work_average = None
+    if assessments:
+        work_average = sum((assessment.grade for assessment in assessments), Decimal("0")) / len(assessments)
+
+    team_members = []
+    for member in work.team.team_members.all():
+        student_assessment = student_assessment_by_student.get(member.id)
+
+        final_grade = None
+        situation = None
+        if student_assessment is not None and work_average is not None:
+            final = (
+                student_assessment.grade * student_weight + work_average * work_weight
+            ) / total_weight
+            final_grade = _money(final)
+            situation = "Aprovado" if Decimal(final_grade) >= 6 else "Reprovado"
+
+        team_members.append(
+            {
+                **_serialize_team_member_for_report(member, edition),
+                "advisor_assessment": _serialize_assessment_for_admin(student_assessment),
+                "final_grade": final_grade,
+                "situation": situation,
+            }
+        )
+
+    return {
+        "id": str(work.id),
+        "title": work.title,
+        "abstract": work.abstract,
+        "status": work.status,
+        "status_label": _choice_label(WorkStatusType.Type, work.status),
+        "advisor_status": work.advisor_status,
+        "advisor_status_label": _choice_label(WorkAdvisorStatusType.Type, work.advisor_status),
+        "integrated_project": work.integrated_project,
+        "feedback": work.feedback,
+        "edition": {
+            "id": edition.id,
+            "year": edition.year,
+            "edition_name": edition.edition_name,
+        },
+        "cross_cutting_theme": work.cross_cutting_theme.name if work.cross_cutting_theme else None,
+        "fields": [field.name for field in work.field.all()],
+        "ods": [ods.name for ods in work.ods.all()],
+        "advisor": _serialize_user(work.advisor),
+        "weights": {"work": float(work_weight), "student": float(student_weight)},
+        "evaluators": [
+            {
+                "id": evaluator.id,
+                "user": _serialize_user(evaluator.user),
+                "assessment": _serialize_assessment_for_admin(assessment_by_evaluator.get(evaluator.id)),
+            }
+            for evaluator in work.evaluator.all()
+        ],
+        "work_grade_average": _money(work_average) if work_average is not None else None,
+        "team_members": team_members,
+        "collaborators": [
+            {
+                "id": link.id,
+                "status": link.status,
+                "status_label": _choice_label(WorkCollaboratorStatusType.Type, link.status),
+                "collaborator": _serialize_user(link.collaborator),
+            }
+            for link in work.work_collaborator.all()
+        ],
+    }
+
+
 @extend_schema(tags=["work"])
 class WorkViewSet(ModelViewSet):
     def get_queryset(self):
@@ -966,6 +1066,36 @@ class WorkViewSet(ModelViewSet):
                 "columns": column_list,
             }
         )
+
+    @action(
+        detail=True,
+        methods=["get"],
+        url_path="admin-detail",
+        permission_classes=[IsAdminOrManagement],
+    )
+    def admin_detail(self, request, pk=None):
+        try:
+            work = (
+                Work.objects.select_related("advisor", "team", "edition", "cross_cutting_theme")
+                .prefetch_related(
+                    "field",
+                    "ods",
+                    "team__team_members__user_classes__class_name",
+                    Prefetch(
+                        "work_collaborator",
+                        queryset=WorkCollaborator.objects.select_related("collaborator"),
+                    ),
+                    Prefetch("evaluator", queryset=Evaluator.objects.select_related("user")),
+                )
+                .get(pk=pk)
+            )
+        except (Work.DoesNotExist, DjangoValidationError, ValueError):
+            return Response({"error": "Trabalho nao encontrado."}, status=status.HTTP_404_NOT_FOUND)
+
+        assessments = list(Assessment.objects.filter(work=work))
+        student_assessments = list(StudentAssessments.objects.filter(work=work))
+
+        return Response(_serialize_work_for_admin_detail(work, assessments, student_assessments))
 
     def _get_advisor_report_context(self, request):
         edition_id = request.query_params.get("edition")

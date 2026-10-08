@@ -11,14 +11,14 @@ from core.edition.infra.edition_django_app.serializers import (
 )
 from core.edition.infra.edition_django_app.filters import EditionFilter
 
-from django_project.permissions import IsAdminOrReadOnly
+from django_project.permissions import IsAdminOrManagementOrReadOnly
 
 @extend_schema(tags=["edition"])
 class EditionViewSet(ModelViewSet):
     queryset = Edition.objects.all()
     serializer_class = EditionDetailSerializer
     filterset_class = EditionFilter
-    permission_classes = [IsAdminOrReadOnly]
+    permission_classes = [IsAdminOrManagementOrReadOnly]
 
     def get_serializer_class(self):
         if self.action in ["list", "retrieve"]:
