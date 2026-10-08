@@ -2,7 +2,8 @@ from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from core.user.infra.user_django_app.models import Certificate, User
+from core.user.infra.user_django_app.models import Certificate, Evaluator, User
+from core.user.infra.user_django_app.serializers import UserRetrieveSerializer
 
 
 class AccessControlTest(TestCase):
@@ -109,3 +110,50 @@ class AccessControlTest(TestCase):
             team=team,
             advisor=self.advisor,
         )
+
+    # ---- dados do usuario logado (login / atualizacao no front) ----
+
+    def test_retrieve_self_returns_the_flags_the_frontend_reads(self):
+        manager = User.objects.create_user(
+            email="manager.acl@test.local",
+            password="password-123",
+            name="Coordenadora",
+            user_type=User.TEACHER,
+            is_advisor=True,
+            is_management=True,
+        )
+        Evaluator.objects.create(user=manager)
+
+        self.client.force_authenticate(user=manager)
+        data = self.client.get(f"/api/users/{manager.id}/").json()
+
+        self.assertIs(data["is_management"], True)
+        self.assertIs(data["is_advisor"], True)
+        self.assertIs(data["is_evaluator"], True)
+        self.assertIs(data["is_collaborator"], False)
+
+    def test_retrieve_hides_is_management_from_unrelated_viewers_but_not_from_admin(self):
+        manager = User.objects.create_user(
+            email="manager2.acl@test.local",
+            password="password-123",
+            name="Coordenadora 2",
+            user_type=User.TEACHER,
+            is_management=True,
+        )
+
+        def represent(viewer):
+            request = type("Request", (), {"user": viewer})()
+            return UserRetrieveSerializer(manager, context={"request": request}).data
+
+        self.assertNotIn("is_management", represent(self.student))
+        self.assertNotIn("is_management", represent(self.advisor))
+        self.assertIs(represent(self.admin)["is_management"], True)
+        self.assertIs(represent(manager)["is_management"], True)
+
+    def test_user_cannot_grant_management_to_self_through_the_api(self):
+        self.client.force_authenticate(user=self.advisor)
+        response = self.client.patch(f"/api/users/{self.advisor.id}/", {"is_management": True}, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.advisor.refresh_from_db()
+        self.assertFalse(self.advisor.is_management)
