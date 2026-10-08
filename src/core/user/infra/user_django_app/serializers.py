@@ -26,11 +26,42 @@ class UserClassSerializer(serializers.Serializer):
 
 
 class UserRetrieveSerializer(serializers.Serializer):
+    """Usado no login (users/<id>) e na atualizacao do usuario logado no front.
+    O front le is_advisor/is_collaborator/is_evaluator/is_management do usuario
+    logado, entao todos precisam vir aqui — sem eles o menu Administrativo e a
+    aprovacao de proposta pelo orientador nao funcionam."""
+
     id = serializers.IntegerField(read_only=True)
     email = serializers.EmailField(read_only=True)
     name = serializers.CharField(read_only=True)
     user_type = serializers.CharField(read_only=True)
     user_classes = UserClassSerializer(many=True, read_only=True)
+    is_advisor = serializers.BooleanField(read_only=True)
+    is_collaborator = serializers.BooleanField(read_only=True)
+    is_management = serializers.BooleanField(read_only=True)
+    is_evaluator = serializers.SerializerMethodField()
+
+    def get_is_evaluator(self, obj):
+        return hasattr(obj, "evaluator")
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+
+        # is_management e permissao interna: so a propria pessoa e quem administra enxergam.
+        viewer = getattr(self.context.get("request"), "user", None)
+        can_see_management = bool(
+            viewer
+            and getattr(viewer, "is_authenticated", False)
+            and (
+                viewer.id == instance.id
+                or viewer.user_type == User.ADMIN
+                or getattr(viewer, "is_management", False)
+            )
+        )
+        if not can_see_management:
+            data.pop("is_management", None)
+
+        return data
     
 
 class UserSerializer(serializers.ModelSerializer):
