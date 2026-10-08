@@ -134,6 +134,17 @@ class WorkDetailSerializer(serializers.ModelSerializer):
     edition_initial_evaluators_date = serializers.ReadOnlyField(source='edition.initial_evaluators_date')
     edition_final_evaluators_date = serializers.ReadOnlyField(source='edition.final_evaluators_date')
     edition_final_second_submission_date = serializers.ReadOnlyField(source='edition.final_second_submission_date')
+    edition_evaluator_window = serializers.SerializerMethodField()
+
+    def get_edition_evaluator_window(self, obj):
+        status = obj.edition.evaluator_window_status()
+        if status is None:
+            return None
+
+        return {
+            "is_open_now": status["is_open_now"],
+            "next_open_at": status["next_open_at"].isoformat() if status["next_open_at"] else None,
+        }
 
     class Meta:
         model = Work
@@ -161,6 +172,7 @@ class WorkDetailSerializer(serializers.ModelSerializer):
             "edition_initial_evaluators_date",
             "edition_final_evaluators_date",
             "edition_final_second_submission_date",
+            "edition_evaluator_window",
             "edition",
         ]
 
