@@ -1,4 +1,5 @@
 import logging
+from collections import defaultdict
 from datetime import timedelta
 from io import BytesIO
 
@@ -601,10 +602,25 @@ def _history_entry(history_record, *, source, fallback_label, collaborator=None)
     return entry
 
 
-def _timeline_for(work):
+def _bulk_history_by_id(model, ids):
+    """Busca o historico de varios registros em uma query só, em vez de uma
+    por registro (`instance.history` do simple_history não é uma relação de
+    verdade, então `prefetch_related` não serve aqui)."""
+    history_by_id = defaultdict(list)
+    if not ids:
+        return history_by_id
+
+    records = model.history.filter(id__in=ids).select_related("history_user").order_by("history_date")
+    for record in records:
+        history_by_id[record.id].append(record)
+
+    return history_by_id
+
+
+def _timeline_for(work, work_history_by_id, collaborator_history_by_id):
     entries = []
 
-    for record in work.history.order_by("history_date"):
+    for record in work_history_by_id.get(work.id, []):
         fallback = {
             "+": "Trabalho criado",
             "~": "Trabalho atualizado",
@@ -613,7 +629,7 @@ def _timeline_for(work):
         entries.append(_history_entry(record, source="work", fallback_label=fallback))
 
     for collaborator in work.work_collaborator.all():
-        for record in collaborator.history.order_by("history_date"):
+        for record in collaborator_history_by_id.get(collaborator.id, []):
             fallback = {
                 "+": "Colaborador vinculado",
                 "~": "Colaborador atualizado",
@@ -631,7 +647,7 @@ def _timeline_for(work):
     return sorted(entries, key=lambda item: item["date"])
 
 
-def _serialize_work_for_kanban(work):
+def _serialize_work_for_kanban(work, work_history_by_id, collaborator_history_by_id):
     collaborators = [
         {
             "id": link.id,
@@ -641,7 +657,7 @@ def _serialize_work_for_kanban(work):
         }
         for link in work.work_collaborator.all()
     ]
-    timeline = _timeline_for(work)
+    timeline = _timeline_for(work, work_history_by_id, collaborator_history_by_id)
 
     return {
         "id": str(work.id),
@@ -767,10 +783,20 @@ class WorkViewSet(ModelViewSet):
                 )
             ).distinct()
 
+        works = list(queryset)
+        work_ids = [work.id for work in works]
+        collaborator_ids = [
+            link.id for work in works for link in work.work_collaborator.all()
+        ]
+        work_history_by_id = _bulk_history_by_id(Work, work_ids)
+        collaborator_history_by_id = _bulk_history_by_id(WorkCollaborator, collaborator_ids)
+
         column_map = {column["key"]: column for column in columns}
-        for work in queryset:
+        for work in works:
             column = column_map[_kanban_column_for(work)]
-            column["items"].append(_serialize_work_for_kanban(work))
+            column["items"].append(
+                _serialize_work_for_kanban(work, work_history_by_id, collaborator_history_by_id)
+            )
 
         for column in columns:
             column["count"] = len(column["items"])
