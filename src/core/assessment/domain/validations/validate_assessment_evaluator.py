@@ -1,9 +1,10 @@
 from rest_framework import serializers
 from core.assessment.infra.assessment_django_app.models import Assessment
 
-def validate_assessment_evaluator(owner, value):
+def validate_assessment_evaluator(owner, value, instance=None):
     """
     Validates that the user creating the assessment is an advisor.
+    Em edicao (instance), a propria nota nao conta como duplicada.
     """
     work = value.get('work', None)
     evaluator = value.get('evaluator', None)
@@ -19,7 +20,11 @@ def validate_assessment_evaluator(owner, value):
             "Só pode avaliar trabalhos que o avaliador avaliou."
         )
     
-    if Assessment.objects.filter(work=work, evaluator=evaluator).exists():
+    duplicates = Assessment.objects.filter(work=work, evaluator=evaluator)
+    if instance is not None:
+        duplicates = duplicates.exclude(pk=instance.pk)
+
+    if duplicates.exists():
         raise serializers.ValidationError(
             "Já existe uma avaliação para este trabalho por este avaliador."
         )
