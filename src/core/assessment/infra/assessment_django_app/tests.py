@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import time, timedelta
 from decimal import Decimal
 
 from django.utils import timezone
@@ -7,7 +7,7 @@ from rest_framework.test import APIClient, APITestCase
 
 from core.assessment.infra.assessment_django_app.models import Assessment, StudentAssessments
 from core.cross_cutting_themes.infra.cross_cutting_themes_django_app.models import CrossCuttingTheme
-from core.edition.infra.edition_django_app.models import Edition
+from core.edition.infra.edition_django_app.models import Edition, EvaluationDailyWindow
 from core.field.infra.field_django_app.models import Field
 from core.user.domain.value_objects import UserType
 from core.user.infra.user_django_app.models import Evaluator, User
@@ -178,6 +178,80 @@ class AssessmentValidationApiTest(APITestCase):
         self.assert_response_contains(response, "Avaliacoes so podem ser realizadas")
         self.assertFalse(Assessment.objects.exists())
 
+    def test_allows_work_assessment_when_no_daily_window_is_configured(self):
+        # Edicao sem nenhuma janela diaria cadastrada mantem o comportamento
+        # antigo: liberado o dia todo, dentro do periodo.
+        work = self.create_work()
+
+        response = self.post_work_assessment(work)
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED, response.data)
+
+    def test_rejects_work_assessment_outside_todays_daily_window(self):
+        work = self.create_work()
+        now = timezone.localtime().time()
+        # Janela de 1 minuto que certamente nao inclui o horario atual.
+        closed_start = time((now.hour + 2) % 24, 0)
+        closed_end = time((now.hour + 2) % 24, 1)
+        EvaluationDailyWindow.objects.create(
+            edition=work.edition,
+            date=self.today,
+            opens_at=closed_start,
+            closes_at=closed_end,
+        )
+
+        response = self.post_work_assessment(work)
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST, response.data)
+        self.assert_response_contains(response, "so podem ser feitas entre")
+        self.assertFalse(Assessment.objects.exists())
+
+    def test_allows_work_assessment_inside_todays_daily_window(self):
+        work = self.create_work()
+        EvaluationDailyWindow.objects.create(
+            edition=work.edition,
+            date=self.today,
+            opens_at=time(0, 0),
+            closes_at=time(23, 59, 59),
+        )
+
+        response = self.post_work_assessment(work)
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED, response.data)
+
+    def test_rejects_work_assessment_when_today_has_no_configured_window(self):
+        work = self.create_work()
+        EvaluationDailyWindow.objects.create(
+            edition=work.edition,
+            date=self.today + timedelta(days=1),
+            opens_at=time(0, 0),
+            closes_at=time(23, 59, 59),
+        )
+
+        response = self.post_work_assessment(work)
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST, response.data)
+        self.assert_response_contains(response, "Hoje nao e um dia de avaliacao")
+        self.assertFalse(Assessment.objects.exists())
+
+    def test_student_assessment_ignores_daily_window(self):
+        # So a nota da banca (avaliador) respeita o recorte diario; a nota
+        # individual do orientador nao usa essa janela.
+        work = self.create_work()
+        now = timezone.localtime().time()
+        closed_start = time((now.hour + 2) % 24, 0)
+        closed_end = time((now.hour + 2) % 24, 1)
+        EvaluationDailyWindow.objects.create(
+            edition=work.edition,
+            date=self.today,
+            opens_at=closed_start,
+            closes_at=closed_end,
+        )
+
+        response = self.post_student_assessment(work)
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED, response.data)
+
     def test_rejects_student_assessment_before_grade_period(self):
         work = self.create_work(grade_period_open=False)
 
@@ -297,3 +371,138 @@ class AssessmentValidationApiTest(APITestCase):
         assessment = Assessment.objects.get(work=work, evaluator=self.evaluator)
         self.assertEqual(assessment.grade, Decimal("8.80"))
         self.assertEqual(len(assessment.criterion_grades), 2)
+
+    # ---- edicao de nota (PATCH) ----
+
+    def patch_assessment(self, url, payload, user):
+        self.client.force_authenticate(user)
+        return self.client.patch(url, payload, format="json")
+
+    def create_work_assessment(self, work, grade="8.00"):
+        return Assessment.objects.create(
+            work=work,
+            evaluator=self.evaluator,
+            grade=Decimal(grade),
+            date_time=timezone.now(),
+        )
+
+    def create_student_assessment(self, work, grade="8.00"):
+        return StudentAssessments.objects.create(
+            work=work,
+            student=self.student,
+            grade=Decimal(grade),
+            date_time=timezone.now(),
+        )
+
+    def test_evaluator_can_edit_own_work_assessment_with_criteria(self):
+        work = self.create_work()
+        assessment = self.create_work_assessment(work)
+
+        response = self.patch_assessment(
+            f"/api/assessment/{assessment.id}/",
+            {
+                "criterion_grades": [
+                    {"key": "work_general", "grade": "9.00"},
+                    {"key": "presentation", "grade": "5.00"},
+                ],
+                "date_time": timezone.now().isoformat(),
+            },
+            self.evaluator_user,
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK, response.data)
+        assessment.refresh_from_db()
+        self.assertEqual(assessment.grade, Decimal("7.40"))
+        self.assertEqual(Assessment.objects.count(), 1)
+
+    def test_evaluator_edit_cannot_move_assessment_to_another_work(self):
+        work = self.create_work()
+        other_work = self.create_work()
+        assessment = self.create_work_assessment(work)
+
+        response = self.patch_assessment(
+            f"/api/assessment/{assessment.id}/",
+            {"grade": "6.50", "work": str(other_work.id)},
+            self.evaluator_user,
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK, response.data)
+        assessment.refresh_from_db()
+        self.assertEqual(assessment.work_id, work.id)
+        self.assertEqual(assessment.grade, Decimal("6.50"))
+
+    def test_other_evaluator_of_same_work_cannot_edit_assessment(self):
+        work = self.create_work()
+        work.evaluator.add(self.other_evaluator)
+        assessment = self.create_work_assessment(work)
+
+        response = self.patch_assessment(
+            f"/api/assessment/{assessment.id}/", {"grade": "1.00"}, self.other_evaluator_user
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN, response.data)
+        assessment.refresh_from_db()
+        self.assertEqual(assessment.grade, Decimal("8.00"))
+
+    def test_advisor_cannot_edit_evaluator_assessment(self):
+        work = self.create_work()
+        assessment = self.create_work_assessment(work)
+
+        response = self.patch_assessment(
+            f"/api/assessment/{assessment.id}/", {"grade": "1.00"}, self.advisor
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN, response.data)
+        assessment.refresh_from_db()
+        self.assertEqual(assessment.grade, Decimal("8.00"))
+
+    def test_evaluator_cannot_edit_assessment_after_grade_period(self):
+        work = self.create_work(grade_period_open=False)
+        assessment = self.create_work_assessment(work)
+
+        response = self.patch_assessment(
+            f"/api/assessment/{assessment.id}/", {"grade": "9.00"}, self.evaluator_user
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST, response.data)
+        self.assert_response_contains(response, "Avaliacoes so podem ser realizadas")
+        assessment.refresh_from_db()
+        self.assertEqual(assessment.grade, Decimal("8.00"))
+
+    def test_advisor_can_edit_own_student_assessment(self):
+        work = self.create_work()
+        assessment = self.create_student_assessment(work)
+
+        response = self.patch_assessment(
+            f"/api/student-assessments/{assessment.id}/",
+            {"criterion_grades": [{"key": "student_general", "grade": "9.50"}]},
+            self.advisor,
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK, response.data)
+        assessment.refresh_from_db()
+        self.assertEqual(assessment.grade, Decimal("9.50"))
+        self.assertEqual(StudentAssessments.objects.count(), 1)
+
+    def test_other_teacher_cannot_edit_student_assessment(self):
+        work = self.create_work()
+        assessment = self.create_student_assessment(work)
+
+        response = self.patch_assessment(
+            f"/api/student-assessments/{assessment.id}/", {"grade": "1.00"}, self.other_teacher
+        )
+
+        # fora do queryset do outro orientador: nem enxerga a nota
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND, response.data)
+
+    def test_student_cannot_edit_own_assessment(self):
+        work = self.create_work()
+        assessment = self.create_student_assessment(work)
+
+        response = self.patch_assessment(
+            f"/api/student-assessments/{assessment.id}/", {"grade": "10.00"}, self.student
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN, response.data)
+        assessment.refresh_from_db()
+        self.assertEqual(assessment.grade, Decimal("8.00"))

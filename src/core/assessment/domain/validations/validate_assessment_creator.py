@@ -2,7 +2,7 @@ from core.assessment.infra.assessment_django_app.models import StudentAssessment
 from rest_framework import serializers
 
 
-def validate_assessment_creator(owner, value):
+def validate_assessment_creator(owner, value, instance=None):
     work = value.get('work', None)
     student = value.get('student', None)
 
@@ -16,7 +16,11 @@ def validate_assessment_creator(owner, value):
             "O usuário deve ser membro da equipe relacionada para criar uma avaliação."
         )
 
-    if StudentAssessments.objects.filter(work=work, student=student).exists():
+    duplicates = StudentAssessments.objects.filter(work=work, student=student)
+    if instance is not None:
+        duplicates = duplicates.exclude(pk=instance.pk)
+
+    if duplicates.exists():
         raise serializers.ValidationError(
             "Já existe uma avaliação para este aluno por este trabalho."
         )
