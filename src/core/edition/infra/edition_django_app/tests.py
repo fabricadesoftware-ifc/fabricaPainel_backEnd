@@ -1,8 +1,10 @@
-from datetime import date, datetime
+from datetime import date, datetime, time
 
 from django.test import SimpleTestCase, TestCase
+from django.utils import timezone
 
 from core.edition.domain.validations import validate_dates, validate_evaluation_criteria
+from core.edition.infra.edition_django_app.models import Edition, EvaluationDailyWindow
 from core.edition.infra.edition_django_app.serializers import EditionWriteSerializer
 from core.uploader.infra.uploader_django_app.models import Image
 
@@ -217,3 +219,69 @@ class EditionWriteSerializerTestCase(TestCase):
         edition = serializer.save()
 
         self.assertEqual(edition.banner_id, image.id)
+
+
+class EvaluatorWindowStatusTestCase(TestCase):
+    def create_edition(self):
+        return Edition.objects.create(
+            year=2026,
+            theme="Tema",
+            edition_name="Edicao Janela",
+            workload=10,
+        )
+
+    def test_returns_none_when_edition_has_no_windows_configured(self):
+        edition = self.create_edition()
+
+        self.assertIsNone(edition.evaluator_window_status())
+
+    def test_is_open_now_when_current_time_is_inside_todays_window(self):
+        edition = self.create_edition()
+        now = timezone.make_aware(datetime(2026, 10, 9, 15, 0))
+        EvaluationDailyWindow.objects.create(
+            edition=edition, date=now.date(), opens_at=time(8, 0), closes_at=time(22, 0)
+        )
+
+        status = edition.evaluator_window_status(now=now)
+
+        self.assertTrue(status["is_open_now"])
+        self.assertIsNone(status["next_open_at"])
+
+    def test_shows_reopen_time_later_today_when_closed_before_opening(self):
+        edition = self.create_edition()
+        now = timezone.make_aware(datetime(2026, 10, 9, 7, 0))
+        EvaluationDailyWindow.objects.create(
+            edition=edition, date=now.date(), opens_at=time(10, 0), closes_at=time(22, 0)
+        )
+
+        status = edition.evaluator_window_status(now=now)
+
+        self.assertFalse(status["is_open_now"])
+        self.assertEqual(status["next_open_at"], timezone.make_aware(datetime(2026, 10, 9, 10, 0)))
+
+    def test_shows_next_days_reopen_time_after_todays_window_closed(self):
+        edition = self.create_edition()
+        now = timezone.make_aware(datetime(2026, 10, 9, 23, 0))
+        EvaluationDailyWindow.objects.create(
+            edition=edition, date=date(2026, 10, 9), opens_at=time(8, 0), closes_at=time(22, 0)
+        )
+        EvaluationDailyWindow.objects.create(
+            edition=edition, date=date(2026, 10, 10), opens_at=time(9, 0), closes_at=time(20, 0)
+        )
+
+        status = edition.evaluator_window_status(now=now)
+
+        self.assertFalse(status["is_open_now"])
+        self.assertEqual(status["next_open_at"], timezone.make_aware(datetime(2026, 10, 10, 9, 0)))
+
+    def test_shows_next_configured_day_when_today_has_no_window(self):
+        edition = self.create_edition()
+        now = timezone.make_aware(datetime(2026, 10, 9, 12, 0))
+        EvaluationDailyWindow.objects.create(
+            edition=edition, date=date(2026, 10, 11), opens_at=time(9, 0), closes_at=time(20, 0)
+        )
+
+        status = edition.evaluator_window_status(now=now)
+
+        self.assertFalse(status["is_open_now"])
+        self.assertEqual(status["next_open_at"], timezone.make_aware(datetime(2026, 10, 11, 9, 0)))

@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 from core.uploader.infra.uploader_django_app.models import Image
 from datetime import datetime
 from typing import TYPE_CHECKING
@@ -170,6 +171,40 @@ class Edition(models.Model):
         if not self.event_date or not self.final_event_date:
             return False
         return self.event_date <= today <= self.final_event_date
+
+    def evaluator_window_status(self, now=None):
+        """
+        Status da janela diaria de avaliacao da banca, pra hora atual.
+        Retorna None quando a edicao nao usa esse recurso (comportamento
+        antigo, sem recorte de horario). Usado pelo front pra desabilitar o
+        botao de dar nota e mostrar quando ele abre de novo.
+        """
+        now = now or timezone.localtime()
+        today = now.date()
+
+        windows = list(self.evaluation_daily_windows.all())
+        if not windows:
+            return None
+
+        today_window = next((window for window in windows if window.date == today), None)
+        is_open_now = bool(
+            today_window and today_window.opens_at <= now.time() <= today_window.closes_at
+        )
+
+        next_open_at = None
+        if not is_open_now:
+            upcoming = sorted(
+                (
+                    window for window in windows
+                    if timezone.make_aware(datetime.combine(window.date, window.opens_at)) > now
+                ),
+                key=lambda window: (window.date, window.opens_at),
+            )
+            if upcoming:
+                soonest = upcoming[0]
+                next_open_at = timezone.make_aware(datetime.combine(soonest.date, soonest.opens_at))
+
+        return {"is_open_now": is_open_now, "next_open_at": next_open_at}
 
     def __str__(self) -> str:
         return f"{self.edition_name} - {self.year}"
