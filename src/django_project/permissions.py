@@ -163,7 +163,13 @@ class IsAdvisorOrEvaluatorOrTeamMember(BasePermission):
         if request.method in SAFE_METHODS:
             return is_team_member or is_advisor or is_evaluator
 
-        return is_advisor or is_evaluator
+        # Escrita (editar/apagar nota): so o dono. Nota de aluno (tem `student`)
+        # e do orientador do trabalho; nota da banca e do avaliador que a lancou
+        # — nao de qualquer avaliador/orientador do mesmo trabalho.
+        if hasattr(obj, "student"):
+            return is_advisor
+
+        return obj.evaluator.user_id == user.id
     
 
     

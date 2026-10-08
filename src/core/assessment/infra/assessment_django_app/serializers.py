@@ -128,12 +128,17 @@ class AssessmentWriteSerializer(serializers.ModelSerializer):
         ]
 
     def validate(self, attrs):
+        # Edicao (PATCH): trabalho e avaliador nao mudam, vem sempre da nota existente.
+        if self.instance is not None:
+            attrs["work"] = self.instance.work
+            attrs["evaluator"] = self.instance.evaluator
+
         _apply_criterion_grades(attrs, "work")
 
         try:
             validate_work_is_approved(attrs.get("work"))
             validate_assessment_date(attrs.get("work"), "work")
-            validate_assessment_evaluator(self.context["request"].user, attrs)
+            validate_assessment_evaluator(self.context["request"].user, attrs, self.instance)
         except serializers.ValidationError as e:
             raise serializers.ValidationError({"detail": str(e.detail[0])})
 
@@ -168,12 +173,17 @@ class StudentAssessmentsWriteSerializer(serializers.ModelSerializer):
         ]
 
     def validate(self, attrs):
+        # Edicao (PATCH): trabalho e aluno nao mudam, vem sempre da nota existente.
+        if self.instance is not None:
+            attrs["work"] = self.instance.work
+            attrs["student"] = self.instance.student
+
         _apply_criterion_grades(attrs, "student")
 
         try:
             validate_work_is_approved(attrs.get("work"))
             validate_assessment_date(attrs.get("work"), "student")
-            validate_assessment_creator(self.context["request"].user, attrs)
+            validate_assessment_creator(self.context["request"].user, attrs, self.instance)
 
         except serializers.ValidationError as e:
             raise serializers.ValidationError({"detail": str(e.detail[0])})
