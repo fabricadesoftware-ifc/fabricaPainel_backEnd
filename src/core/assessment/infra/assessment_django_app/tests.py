@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import time, timedelta
 from decimal import Decimal
 
 from django.utils import timezone
@@ -7,7 +7,7 @@ from rest_framework.test import APIClient, APITestCase
 
 from core.assessment.infra.assessment_django_app.models import Assessment, StudentAssessments
 from core.cross_cutting_themes.infra.cross_cutting_themes_django_app.models import CrossCuttingTheme
-from core.edition.infra.edition_django_app.models import Edition
+from core.edition.infra.edition_django_app.models import Edition, EvaluationDailyWindow
 from core.field.infra.field_django_app.models import Field
 from core.user.domain.value_objects import UserType
 from core.user.infra.user_django_app.models import Evaluator, User
@@ -177,6 +177,80 @@ class AssessmentValidationApiTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST, response.data)
         self.assert_response_contains(response, "Avaliacoes so podem ser realizadas")
         self.assertFalse(Assessment.objects.exists())
+
+    def test_allows_work_assessment_when_no_daily_window_is_configured(self):
+        # Edicao sem nenhuma janela diaria cadastrada mantem o comportamento
+        # antigo: liberado o dia todo, dentro do periodo.
+        work = self.create_work()
+
+        response = self.post_work_assessment(work)
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED, response.data)
+
+    def test_rejects_work_assessment_outside_todays_daily_window(self):
+        work = self.create_work()
+        now = timezone.localtime().time()
+        # Janela de 1 minuto que certamente nao inclui o horario atual.
+        closed_start = time((now.hour + 2) % 24, 0)
+        closed_end = time((now.hour + 2) % 24, 1)
+        EvaluationDailyWindow.objects.create(
+            edition=work.edition,
+            date=self.today,
+            opens_at=closed_start,
+            closes_at=closed_end,
+        )
+
+        response = self.post_work_assessment(work)
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST, response.data)
+        self.assert_response_contains(response, "so podem ser feitas entre")
+        self.assertFalse(Assessment.objects.exists())
+
+    def test_allows_work_assessment_inside_todays_daily_window(self):
+        work = self.create_work()
+        EvaluationDailyWindow.objects.create(
+            edition=work.edition,
+            date=self.today,
+            opens_at=time(0, 0),
+            closes_at=time(23, 59, 59),
+        )
+
+        response = self.post_work_assessment(work)
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED, response.data)
+
+    def test_rejects_work_assessment_when_today_has_no_configured_window(self):
+        work = self.create_work()
+        EvaluationDailyWindow.objects.create(
+            edition=work.edition,
+            date=self.today + timedelta(days=1),
+            opens_at=time(0, 0),
+            closes_at=time(23, 59, 59),
+        )
+
+        response = self.post_work_assessment(work)
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST, response.data)
+        self.assert_response_contains(response, "Hoje nao e um dia de avaliacao")
+        self.assertFalse(Assessment.objects.exists())
+
+    def test_student_assessment_ignores_daily_window(self):
+        # So a nota da banca (avaliador) respeita o recorte diario; a nota
+        # individual do orientador nao usa essa janela.
+        work = self.create_work()
+        now = timezone.localtime().time()
+        closed_start = time((now.hour + 2) % 24, 0)
+        closed_end = time((now.hour + 2) % 24, 1)
+        EvaluationDailyWindow.objects.create(
+            edition=work.edition,
+            date=self.today,
+            opens_at=closed_start,
+            closes_at=closed_end,
+        )
+
+        response = self.post_student_assessment(work)
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED, response.data)
 
     def test_rejects_student_assessment_before_grade_period(self):
         work = self.create_work(grade_period_open=False)

@@ -173,3 +173,32 @@ class Edition(models.Model):
 
     def __str__(self) -> str:
         return f"{self.edition_name} - {self.year}"
+
+
+class EvaluationDailyWindow(models.Model):
+    """
+    Recorte diario de horario em que avaliadores podem dar nota aos trabalhos
+    (banca), dentro do periodo geral de avaliacao da edicao
+    (initial_evaluators_date/final_evaluators_date). So se aplica a avaliacao
+    da banca (target="work") — a nota individual do orientador nao usa isso.
+
+    Uma edicao sem nenhuma janela cadastrada aqui mantem o comportamento
+    antigo: avaliacao liberada o dia todo, durante todo o periodo. O recorte
+    diario so passa a valer quando pelo menos um dia for cadastrado.
+    """
+
+    edition = models.ForeignKey(
+        Edition, related_name="evaluation_daily_windows", on_delete=models.CASCADE
+    )
+    date = models.DateField("Data")
+    opens_at = models.TimeField("Abre as")
+    closes_at = models.TimeField("Fecha as")
+
+    class Meta:
+        ordering = ["date"]
+        unique_together = ("edition", "date")
+        verbose_name = "Janela diaria de avaliacao"
+        verbose_name_plural = "Janelas diarias de avaliacao"
+
+    def __str__(self) -> str:
+        return f"{self.edition} - {self.date} ({self.opens_at}-{self.closes_at})"
