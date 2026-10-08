@@ -44,6 +44,23 @@ class IsAdminOrReadOnly(RolePermission):
     role = UserType.Type.ADMIN
     require_auth = False
 
+class IsAdminOrManagementOrReadOnly(BasePermission):
+    """Todo usuario autenticado le; escrever so admin ou gestao (professor com
+    a flag is_management, que continua sendo professor normal no painel)."""
+
+    def has_permission(self, request, view):
+        user = request.user
+        if not user or not user.is_authenticated:
+            return False
+
+        if request.method in SAFE_METHODS:
+            return True
+
+        return bool(
+            user.user_type == UserType.Type.ADMIN
+            or getattr(user, 'is_management', False)
+        )
+
 class IsStudent(RolePermission):
     role = UserType.Type.STUDENT
     require_auth = True
