@@ -23,8 +23,9 @@ from openpyxl import Workbook
 from openpyxl.styles import Alignment, Font, PatternFill
 from openpyxl.utils import get_column_letter
 
+from core.assessment.infra.assessment_django_app.models import Assessment, StudentAssessments
 from core.edition.infra.edition_django_app.models import Edition
-from core.user.infra.user_django_app.models import User, UserClass
+from core.user.infra.user_django_app.models import Evaluator, User, UserClass
 from core.work.infra.work_django_app.models import Work, WorkCollaborator
 from core.work.infra.work_django_app.serializers import (
     WorkDetailSerializer,
@@ -50,6 +51,27 @@ KANBAN_COLUMNS = [
     ("rejected", "Trabalho rejeitado/cancelado"),
     ("expired", "Expirado"),
 ]
+
+GRADING_OVERVIEW_COLUMNS = [
+    ("advisor_only", "Só o orientador avaliou"),
+    ("evaluator_only", "Só o avaliador avaliou"),
+    ("complete", "Completo — tudo certinho"),
+]
+
+
+def _resolve_edition_or_default(request):
+    """Mesma resolucao de edicao usada pelo kanban e pela aba de notas: usa
+    ?edition=<id> se vier, senao cai pra edicao padrao (_default_edition)."""
+    edition_id = request.query_params.get("edition")
+    if not edition_id:
+        return _default_edition(), None
+
+    try:
+        return Edition.objects.get(id=edition_id), None
+    except Edition.DoesNotExist:
+        return None, Response(
+            {"error": "Edicao nao encontrada."}, status=status.HTTP_404_NOT_FOUND
+        )
 
 
 def _choice_label(enum_cls, value):
@@ -683,6 +705,46 @@ def _serialize_work_for_kanban(work, work_history_by_id, collaborator_history_by
         "last_event": timeline[-1] if timeline else None,
     }
 
+def _serialize_work_for_grading_overview(work, student_grades, evaluator_grades):
+    """
+    student_grades: {student_id: grade} ja dados pelo orientador pra esse
+    trabalho. evaluator_grades: {evaluator_id: grade} ja dados pela banca.
+    Retorna (item, advisor_done, evaluator_done) — done = nota de todo
+    mundo que precisa avaliar esse trabalho (sem ninguem esperado, nao
+    conta como feito).
+    """
+    team_members = list(work.team.team_members.all())
+    evaluators = list(work.evaluator.all())
+
+    advisor_done = bool(team_members) and all(member.id in student_grades for member in team_members)
+    evaluator_done = bool(evaluators) and all(ev.id in evaluator_grades for ev in evaluators)
+
+    item = {
+        "id": str(work.id),
+        "title": work.title,
+        "status_label": _choice_label(WorkStatusType.Type, work.status),
+        "advisor": _serialize_user(work.advisor),
+        "advisor_done": advisor_done,
+        "student_grades": [
+            {
+                "student": _serialize_user(member),
+                "grade": str(student_grades[member.id]) if member.id in student_grades else None,
+            }
+            for member in team_members
+        ],
+        "evaluator_done": evaluator_done,
+        "evaluator_grades": [
+            {
+                "evaluator": _serialize_user(ev.user),
+                "grade": str(evaluator_grades[ev.id]) if ev.id in evaluator_grades else None,
+            }
+            for ev in evaluators
+        ],
+    }
+
+    return item, advisor_done, evaluator_done
+
+
 @extend_schema(tags=["work"])
 class WorkViewSet(ModelViewSet):
     def get_queryset(self):
@@ -728,19 +790,11 @@ class WorkViewSet(ModelViewSet):
         permission_classes=[IsAdminOrManagement],
     )
     def admin_kanban(self, request):
-        edition_id = request.query_params.get("edition")
         search = (request.query_params.get("search") or "").strip()
 
-        if edition_id:
-            try:
-                edition = Edition.objects.get(id=edition_id)
-            except Edition.DoesNotExist:
-                return Response(
-                    {"error": "Edicao nao encontrada."},
-                    status=status.HTTP_404_NOT_FOUND,
-                )
-        else:
-            edition = _default_edition()
+        edition, error_response = _resolve_edition_or_default(request)
+        if error_response:
+            return error_response
 
         columns = [
             {"key": key, "title": title, "count": 0, "items": []}
@@ -813,6 +867,103 @@ class WorkViewSet(ModelViewSet):
                     for column in columns
                 ],
                 "columns": columns,
+            }
+        )
+
+    @action(
+        detail=False,
+        methods=["get"],
+        url_path="admin-grading-overview",
+        permission_classes=[IsAdminOrManagement],
+    )
+    def admin_grading_overview(self, request):
+        """
+        Aba do kanban com o que ja foi avaliado: trabalhos aprovados onde o
+        orientador ja deu nota a todos os alunos, onde o avaliador ja deu
+        nota ao trabalho, e os que tem as duas coisas (completos).
+        """
+        search = (request.query_params.get("search") or "").strip()
+
+        edition, error_response = _resolve_edition_or_default(request)
+        if error_response:
+            return error_response
+
+        columns = {key: [] for key, _ in GRADING_OVERVIEW_COLUMNS}
+
+        if not edition:
+            return self._grading_overview_response(None, columns)
+
+        queryset = (
+            Work.objects.filter(edition=edition, status=WorkStatusType.Type.APPROVED.value)
+            .select_related("advisor", "team", "edition", "cross_cutting_theme")
+            .prefetch_related(
+                "team__team_members",
+                Prefetch("evaluator", queryset=Evaluator.objects.select_related("user")),
+            )
+        )
+
+        if search:
+            queryset = queryset.filter(
+                Q(title__icontains=search)
+                | Q(team__team_members__name__icontains=search)
+                | Q(team__team_members__email__icontains=search)
+                | Q(advisor__name__icontains=search)
+                | Q(advisor__email__icontains=search)
+            ).distinct()
+
+        works = list(queryset)
+        work_ids = [work.id for work in works]
+
+        # Duas buscas em lote (nao uma por trabalho) — mesmo motivo do fix de
+        # N+1 do kanban: nao da pra deixar isso escalar com a quantidade de
+        # trabalhos.
+        student_grades_by_work = defaultdict(dict)
+        for work_id, student_id, grade in StudentAssessments.objects.filter(
+            work_id__in=work_ids
+        ).values_list("work_id", "student_id", "grade"):
+            student_grades_by_work[work_id][student_id] = grade
+
+        evaluator_grades_by_work = defaultdict(dict)
+        for work_id, evaluator_id, grade in Assessment.objects.filter(
+            work_id__in=work_ids
+        ).values_list("work_id", "evaluator_id", "grade"):
+            evaluator_grades_by_work[work_id][evaluator_id] = grade
+
+        for work in works:
+            item, advisor_done, evaluator_done = _serialize_work_for_grading_overview(
+                work,
+                student_grades_by_work.get(work.id, {}),
+                evaluator_grades_by_work.get(work.id, {}),
+            )
+
+            if advisor_done and evaluator_done:
+                columns["complete"].append(item)
+            elif advisor_done:
+                columns["advisor_only"].append(item)
+            elif evaluator_done:
+                columns["evaluator_only"].append(item)
+            # Sem nenhuma nota ainda: fora dessa aba (ja aparece no kanban normal).
+
+        return self._grading_overview_response(edition, columns)
+
+    def _grading_overview_response(self, edition, columns):
+        column_list = [
+            {"key": key, "title": title, "count": len(columns[key]), "items": columns[key]}
+            for key, title in GRADING_OVERVIEW_COLUMNS
+        ]
+
+        return Response(
+            {
+                "edition": (
+                    {"id": edition.id, "year": edition.year, "edition_name": edition.edition_name}
+                    if edition
+                    else None
+                ),
+                "summary": [
+                    {"key": column["key"], "title": column["title"], "count": column["count"]}
+                    for column in column_list
+                ],
+                "columns": column_list,
             }
         )
 
