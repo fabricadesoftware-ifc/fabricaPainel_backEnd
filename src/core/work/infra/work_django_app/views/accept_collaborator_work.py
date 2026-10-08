@@ -1,10 +1,12 @@
 import logging
 
+from django.utils import timezone
 from rest_framework.decorators import api_view, throttle_classes, permission_classes
 from rest_framework.response import Response
 from rest_framework.throttling import UserRateThrottle
 from rest_framework import status
 
+from core.__seedwork.domain.actions.acceptance_window import advisor_decision_windows, is_within_window
 from core.work.infra.work_django_app.models import WorkCollaborator, WorkCollaboratorStatusType
 from core.user.infra.user_django_app.models import User
 from django_project.permissions import IsCollaborator
@@ -35,6 +37,13 @@ def accept_collaborator_work(request, verification_token) -> Response:
         )
         return Response(
             {"error": "Este trabalho foi rejeitado e não pode mais ser aceito."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    windows = advisor_decision_windows(work_collaborator.work.edition)
+    if not is_within_window(timezone.localdate(), windows):
+        return Response(
+            {"error": "O período para aceitar esta colaboração já foi encerrado."},
             status=status.HTTP_400_BAD_REQUEST,
         )
 

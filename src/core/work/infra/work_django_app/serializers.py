@@ -22,6 +22,13 @@ from core.work.infra.work_django_app.models import CrossCuttingTheme
 from core.work.infra.work_django_app.models import Field
 from core.user.infra.user_django_app.models import Evaluator
 
+
+# str(ValidationError) devolve o repr da lista de ErrorDetail; o front mostra isso cru.
+def _error_text(error: ValidationError) -> str:
+    detail = error.detail
+    return str(detail[0] if isinstance(detail, list) else detail)
+
+
 class MinimalUserSerializer(serializers.ModelSerializer):
     user_classes = UserClassSerializer(many=True, read_only=True)
 
@@ -82,6 +89,12 @@ class WorkListSerializer(serializers.ModelSerializer):
         queryset=User.objects.filter(is_advisor=True, user_type=User.TEACHER),
         required=False, allow_null=True
     )
+    submitted_at = serializers.SerializerMethodField()
+
+    def get_submitted_at(self, obj):
+        first_record = obj.history.order_by("history_date").first()
+        return first_record.history_date if first_record else None
+
     class Meta:
         model = Work
         fields: list[str] = [
@@ -96,6 +109,7 @@ class WorkListSerializer(serializers.ModelSerializer):
             "team",
             "ods",
             "needs_changes_submission_work_date",
+            "submitted_at",
             "status",
             "advisor",
             "advisor_status",
@@ -240,23 +254,32 @@ class WorkWriteSerializer(serializers.ModelSerializer):
         
         if request and request.method in ["PATCH", "PUT"] and self.instance:
             self._validate_work_status_for_updates(attrs)
-        
+            new_advisor = attrs.get("advisor")
+            if (
+                new_advisor
+                and self.instance.advisor_status == WorkAdvisorStatusType.Type.REJECTED.value
+                and new_advisor == self.instance.advisor
+            ):
+                raise ValidationError({
+                    "advisor": ["Escolha outro orientador: este já recusou o trabalho."]
+                })
+
         if request and request.method == "POST":
             try:
                 validate_work_date_submission_is_valid(attrs)
             except ValidationError as e:
-                raise ValidationError({"date_submission": str(e)})
+                raise ValidationError({"date_submission": _error_text(e)})
             
             try:
                 validate_work_team_members(attrs)
             except ValidationError as e:
-                raise ValidationError({"team_members": str(e)})
+                raise ValidationError({"team_members": _error_text(e)})
             
             if attrs.get('collaborators'):
                 try:
                     validate_work_collaborators(attrs)
                 except ValidationError as e:
-                    raise ValidationError({"collaborators": str(e)})
+                    raise ValidationError({"collaborators": _error_text(e)})
 
         if attrs.get('evaluator'):
             edition = attrs.get('edition') or (self.instance.edition if self.instance else None)
@@ -264,7 +287,7 @@ class WorkWriteSerializer(serializers.ModelSerializer):
             try:
                 validate_work_evaluator_limits(edition, attrs.get('evaluator'), current_work_id)
             except ValidationError as e:
-                raise ValidationError({"evaluator": str(e)})
+                raise ValidationError({"evaluator": _error_text(e)})
 
         # Vale tanto na criação quanto na troca de orientador via PATCH. É só uma
         # antecipação do erro: a vaga só é de fato ocupada no aceite, então quem
@@ -278,7 +301,7 @@ class WorkWriteSerializer(serializers.ModelSerializer):
                     current_work_id=current_work_id,
                 )
             except ValidationError as e:
-                raise ValidationError({"advisor": str(e)})
+                raise ValidationError({"advisor": _error_text(e)})
 
         return super().validate(attrs)
 

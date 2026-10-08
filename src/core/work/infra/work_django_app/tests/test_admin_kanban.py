@@ -1,6 +1,8 @@
 from datetime import timedelta
 from unittest.mock import patch
 
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
@@ -258,3 +260,37 @@ class AdminKanbanApiTest(APITestCase):
 
         self.assertIn("Orientador aceitou", timeline_events)
         self.assertIn("Colaborador aceitou", timeline_events)
+
+    def test_query_count_does_not_grow_with_the_number_of_works(self):
+        # `instance.history` do simple_history não é uma relação de verdade, então
+        # prefetch_related não serve nela — sem buscar o histórico em lote, cada
+        # trabalho (e cada colaborador) soma consultas, e a tela trava com muitos
+        # trabalhos (visto na prática: ~700 queries para ~100 trabalhos).
+        self.client.force_authenticate(self.admin)
+
+        def create_batch(count, offset):
+            for i in range(count):
+                self.create_work(
+                    f"Trabalho {offset + i}",
+                    work_status=WorkStatusType.Type.PENDING.value,
+                    advisor_status=WorkAdvisorStatusType.Type.APPROVED.value,
+                    collaborator_status=WorkCollaboratorStatusType.Type.PENDING.value,
+                )
+
+        create_batch(2, offset=0)
+        with CaptureQueriesContext(connection) as small_batch:
+            response = self.client.get(f"/api/work/admin-kanban/?edition={self.edition.id}")
+        self.assertEqual(response.status_code, status.HTTP_200_OK, response.data)
+
+        create_batch(10, offset=2)
+        with CaptureQueriesContext(connection) as large_batch:
+            response = self.client.get(f"/api/work/admin-kanban/?edition={self.edition.id}")
+        self.assertEqual(response.status_code, status.HTTP_200_OK, response.data)
+
+        # 12 trabalhos a mais devem somar poucas queries extras (paginação/contagem
+        # de edição etc.), não uma por trabalho/colaborador/evento de histórico.
+        self.assertLess(
+            len(large_batch.captured_queries) - len(small_batch.captured_queries),
+            5,
+            "numero de queries cresceu junto com a quantidade de trabalhos (N+1)",
+        )
