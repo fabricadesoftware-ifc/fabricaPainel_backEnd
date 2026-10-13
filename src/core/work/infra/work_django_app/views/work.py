@@ -972,6 +972,28 @@ class WorkViewSet(ModelViewSet):
 
     @action(
         detail=False,
+        methods=["post"],
+        url_path="send-grade-reminders",
+        permission_classes=[IsAdminOrManagement],
+    )
+    def send_grade_reminders(self, request):
+        """Lembra por e-mail orientadores e avaliadores que ainda devem nota.
+        `?edition=<id>` (ou edicao padrao). `dry_run=true` so conta, sem enviar."""
+        from core.work.domain.grade_reminders import send_grade_reminders
+
+        edition, error_response = _resolve_edition_or_default(request)
+        if error_response:
+            return error_response
+        if edition is None:
+            return Response(
+                {"error": "Nenhuma edicao encontrada."}, status=status.HTTP_404_NOT_FOUND
+            )
+
+        dry_run = str(request.data.get("dry_run", "")).lower() in ("1", "true", "yes")
+        return Response(send_grade_reminders(edition, dry_run=dry_run))
+
+    @action(
+        detail=False,
         methods=["get"],
         url_path="admin-grading-overview",
         permission_classes=[IsAdminOrManagement],
