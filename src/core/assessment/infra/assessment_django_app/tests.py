@@ -506,3 +506,71 @@ class AssessmentValidationApiTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN, response.data)
         assessment.refresh_from_db()
         self.assertEqual(assessment.grade, Decimal("8.00"))
+
+    # --- Admin lanca nota em nome de professor sem acesso ao sistema ---
+
+    def make_admin(self):
+        return self.create_user("admin.assessment@test.local", UserType.Type.ADMIN.value)
+
+    def test_admin_can_register_work_assessment_for_assigned_evaluator(self):
+        work = self.create_work()
+
+        response = self.post_work_assessment(work, user=self.make_admin())
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED, response.data)
+        self.assertEqual(Assessment.objects.get().evaluator, self.evaluator)
+
+    def test_admin_cannot_register_work_assessment_for_unassigned_evaluator(self):
+        work = self.create_work()
+
+        response = self.post_work_assessment(
+            work, {"evaluator": self.other_evaluator.id}, user=self.make_admin()
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST, response.data)
+        self.assertFalse(Assessment.objects.exists())
+        self.assertEqual(list(work.evaluator.all()), [self.evaluator])
+
+    def test_admin_can_register_student_assessment_for_work_advisor(self):
+        work = self.create_work()
+
+        response = self.post_student_assessment(work, user=self.make_admin())
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED, response.data)
+        self.assertEqual(StudentAssessments.objects.get().student, self.student)
+
+    def test_admin_student_assessment_still_requires_team_member(self):
+        work = self.create_work()
+
+        response = self.post_student_assessment(
+            work, {"student": self.student_outside_team.id}, user=self.make_admin()
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST, response.data)
+
+    def test_admin_assessment_still_respects_grade_period(self):
+        work = self.create_work(grade_period_open=False)
+
+        response = self.post_work_assessment(work, user=self.make_admin())
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST, response.data)
+
+    def test_admin_cannot_register_duplicate_work_assessment(self):
+        work = self.create_work()
+        admin = self.make_admin()
+        self.post_work_assessment(work, user=admin)
+
+        response = self.post_work_assessment(work, user=admin)
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST, response.data)
+        self.assertEqual(Assessment.objects.count(), 1)
+
+    def test_management_teacher_still_cannot_register_assessment_for_others(self):
+        work = self.create_work()
+        manager = self.create_user(
+            "manager.assessment@test.local", UserType.Type.TEACHER.value, is_management=True
+        )
+
+        response = self.post_work_assessment(work, user=manager)
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN, response.data)

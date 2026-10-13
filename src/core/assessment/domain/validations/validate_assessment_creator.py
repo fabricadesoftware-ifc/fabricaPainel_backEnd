@@ -1,12 +1,16 @@
 from core.assessment.infra.assessment_django_app.models import StudentAssessments
 from rest_framework import serializers
+from core.user.domain.value_objects import UserType
 
 
 def validate_assessment_creator(owner, value, instance=None):
     work = value.get('work', None)
     student = value.get('student', None)
 
-    if not work.advisor == owner:
+    # Admin registra a nota em nome do orientador (sem acesso ao sistema).
+    is_admin = owner.user_type == UserType.Type.ADMIN
+
+    if not is_admin and not work.advisor == owner:
         raise serializers.ValidationError(
             "O usuário deve ser o orientador relacionado para criar uma avaliação."
         )

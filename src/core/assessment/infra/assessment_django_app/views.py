@@ -23,6 +23,7 @@ from core.assessment.infra.assessment_django_app.models import Assessment, Asses
 from core.assessment.domain.assessment_datas import prepare_grades
 from core.work.infra.work_django_app.models import Work
 from core.user.infra.user_django_app.models import Evaluator
+from core.user.domain.value_objects import UserType
 from core.assessment.infra.assessment_django_app.serializers import (
     AssessmentDetailSerializer,
     AssessmentWriteSerializer,
@@ -41,6 +42,9 @@ class AssessmentViewSet(ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         qs = super().get_queryset()
+
+        if user.user_type == UserType.Type.ADMIN:
+            return qs
 
         # Cria uma condição OR para trabalhos onde o usuário é avaliador ou orientador
         conditions = Q()
@@ -72,6 +76,8 @@ class StudentAssessmentsViewSet(ModelViewSet):
         user = self.request.user
         qs = super().get_queryset()
 
+        if user.user_type == UserType.Type.ADMIN:
+            return qs
         if user.is_advisor:
             return qs.filter(work__advisor=user)
         return qs.filter(work__team__team_members=user)
