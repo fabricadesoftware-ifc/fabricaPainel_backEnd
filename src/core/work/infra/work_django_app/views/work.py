@@ -757,6 +757,7 @@ def _serialize_assessment_for_admin(assessment):
         return None
 
     return {
+        "id": str(assessment.id),
         "grade": _money(assessment.grade),
         "criterion_grades": assessment.criterion_grades or [],
         "date_time": assessment.date_time.isoformat() if assessment.date_time else None,
@@ -823,6 +824,12 @@ def _serialize_work_for_admin_detail(work, assessments, student_assessments):
         "ods": [ods.name for ods in work.ods.all()],
         "advisor": _serialize_user(work.advisor),
         "weights": {"work": float(work_weight), "student": float(student_weight)},
+        # Criterios configurados na edicao: o admin usa pra lancar nota pela tela.
+        "criteria": {
+            group.get("target"): group.get("criteria") or []
+            for group in (edition.evaluation_criteria or [])
+            if isinstance(group, dict)
+        },
         "evaluators": [
             {
                 "id": evaluator.id,
@@ -969,6 +976,28 @@ class WorkViewSet(ModelViewSet):
                 "columns": columns,
             }
         )
+
+    @action(
+        detail=False,
+        methods=["post"],
+        url_path="send-grade-reminders",
+        permission_classes=[IsAdminOrManagement],
+    )
+    def send_grade_reminders(self, request):
+        """Lembra por e-mail orientadores e avaliadores que ainda devem nota.
+        `?edition=<id>` (ou edicao padrao). `dry_run=true` so conta, sem enviar."""
+        from core.work.domain.grade_reminders import send_grade_reminders
+
+        edition, error_response = _resolve_edition_or_default(request)
+        if error_response:
+            return error_response
+        if edition is None:
+            return Response(
+                {"error": "Nenhuma edicao encontrada."}, status=status.HTTP_404_NOT_FOUND
+            )
+
+        dry_run = str(request.data.get("dry_run", "")).lower() in ("1", "true", "yes")
+        return Response(send_grade_reminders(edition, dry_run=dry_run))
 
     @action(
         detail=False,

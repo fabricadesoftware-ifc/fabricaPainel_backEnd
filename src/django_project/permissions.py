@@ -156,6 +156,10 @@ class IsAdvisorOrEvaluatorOrTeamMember(BasePermission):
         if not user.is_authenticated:
             return False
 
+        # Admin lanca nota em nome de professor sem acesso ao sistema.
+        if user.user_type == UserType.Type.ADMIN:
+            return True
+
         if Evaluator.objects.filter(user=user.id).exists():
             return True
 
@@ -172,6 +176,9 @@ class IsAdvisorOrEvaluatorOrTeamMember(BasePermission):
 
         if not user.is_authenticated:
             return False
+
+        if user.user_type == UserType.Type.ADMIN:
+            return True
 
         is_team_member = obj.work.team.team_members.filter(id=user.id).exists()
         is_advisor = obj.work.advisor_id == user.id
