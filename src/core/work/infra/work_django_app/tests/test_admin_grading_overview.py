@@ -153,11 +153,18 @@ class AdminGradingOverviewApiTest(APITestCase):
         advisor_only_ids = {item["id"] for item in self.get_column(response, "advisor_only")["items"]}
         evaluator_only_ids = {item["id"] for item in self.get_column(response, "evaluator_only")["items"]}
         complete_ids = {item["id"] for item in self.get_column(response, "complete")["items"]}
+        not_graded_ids = {item["id"] for item in self.get_column(response, "not_graded")["items"]}
 
+        self.assertEqual(not_graded_ids, {str(not_graded_yet.id)})
         self.assertEqual(advisor_only_ids, {str(only_advisor.id)})
         self.assertEqual(evaluator_only_ids, {str(only_evaluator.id)})
         self.assertEqual(complete_ids, {str(complete.id)})
         self.assertNotIn(str(not_graded_yet.id), advisor_only_ids | evaluator_only_ids | complete_ids)
+        # "Não avaliado" é a primeira coluna, antes de "Só o orientador avaliou".
+        self.assertEqual(
+            [column["key"] for column in response.data["columns"]][:2],
+            ["not_graded", "advisor_only"],
+        )
 
     def test_excludes_works_that_are_not_approved(self):
         pending_work = self.create_work("Ainda pendente", status_value=WorkStatusType.Type.PENDING.value)

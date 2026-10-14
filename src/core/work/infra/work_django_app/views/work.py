@@ -56,6 +56,7 @@ KANBAN_COLUMNS = [
 ]
 
 GRADING_OVERVIEW_COLUMNS = [
+    ("not_graded", "Não avaliado"),
     ("advisor_only", "Só o orientador avaliou"),
     ("evaluator_only", "Só o avaliador avaliou"),
     ("complete", "Completo — tudo certinho"),
@@ -985,9 +986,10 @@ class WorkViewSet(ModelViewSet):
     )
     def admin_grading_overview(self, request):
         """
-        Aba do kanban com o que ja foi avaliado: trabalhos aprovados onde o
-        orientador ja deu nota a todos os alunos, onde o avaliador ja deu
-        nota ao trabalho, e os que tem as duas coisas (completos).
+        Aba do kanban de notas: trabalhos aprovados ainda sem avaliacao
+        completa de nenhum lado, onde so o orientador ja deu nota a todos os
+        alunos, onde so o avaliador ja deu nota ao trabalho, e os que tem as
+        duas coisas (completos).
         """
         search = (request.query_params.get("search") or "").strip()
 
@@ -1049,7 +1051,9 @@ class WorkViewSet(ModelViewSet):
                 columns["advisor_only"].append(item)
             elif evaluator_done:
                 columns["evaluator_only"].append(item)
-            # Sem nenhuma nota ainda: fora dessa aba (ja aparece no kanban normal).
+            else:
+                # Nem o orientador (todos os alunos) nem a banca terminaram.
+                columns["not_graded"].append(item)
 
         return self._grading_overview_response(edition, columns)
 
