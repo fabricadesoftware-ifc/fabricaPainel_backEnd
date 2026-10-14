@@ -1,3 +1,5 @@
+from uuid import uuid4
+
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from core.work.infra.work_django_app.models import Work
@@ -258,6 +260,8 @@ class WorkWriteSerializer(serializers.ModelSerializer):
         # Troca de orientador reabre a decisão, senão herdava o advisor_status do anterior.
         if "advisor" in validated_data and validated_data["advisor"] != instance.advisor:
             validated_data["advisor_status"] = WorkAdvisorStatusType.Type.PENDING.value
+            # Token novo: o link do orientador anterior deixa de valer.
+            validated_data["verification_token"] = str(uuid4())
 
         return super().update(instance, validated_data)
 

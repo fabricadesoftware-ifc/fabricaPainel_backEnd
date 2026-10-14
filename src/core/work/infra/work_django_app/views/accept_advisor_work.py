@@ -7,7 +7,8 @@ from rest_framework import status
 from django.utils import timezone
 from django_project.permissions import IsAdvisor
 
-from core.work.infra.work_django_app.models import Work, WorkAdvisorStatusType, Edition
+from core.work.infra.work_django_app.models import Work, WorkAdvisorStatusType, WorkStatusType, Edition
+from django_project.settings import EMAIL_HOST_USER
 # Import sem uso direto: mantido porque test_edition_flow.py patcha este caminho.
 from core.work.domain.tasks.send_email_student.approve.send_work_approve_email_to_student import (
     send_work_approve_email_to_student,
@@ -28,6 +29,15 @@ def accept_advisor_work(request, verification_token) -> Response:
     except Work.DoesNotExist:
         logger.warning(f"accept_advisor_work: token não encontrado ({verification_token})")
         return Response({"error": "Trabalho não encontrado."}, status=status.HTTP_404_NOT_FOUND)
+
+    if work.advisor_id != request.user.id:
+        logger.warning(
+            f"accept_advisor_work: usuario {request.user.id} tentou decidir o work {work.id} sem ser o orientador dele"
+        )
+        return Response(
+            {"error": "Apenas o orientador deste trabalho pode tomar esta decisão."},
+            status=status.HTTP_403_FORBIDDEN,
+        )
 
     if work.status == 4:  # REJECTED
         logger.warning(f"accept_advisor_work: work {work.id} já rejeitado, aceite negado")
@@ -65,22 +75,41 @@ def accept_advisor_work(request, verification_token) -> Response:
             )
 
     if is_within_window(current_date, windows):
+        # Aceitar a orientação e aprovar o trabalho acontecem juntos: antes eram duas
+        # chamadas (esta e /accept-submission/), e se a segunda falhasse o trabalho
+        # ficava com orientador aprovado e status pendente, com o link já trocado.
+        students_ids = list(work.team.team_members.values_list("id", flat=True))
+        # Dois registros de histórico, como antes (a linha do tempo do kanban mostra
+        # "Orientador aceitou" e depois "Trabalho aprovado").
         work.advisor_status = WorkAdvisorStatusType.Type.APPROVED.value
-        work.verification_token = uuid.uuid4()
         work._change_reason = "Orientador aceitou"
         work.save()
 
-        # Email de aprovação é enviado em /accept-submission/, não aqui, pra não duplicar.
+        work.status = WorkStatusType.Type.APPROVED.value
+        work.verification_token = None
+        work._change_reason = "Trabalho aprovado"
+        work.save()
+
+        # Falha no broker não pode virar 500 depois da decisão já gravada.
+        try:
+            send_work_approve_email_to_student.delay(EMAIL_HOST_USER, students_ids, work.advisor_id)
+        except Exception as exc:
+            logger.error(
+                f"accept_advisor_work: work {work.id} aprovado, mas falhou ao enfileirar "
+                f"o email de aviso aos alunos: {exc}"
+            )
+
         logger.info(
-            f"accept_advisor_work: work {work.id} ('{work.title}') aceito por {work.advisor.email} "
-            f"em {current_date}"
+            f"accept_advisor_work: work {work.id} ('{work.title}') aceito e aprovado por "
+            f"{work.advisor.email} em {current_date}"
         )
-        # Token novo devolvido pro caller poder chamar /accept-submission/ em seguida.
+        # verification_token segue na resposta (nulo) por compatibilidade com o front antigo,
+        # que só chama /accept-submission/ quando recebe um token.
         return Response(
             {
                 "message": "Orientação do trabalho aceita com sucesso.",
                 "work_id": str(work.id),
-                "verification_token": str(work.verification_token),
+                "verification_token": None,
             },
             status=status.HTTP_200_OK,
         )

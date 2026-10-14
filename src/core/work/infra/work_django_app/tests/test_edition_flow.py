@@ -236,14 +236,10 @@ class EditionFlowTestCase(APITransactionTestCase):
         )
         self.assertEqual(accept_advisor.status_code, status.HTTP_200_OK, accept_advisor.data)
 
-        advisor_detail = self.client.get(f"/api/work/{work.id}/")
-        approve_work = self.client.get(
-            f"/api/accept-submission/{advisor_detail.data['verification_token']}/"
-        )
-        self.assertEqual(approve_work.status_code, status.HTTP_200_OK, approve_work.data)
-
+        # Aceitar a orientação já aprova o trabalho (uma chamada só).
         work.refresh_from_db()
         self.assertEqual(work.status, WorkStatusType.Type.APPROVED.value)
+        self.assertIsNone(work.verification_token)
 
         response = self.client.post(
             "/api/student-assessments/",
@@ -289,14 +285,10 @@ class EditionFlowTestCase(APITransactionTestCase):
         work.refresh_from_db()
         self.assertEqual(work.advisor_status, WorkAdvisorStatusType.Type.APPROVED.value)
 
-        advisor_detail = self.client.get(f"/api/work/{work.id}/")
-        approve_work = self.client.get(
-            f"/api/accept-submission/{advisor_detail.data['verification_token']}/"
-        )
-        self.assertEqual(approve_work.status_code, status.HTTP_200_OK, approve_work.data)
-
+        # Aceitar a orientação já aprova o trabalho (uma chamada só).
         work.refresh_from_db()
         self.assertEqual(work.status, WorkStatusType.Type.APPROVED.value)
+        self.assertIsNone(work.verification_token)
 
         self.client.force_authenticate(self.collaborator)
         collaborator_detail = self.client.get(f"/api/work/{work.id}/")

@@ -16,7 +16,6 @@ from rest_framework_simplejwt.views import (
 from core.user.infra.user_django_app.views import CustomTokenObtainPairView
 from core.user.infra.user_django_app.views import create_certificate, verify_certificate
 from core.work.infra.work_django_app.views import (
-    needs_changes_work,
     CanceledWork,
     resend_invite_team,
     WorkViewSet,
@@ -53,11 +52,6 @@ urlpatterns = [
     path("api/token/logout/", TokenBlacklistView.as_view(), name="token_logout"),
     path("api/generate-assessment-report/<str:year>/<str:class_name>/", generate_assessment_report, name="generate-assessment-report"),
     path("api/generate-assessment-report/<str:year>/", generate_assessment_report, name="generate-assessment-report-by-class"),
-    path(
-        "api/needs-changes-work/<str:pk>/",
-        needs_changes_work,
-        name="needs-changes-work",
-    ),
     path("api/canceled-work/<str:pk>/", CanceledWork.as_view(), name="canceled-work"),
     #orientador
     path("api/accept-advisor-work/<str:verification_token>/", accept_advisor_work, name="accept-advisor-work"),

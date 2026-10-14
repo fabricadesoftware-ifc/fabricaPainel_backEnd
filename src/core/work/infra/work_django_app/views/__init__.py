@@ -1,5 +1,4 @@
 from .work import WorkViewSet
-from .needs_changes_work import needs_changes_work
 from .canceled_work import CanceledWork
 from .keyword import KeywordViewSet
 from .team import TeamViewSet

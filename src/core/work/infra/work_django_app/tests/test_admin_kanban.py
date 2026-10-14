@@ -245,7 +245,10 @@ class AdminKanbanApiTest(APITestCase):
         work.refresh_from_db()
         collaborator_link.refresh_from_db()
 
-        self.assertEqual(work.history.first().history_change_reason, "Orientador aceitou")
+        # Aceitar agora aprova junto: dois registros, o mais recente e a aprovacao.
+        history = list(work.history.all()[:2])
+        self.assertEqual(history[0].history_change_reason, "Trabalho aprovado")
+        self.assertEqual(history[1].history_change_reason, "Orientador aceitou")
         self.assertEqual(collaborator_link.history.first().history_change_reason, "Colaborador aceitou")
 
         self.client.force_authenticate(self.admin)
@@ -255,7 +258,7 @@ class AdminKanbanApiTest(APITestCase):
         )
         timeline_events = [
             event["event"]
-            for event in self.get_column(response, "ready")["items"][0]["timeline"]
+            for event in self.get_column(response, "approved")["items"][0]["timeline"]
         ]
 
         self.assertIn("Orientador aceitou", timeline_events)
@@ -294,3 +297,120 @@ class AdminKanbanApiTest(APITestCase):
             5,
             "numero de queries cresceu junto com a quantidade de trabalhos (N+1)",
         )
+
+    # ---- fluxo de aceite do orientador (revisao de fluxo A-01..A-05) ----
+
+    def create_other_advisor(self):
+        return self.create_user(
+            "other.advisor.kanban@test.local", UserType.Type.TEACHER.value, is_advisor=True
+        )
+
+    @patch("core.work.infra.work_django_app.views.accept_advisor_work.send_work_approve_email_to_student.delay")
+    def test_advisor_accept_approves_the_work_in_one_call(self, email_delay):
+        work = self.create_work(
+            "Aceite em uma chamada",
+            work_status=WorkStatusType.Type.PENDING.value,
+            advisor_status=WorkAdvisorStatusType.Type.PENDING.value,
+        )
+
+        self.client.force_authenticate(self.advisor)
+        response = self.client.get(f"/api/accept-advisor-work/{work.verification_token}/")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK, response.data)
+        work.refresh_from_db()
+        self.assertEqual(work.advisor_status, WorkAdvisorStatusType.Type.APPROVED.value)
+        self.assertEqual(work.status, WorkStatusType.Type.APPROVED.value)
+        self.assertIsNone(work.verification_token)
+        email_delay.assert_called_once()
+
+    @patch("core.work.infra.work_django_app.views.accept_advisor_work.send_work_approve_email_to_student.delay")
+    def test_only_the_work_advisor_can_decide_with_the_token(self, email_delay):
+        work = self.create_work(
+            "Decisao so do dono",
+            work_status=WorkStatusType.Type.PENDING.value,
+            advisor_status=WorkAdvisorStatusType.Type.PENDING.value,
+        )
+        token = work.verification_token
+
+        self.client.force_authenticate(self.create_other_advisor())
+        for url in (
+            f"/api/accept-advisor-work/{token}/",
+            f"/api/reject-advisor-work/{token}/",
+            f"/api/accept-submission/{token}/",
+            f"/api/reject-submission/{token}/",
+        ):
+            response = self.client.get(url)
+            self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN, (url, response.data))
+
+        work.refresh_from_db()
+        self.assertEqual(work.advisor_status, WorkAdvisorStatusType.Type.PENDING.value)
+        self.assertEqual(work.status, WorkStatusType.Type.PENDING.value)
+
+    @patch("core.work.infra.work_django_app.views.submission_work.send_work_approve_email_to_student.delay")
+    def test_legacy_stuck_work_can_still_be_approved_with_accept_submission(self, email_delay):
+        # Orientador aceitou antes da mudanca e a segunda chamada falhou: o trabalho
+        # ficou com orientador aprovado, status pendente e token ainda valido.
+        work = self.create_work(
+            "Preso no meio",
+            work_status=WorkStatusType.Type.PENDING.value,
+            advisor_status=WorkAdvisorStatusType.Type.APPROVED.value,
+        )
+
+        self.client.force_authenticate(self.advisor)
+        response = self.client.get(f"/api/accept-submission/{work.verification_token}/")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK, response.data)
+        work.refresh_from_db()
+        self.assertEqual(work.status, WorkStatusType.Type.APPROVED.value)
+
+    def test_reject_submission_requires_advisor_acceptance_and_pending_work(self):
+        waiting = self.create_work(
+            "Rejeitar sem aceite",
+            work_status=WorkStatusType.Type.PENDING.value,
+            advisor_status=WorkAdvisorStatusType.Type.PENDING.value,
+        )
+        approved = self.create_work(
+            "Rejeitar ja aprovado",
+            work_status=WorkStatusType.Type.APPROVED.value,
+            advisor_status=WorkAdvisorStatusType.Type.APPROVED.value,
+        )
+
+        self.client.force_authenticate(self.advisor)
+        for work in (waiting, approved):
+            response = self.client.get(f"/api/reject-submission/{work.verification_token}/")
+            self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST, response.data)
+
+        waiting.refresh_from_db()
+        approved.refresh_from_db()
+        self.assertEqual(waiting.status, WorkStatusType.Type.PENDING.value)
+        self.assertEqual(approved.status, WorkStatusType.Type.APPROVED.value)
+
+    def test_email_link_does_not_rotate_an_existing_token(self):
+        from core.__seedwork.domain.actions.work_path import work_path
+
+        work = self.create_work(
+            "Token estavel",
+            work_status=WorkStatusType.Type.PENDING.value,
+            advisor_status=WorkAdvisorStatusType.Type.PENDING.value,
+        )
+        original = work.verification_token
+
+        first, _, _, _ = work_path(work)
+        second, _, _, _ = work_path(work)
+
+        self.assertEqual(first, second)
+        self.assertTrue(first.endswith(original))
+        work.refresh_from_db()
+        self.assertEqual(work.verification_token, original)
+
+    def test_needs_changes_work_route_was_removed(self):
+        work = self.create_work(
+            "Rota removida",
+            work_status=WorkStatusType.Type.PENDING.value,
+            advisor_status=WorkAdvisorStatusType.Type.PENDING.value,
+        )
+
+        self.client.force_authenticate(self.advisor)
+        response = self.client.get(f"/api/needs-changes-work/{work.id}/")
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
