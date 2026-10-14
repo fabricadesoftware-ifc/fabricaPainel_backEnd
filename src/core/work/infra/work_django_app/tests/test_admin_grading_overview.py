@@ -271,6 +271,10 @@ class AdminGradingOverviewApiTest(APITestCase):
         self.assertEqual(data["weights"], {"work": 40.0, "student": 60.0})
         self.assertEqual(data["evaluators"][0]["assessment"]["grade"], "9.00")
         self.assertEqual(data["work_grade_average"], "9.00")
+        # id da nota e criterios da edicao: o admin lanca/edita nota pelo popup.
+        self.assertTrue(data["evaluators"][0]["assessment"]["id"])
+        self.assertEqual(data["criteria"]["work"][0]["key"], "work_general")
+        self.assertEqual(data["criteria"]["student"][0]["key"], "student_general")
 
         member = data["team_members"][0]
         self.assertEqual(member["email"], self.student.email)

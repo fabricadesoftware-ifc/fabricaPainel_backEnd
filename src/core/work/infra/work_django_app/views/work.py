@@ -757,6 +757,7 @@ def _serialize_assessment_for_admin(assessment):
         return None
 
     return {
+        "id": str(assessment.id),
         "grade": _money(assessment.grade),
         "criterion_grades": assessment.criterion_grades or [],
         "date_time": assessment.date_time.isoformat() if assessment.date_time else None,
@@ -823,6 +824,12 @@ def _serialize_work_for_admin_detail(work, assessments, student_assessments):
         "ods": [ods.name for ods in work.ods.all()],
         "advisor": _serialize_user(work.advisor),
         "weights": {"work": float(work_weight), "student": float(student_weight)},
+        # Criterios configurados na edicao: o admin usa pra lancar nota pela tela.
+        "criteria": {
+            group.get("target"): group.get("criteria") or []
+            for group in (edition.evaluation_criteria or [])
+            if isinstance(group, dict)
+        },
         "evaluators": [
             {
                 "id": evaluator.id,
