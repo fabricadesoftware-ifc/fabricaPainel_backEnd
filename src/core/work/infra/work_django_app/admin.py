@@ -32,7 +32,7 @@ class WorkAdminForm(forms.ModelForm):
 class WorkAdmin(admin.ModelAdmin):
     form = WorkAdminForm
     inlines = [WorkCollaboratorInline]
-    list_display = ("title", "advisor", "status", "get_year")
+    list_display = ("title", "work_kind", "advisor", "status", "get_year")
     # Sem isso, esses campos viravam um <select> gigante com TODOS os registros
     # (todas as equipes, todos os usuários, todas as disciplinas...), que
     # estourava a tela e não dava pra pesquisar. Com autocomplete_fields vira
@@ -47,7 +47,7 @@ class WorkAdmin(admin.ModelAdmin):
         "Pesquise por: título, orientador ou ano da edição (exato). "
         "Exemplos: 'robótica', 'maria', '2025'"
     )
-    list_filter = ("status", "edition__year")
+    list_filter = ("status", "work_kind", "edition__year")
     
     def get_year(self, obj):
         return obj.edition.year
