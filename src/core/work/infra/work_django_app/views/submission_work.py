@@ -29,6 +29,23 @@ def accept_submission(request, verification_token) -> Response:
             status=status.HTTP_404_NOT_FOUND,
         )
 
+    if work.advisor_id != request.user.id:
+        logger.warning(
+            f"accept_submission: usuario {request.user.id} tentou decidir o work {work.id} sem ser o orientador dele"
+        )
+        return Response(
+            {"error": "Apenas o orientador deste trabalho pode tomar esta decisão."},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
+    # Idempotente: a aprovação agora acontece junto do aceite da orientação, e o
+    # front antigo ainda chama este endpoint em seguida.
+    if work.status == WorkStatusType.Type.APPROVED.value:
+        return Response(
+            {"message": "Trabalho aprovado com sucesso."},
+            status=status.HTTP_200_OK,
+        )
+
     if work.advisor_status != WorkAdvisorStatusType.Type.APPROVED.value:
         logger.warning(
             f"accept_submission: work {work.id} ('{work.title}') NEGADO — orientador ainda não aceitou orientar"
@@ -89,6 +106,35 @@ def reject_submission(request, verification_token) -> Response:
         return Response(
             {"error": "Trabalho não encontrado."},
             status=status.HTTP_404_NOT_FOUND,
+        )
+
+    if work.advisor_id != request.user.id:
+        logger.warning(
+            f"reject_submission: usuario {request.user.id} tentou decidir o work {work.id} sem ser o orientador dele"
+        )
+        return Response(
+            {"error": "Apenas o orientador deste trabalho pode tomar esta decisão."},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
+    # Mesmas travas do aceite: orientação aprovada, dentro do prazo do orientador,
+    # e só a partir de um trabalho ainda em análise (pendente ou com ajustes).
+    if work.advisor_status != WorkAdvisorStatusType.Type.APPROVED.value:
+        return Response(
+            {"error": "O orientador ainda não aceitou orientar este trabalho."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    if work.status not in (WorkStatusType.Type.PENDING.value, WorkStatusType.Type.NEEDS_CHANGES.value):
+        return Response(
+            {"error": "Este trabalho não está mais em análise."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    if not is_within_window(timezone.localdate(), advisor_decision_windows(work.edition)):
+        return Response(
+            {"error": "O trabalho não está dentro do período de aprovação pelo orientador."},
+            status=status.HTTP_400_BAD_REQUEST,
         )
 
     # Pega os IDs dos estudantes

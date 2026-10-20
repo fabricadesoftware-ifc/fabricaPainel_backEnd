@@ -3,10 +3,21 @@ from django.urls import reverse
 from django_project.settings import API_URL, PAINEL_URL
 
 
+def _stable_token(instance) -> str:
+    """
+    Reaproveita o token do convite em vez de gerar outro a cada e-mail: trocar o
+    token ao montar o link matava os links dos e-mails ja enviados (o
+    orientador clicava no e-mail anterior e via 404 / "decisao ja tomada").
+    O token so muda quando ha uma decisao (aceite, recusa, troca de orientador).
+    """
+    if not instance.verification_token:
+        instance.verification_token = str(uuid4())
+        instance.save()
+    return str(instance.verification_token)
+
+
 def work_path(instance, **kwargs):
-    token: str = str(uuid4())
-    instance.verification_token = token
-    instance.save()
+    token = _stable_token(instance)
 
     # Os botões do email (aceitar/rejeitar) levam para a mesma página no
     # painel (frontend), que mostra os dois botões de verdade e chama a API
@@ -23,9 +34,7 @@ def work_collaborator_path(work_collaborator_instance):
     Gera o link (por convite de colaborador) que leva à página de decisão no
     painel — usa o token do próprio WorkCollaborator.
     """
-    token: str = str(uuid4())
-    work_collaborator_instance.verification_token = token
-    work_collaborator_instance.save()
+    token = _stable_token(work_collaborator_instance)
 
     painel_url = PAINEL_URL.rstrip('/')
     collaborator_decision_link = f"{painel_url}/decidir-colaboracao/{token}"
@@ -33,9 +42,7 @@ def work_collaborator_path(work_collaborator_instance):
     return collaborator_decision_link, collaborator_decision_link
 
 def work_path_submission(instance, **kwargs):
-    token: str = str(uuid4())
-    instance.verification_token = token
-    instance.save()
+    token = _stable_token(instance)
 
     # Remove qualquer barra dupla do API_URL
     base_url = API_URL.rstrip('/')

@@ -27,11 +27,20 @@ def reject_advisor_work(request, verification_token) -> Response:
         logger.warning(f"reject_advisor_work: token não encontrado ({verification_token})")
         return Response({"error": "Trabalho não encontrado."}, status=status.HTTP_404_NOT_FOUND)
 
-    if work.status == 4:  # REJECTED
+    if work.advisor_id != request.user.id:
+        logger.warning(
+            f"reject_advisor_work: usuario {request.user.id} tentou decidir o work {work.id} sem ser o orientador dele"
+        )
+        return Response(
+            {"error": "Apenas o orientador deste trabalho pode tomar esta decisão."},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
+    if work.status == 4 or work.advisor_status == WorkAdvisorStatusType.Type.REJECTED.value:
         logger.warning(f"reject_advisor_work: work {work.id} já estava rejeitado")
         return Response(
-            {"error": "Este trabalho já foi rejeitad"},
-            status=status.HTTP_204_NO_CONTENT,
+            {"error": "Este trabalho já foi rejeitado."},
+            status=status.HTTP_400_BAD_REQUEST,
         )
 
     # Atualiza o status do orientador e gera novo token
