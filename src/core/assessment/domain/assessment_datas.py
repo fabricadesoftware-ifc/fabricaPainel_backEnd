@@ -116,6 +116,10 @@ def prepare_grades(year, class_name=None):
 
             if not sa:
                 entry['situation'] = 'Pendente. Falta Avaliação do Orientador.'
+            elif work.is_module:
+                # Módulo com nota física: a nota lançada para o aluno já é a final.
+                entry['average_score'] = sa.grade
+                entry['situation'] = 'Aprovado' if sa.grade >= 6 else 'Reprovado'
             elif not wa:
                 entry['situation'] = 'Pendente. Falta Avaliação do Trabalho.'
             else:

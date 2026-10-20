@@ -114,6 +114,7 @@ class WorkListSerializer(serializers.ModelSerializer):
             "advisor",
             "advisor_status",
             "integrated_project",
+            "work_kind",
             "feedback",
             "work_collaborator",
         ]
@@ -156,6 +157,7 @@ class WorkDetailSerializer(serializers.ModelSerializer):
             "status",
             "advisor_status",
             "integrated_project",
+            "work_kind",
             "feedback",
             "needs_changes_submission_work_date",
             # Relacionamentos com serializers específicos

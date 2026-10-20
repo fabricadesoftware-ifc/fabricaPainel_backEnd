@@ -721,11 +721,17 @@ def _serialize_work_for_grading_overview(work, student_grades, evaluator_grades)
     evaluators = list(work.evaluator.all())
 
     advisor_done = bool(team_members) and all(member.id in student_grades for member in team_members)
-    evaluator_done = bool(evaluators) and all(ev.id in evaluator_grades for ev in evaluators)
+    # Modulo (nota fisica) nao tem banca: so a nota de cada aluno conta, entao
+    # "feito" da banca acompanha o do orientador e o trabalho vai direto a "Completo".
+    evaluator_done = advisor_done if work.is_module else (
+        bool(evaluators) and all(ev.id in evaluator_grades for ev in evaluators)
+    )
 
     item = {
         "id": str(work.id),
         "title": work.title,
+        "work_kind": work.work_kind,
+        "work_kind_label": work.get_work_kind_display(),
         "status_label": _choice_label(WorkStatusType.Type, work.status),
         "advisor": _serialize_user(work.advisor),
         "advisor_done": advisor_done,
@@ -789,7 +795,11 @@ def _serialize_work_for_admin_detail(work, assessments, student_assessments):
 
         final_grade = None
         situation = None
-        if student_assessment is not None and work_average is not None:
+        if work.is_module and student_assessment is not None:
+            # Nota fisica: a nota lancada para o aluno ja e a final.
+            final_grade = _money(student_assessment.grade)
+            situation = "Aprovado" if Decimal(final_grade) >= 6 else "Reprovado"
+        elif student_assessment is not None and work_average is not None:
             final = (
                 student_assessment.grade * student_weight + work_average * work_weight
             ) / total_weight
@@ -814,6 +824,9 @@ def _serialize_work_for_admin_detail(work, assessments, student_assessments):
         "advisor_status": work.advisor_status,
         "advisor_status_label": _choice_label(WorkAdvisorStatusType.Type, work.advisor_status),
         "integrated_project": work.integrated_project,
+        "work_kind": work.work_kind,
+        "work_kind_label": work.get_work_kind_display(),
+        "is_module": work.is_module,
         "feedback": work.feedback,
         "edition": {
             "id": edition.id,
@@ -824,7 +837,11 @@ def _serialize_work_for_admin_detail(work, assessments, student_assessments):
         "fields": [field.name for field in work.field.all()],
         "ods": [ods.name for ods in work.ods.all()],
         "advisor": _serialize_user(work.advisor),
-        "weights": {"work": float(work_weight), "student": float(student_weight)},
+        "weights": (
+            {"work": 0.0, "student": 100.0}
+            if work.is_module
+            else {"work": float(work_weight), "student": float(student_weight)}
+        ),
         # Criterios configurados na edicao: o admin usa pra lancar nota pela tela.
         "criteria": {
             group.get("target"): group.get("criteria") or []

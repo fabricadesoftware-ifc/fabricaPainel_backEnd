@@ -11,6 +11,12 @@ from core.field.infra.field_django_app.models import Field
 from core.cross_cutting_themes.infra.cross_cutting_themes_django_app.models import CrossCuttingTheme
 from core.work.domain.value_objects import WorkStatusType, WorkAdvisorStatusType, WorkCollaboratorStatusType
 
+class WorkKind(models.TextChoices):
+    REGULAR = "regular", "Trabalho regular"
+    TERRITORIOS = "territorios", "Módulo Territórios"
+    COMUNICACAO = "comunicacao", "Módulo Comunicação"
+
+
 class Token(models.Model):
     if TYPE_CHECKING:
         id: int
@@ -107,8 +113,22 @@ class Work(models.Model):
     advisor_status = models.PositiveSmallIntegerField(choices=WORK_ADVISOR_STATUS_CHOICE, default=PENDING_ADVISOR)
     feedback = models.TextField(blank=True, null=True)
     integrated_project = models.BooleanField(default=False)
+    work_kind = models.CharField(
+        "Tipo do trabalho",
+        max_length=20,
+        choices=WorkKind.choices,
+        default=WorkKind.REGULAR,
+        help_text=(
+            "Territórios e Comunicação são módulos de evento com nota física: "
+            "a nota final de cada aluno é a nota lançada para ele, sem média com a banca."
+        ),
+    )
     history = HistoricalRecords()
     
+    @property
+    def is_module(self) -> bool:
+        return self.work_kind != WorkKind.REGULAR
+
     def __str__(self) -> str:
         return f"{self.title} - {self.team} - {self.get_status_display()}"
 
