@@ -319,3 +319,103 @@ class AdminGradingOverviewApiTest(APITestCase):
         self.assertIsNone(data["team_members"][0]["situation"])
         self.assertEqual(data["team_members"][0]["advisor_assessment"]["grade"], "8.00")
 
+
+
+class ModuleWorkGradingTest(AdminGradingOverviewApiTest):
+    """Modulos (Territorios/Comunicacao) tem nota fisica: a nota do aluno e a final."""
+
+    overview_url = "/api/work/admin-grading-overview/"
+
+    def detail_url(self, work):
+        return f"/api/work/{work.id}/admin-detail/"
+
+    def create_module_work(self, title, kind="territorios"):
+        work = self.create_work(title)
+        work.work_kind = kind
+        work.evaluator.clear()  # modulo nao tem banca
+        work.save()
+        return work
+
+    def test_new_works_are_regular_by_default(self):
+        work = self.create_work("Comum")
+        self.assertEqual(work.work_kind, "regular")
+        self.assertFalse(work.is_module)
+
+    def test_module_final_grade_is_the_student_grade_without_averaging(self):
+        work = self.create_module_work("Territorios")
+        StudentAssessments.objects.create(
+            work=work, student=self.student, grade=Decimal("9.50"), date_time=timezone.now()
+        )
+
+        self.client.force_authenticate(self.admin)
+        data = self.client.get(self.detail_url(work)).data
+
+        self.assertEqual(data["work_kind"], "territorios")
+        self.assertTrue(data["is_module"])
+        self.assertEqual(data["weights"], {"work": 0.0, "student": 100.0})
+        member = data["team_members"][0]
+        self.assertEqual(member["final_grade"], "9.50")
+        self.assertEqual(member["situation"], "Aprovado")
+
+    def test_module_failing_physical_grade_is_marked_failed(self):
+        work = self.create_module_work("Comunicacao", kind="comunicacao")
+        StudentAssessments.objects.create(
+            work=work, student=self.student, grade=Decimal("5.00"), date_time=timezone.now()
+        )
+
+        self.client.force_authenticate(self.admin)
+        member = self.client.get(self.detail_url(work)).data["team_members"][0]
+
+        self.assertEqual(member["final_grade"], "5.00")
+        self.assertEqual(member["situation"], "Reprovado")
+
+    def test_module_goes_to_complete_when_every_student_has_a_grade(self):
+        graded = self.create_module_work("Modulo com nota")
+        self.grade_by_advisor(graded, self.student)
+        other_student = self.create_user("other.module@test.local", UserType.Type.STUDENT.value)
+        pending = self.create_module_work("Modulo sem nota")
+        pending.team.team_members.set([other_student])
+
+        self.client.force_authenticate(self.admin)
+        response = self.client.get(self.overview_url)
+
+        complete = [item["title"] for item in self.get_column(response, "complete")["items"]]
+        not_graded = [item["title"] for item in self.get_column(response, "not_graded")["items"]]
+        self.assertEqual(complete, ["Modulo com nota"])
+        self.assertEqual(not_graded, ["Modulo sem nota"])
+        item = self.get_column(response, "complete")["items"][0]
+        self.assertEqual(item["work_kind"], "territorios")
+
+    def test_regular_work_still_needs_the_board_to_be_complete(self):
+        work = self.create_work("Regular")
+        self.grade_by_advisor(work, self.student)
+
+        self.client.force_authenticate(self.admin)
+        response = self.client.get(self.overview_url)
+
+        self.assertEqual(self.get_column(response, "complete")["count"], 0)
+        self.assertEqual(self.get_column(response, "advisor_only")["count"], 1)
+
+    def test_grades_report_uses_physical_grade_for_module_students(self):
+        from core.assessment.domain.assessment_datas import prepare_grades
+        from core.user.infra.user_django_app.models import Class, UserClass
+
+        module_student = self.create_user("module.report@test.local", UserType.Type.STUDENT.value)
+        regular = self.create_work("Regular no relatorio")
+        self.grade_by_advisor(regular, self.student)  # 8.00
+        self.grade_by_evaluator(regular)  # 9.00
+        module = self.create_module_work("Modulo no relatorio")
+        module.team.team_members.set([module_student])
+        StudentAssessments.objects.create(
+            work=module, student=module_student, grade=Decimal("9.50"), date_time=timezone.now()
+        )
+
+        turma = Class.objects.create(name="3info1")
+        for user in (self.student, module_student):
+            UserClass.objects.create(class_name=turma, user=user, year=self.edition.year)
+
+        report = prepare_grades(self.edition.year, class_name="3info1")
+        scores = {e["student"]: e["average_score"] for e in report[0]["students"]}
+
+        self.assertEqual(scores[module_student.name], Decimal("9.50"))
+        self.assertEqual(scores[self.student.name], Decimal("8.50"))  # 50/50 de 8.00 e 9.00
