@@ -10,6 +10,7 @@ from drf_spectacular.utils import extend_schema
 from rest_framework.throttling import AnonRateThrottle
 
 from core.user.infra.user_django_app.models import User
+from core.user.infra.user_django_app.utils.normalize_input import normalize_reset_token
 from django_project.settings import TOKEN_EXPIRATION_SECONDS
 
 
@@ -19,7 +20,7 @@ from django_project.settings import TOKEN_EXPIRATION_SECONDS
 @authentication_classes([])
 @permission_classes([])
 def validate_token(request: Request, *args: Any, **kwargs: Dict[str, Any]) -> Response:
-    token: Optional[str] = request.data.get("token")
+    token: Optional[str] = normalize_reset_token(request.data.get("token"))
 
     if not token:
         return Response(
