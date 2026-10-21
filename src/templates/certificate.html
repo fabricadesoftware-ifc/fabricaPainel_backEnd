@@ -152,6 +152,7 @@
             margin-top: auto;
             text-align: center;
             padding-top: 15px;
+            padding-bottom: 12px;
         }
 
         .hash {
@@ -176,6 +177,29 @@
             font-size: 9px;
         }
 
+        .validation {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+        }
+
+        .qr {
+            width: 62px;
+            height: 62px;
+        }
+
+        .validation .hash {
+            margin: 0;
+            text-align: left;
+        }
+
+        .validation-link {
+            color: #1a1a1a;
+            text-decoration: none;
+            font-size: 9px;
+        }
+
         .decoration {
             text-align: center;
             margin: 15px 0;
@@ -195,8 +219,8 @@
 <body>
     <div class="cert">
         <div class="logos">
-            <img src="logo_ifc" alt="IFC Campus Araquari" class="logo-ifc">
-            <img src="logo_fabrica" alt="Fábrica de Software" class="logo-fabrica">
+            <img src="{{LOGO_IFC}}" alt="IFC Campus Araquari" class="logo-ifc">
+            <img src="{{LOGO_FABRICA}}" alt="Fábrica de Software" class="logo-fabrica">
         </div>
 
         <div class="header">
@@ -207,23 +231,28 @@
         <div class="content">
             <p class="intro">Certificamos que</p>
 
-            <div class="user-name">nome</div>
+            <div class="user-name">{{NOME}}</div>
 
             <p class="participation">participou do projeto</p>
 
             <div class="decoration"></div>
 
-            <div class="work-title">titulo</div>
+            <div class="work-title">{{TITULO}}</div>
 
-            <p class="workload">com carga horária de <span class="workload-hours">carga_horaria</span></p>
+            <p class="workload">com carga horária de <span class="workload-hours">{{CARGA_HORARIA}}</span></p>
 
             <div class="decoration"></div>
         </div>
 
         <div class="footer">
-            <div class="hash">
-                <span class="hash-label">CÓDIGO DE VALIDAÇÃO:</span><br>
-                hash
+            <div class="validation">
+                <img src="{{QR_CODE}}" alt="QR code de validação" class="qr">
+                <div class="hash">
+                    <span class="hash-label">VALIDE ESTE CERTIFICADO:</span><br>
+                    <a class="validation-link" href="{{VALIDATION_URL}}">{{VALIDATION_URL}}</a><br>
+                    <span class="hash-label">CÓDIGO DE VALIDAÇÃO:</span><br>
+                    {{HASH}}
+                </div>
             </div>
         </div>
     </div>
