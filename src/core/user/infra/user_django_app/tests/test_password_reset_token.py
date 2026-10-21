@@ -76,3 +76,67 @@ class PasswordResetTokenFlowTest(TestCase):
         self.assertTrue(self.user.check_password("new-password-123"))
         self.assertIsNone(self.user.password_reset_token)
         self.assertIsNone(self.user.password_reset_token_created)
+
+
+class PasswordResetInputNormalizationTest(TestCase):
+    """Celular manda o código com espaço sobrando ou a 1ª letra maiúscula."""
+
+    def setUp(self):
+        self.client = APIClient()
+        self.user = User.objects.create_user(
+            email="aluno.celular@test.local",
+            password="old-password-123",
+            name="Aluno Celular",
+            registration=900002,
+        )
+
+    def _arm(self):
+        self.user.password_reset_token = "a1b2c3d4"
+        self.user.password_reset_token_created = timezone.now()
+        self.user.save()
+
+    def test_validate_and_reset_accept_sloppy_token_input(self):
+        for sent in ("a1b2c3d4 ", " a1b2c3d4", "A1b2c3d4", "A1B2C3D4", "\ta1b2c3d4\n"):
+            with self.subTest(sent=sent):
+                self._arm()
+                validate = self.client.post("/api/validate_password_token/", {"token": sent}, format="json")
+                self.assertEqual(validate.status_code, status.HTTP_200_OK)
+
+                self._arm()
+                reset = self.client.post(
+                    "/api/reset_password/", {"token": sent, "new_password": "novaSenha123"}, format="json"
+                )
+                self.assertEqual(reset.status_code, status.HTTP_200_OK)
+                self.user.refresh_from_db()
+                self.assertTrue(self.user.check_password("novaSenha123"))
+                self.assertIsNone(self.user.password_reset_token)
+
+    def test_wrong_token_is_still_rejected(self):
+        self._arm()
+        response = self.client.post("/api/validate_password_token/", {"token": "ffffffff"}, format="json")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_blank_or_non_string_token_is_a_bad_request(self):
+        for sent in ("", "   ", None, 12345):
+            with self.subTest(sent=sent):
+                response = self.client.post("/api/validate_password_token/", {"token": sent}, format="json")
+                self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_forget_password_accepts_email_with_case_and_spaces(self):
+        from unittest import mock
+
+        for sent in ("aluno.celular@test.local", "Aluno.Celular@Test.local", "  aluno.celular@test.local "):
+            with self.subTest(sent=sent):
+                with mock.patch(
+                    "core.user.infra.user_django_app.utils.forget_password.send_forget_password_email"
+                ) as task:
+                    response = self.client.post("/api/forget_password/", {"email": sent}, format="json")
+                self.assertEqual(response.status_code, status.HTTP_200_OK)
+                # o e-mail sai para o endereço salvo, não para o texto digitado
+                self.assertEqual(task.delay.call_args.args[0], "aluno.celular@test.local")
+
+    def test_forget_password_unknown_or_missing_email_is_404(self):
+        for sent in ("ninguem@test.local", "", None):
+            with self.subTest(sent=sent):
+                response = self.client.post("/api/forget_password/", {"email": sent}, format="json")
+                self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)

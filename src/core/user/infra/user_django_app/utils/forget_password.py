@@ -9,6 +9,7 @@ from drf_spectacular.utils import extend_schema
 from rest_framework.throttling import AnonRateThrottle
 
 from core.user.infra.user_django_app.models import User
+from core.user.infra.user_django_app.utils.normalize_input import find_user_by_email, normalize_email_input
 from core.work.domain.tasks.send_forget_password_email import send_forget_password_email
 
 
@@ -18,9 +19,11 @@ from core.work.domain.tasks.send_forget_password_email import send_forget_passwo
 @permission_classes([AllowAny])
 @authentication_classes([])
 def forget_password(request):
-    email = request.data.get('email')
+    email = normalize_email_input(request.data.get('email'))
     try:
-        user = User.objects.get(email=email)
+        user = find_user_by_email(User, email)
+        if user is None:
+            raise User.DoesNotExist
 
         # Gera novo token
         desired_length = 8
@@ -32,7 +35,7 @@ def forget_password(request):
         user.password_reset_token_created = timezone.now()
         user.save()  # Save completo - update_fields causava problema em produção
 
-        send_forget_password_email.delay(email, token)
+        send_forget_password_email.delay(user.email, token)
 
         return Response(status=status.HTTP_200_OK, data={"message": "Email enviado com sucesso."})
 
