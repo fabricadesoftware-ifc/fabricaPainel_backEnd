@@ -50,3 +50,29 @@ class CertificateValidationLinkTest(SimpleTestCase):
         self.assertNotIn("{{", html)
         # Classes e CSS do template não podem ser trocadas pelo hash.
         self.assertIn('class="hash"', html)
+
+
+class CertificateSinglePageTest(SimpleTestCase):
+    """Texto longo não pode empurrar o rodapé (QR/código) para uma 2ª página."""
+
+    LONG_NAME = "Ana Beatriz de Oliveira Figueiredo Nascimento da Silva Pereira Santos"
+    LONG_TITLE = (
+        "Desenvolvimento de uma plataforma web integrada para gestão colaborativa de "
+        "projetos de extensão tecnológica voltados à inclusão digital de comunidades "
+        "ribeirinhas e quilombolas com análise de impacto social e ambiental regional"
+    )
+
+    def _pages(self, name, title):
+        from weasyprint import HTML
+
+        certificate = SimpleNamespace(id=1, hash_validate=HASH)
+        work = SimpleNamespace(title=title, edition=SimpleNamespace(workload="40 horas"))
+        html = generate_certificates.render_certificate_html(
+            certificate, work, SimpleNamespace(name=name)
+        )
+        return len(HTML(string=html).render().pages)
+
+    @override_settings(PAINEL_URL="https://painel.fabricadesoftware.ifc.edu.br")
+    def test_short_and_long_texts_fit_one_page(self):
+        self.assertEqual(self._pages("Ana Souza", "Projeto Curto"), 1)
+        self.assertEqual(self._pages(self.LONG_NAME, self.LONG_TITLE), 1)

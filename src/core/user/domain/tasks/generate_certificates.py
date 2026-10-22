@@ -10,6 +10,12 @@ import os
 import segno
 
 
+# Nomes/títulos acima desses tamanhos ganham fonte menor para o certificado
+# continuar em uma única página.
+NAME_LONG_CHARS = 40
+TITLE_LONG_CHARS = 90
+
+
 def _file_to_data_url(path):
     if not os.path.exists(path):
         return None
@@ -30,7 +36,7 @@ def _qr_data_url(content: str) -> str:
     return segno.make(content, error="m").svg_data_uri(scale=4, border=0)
 
 
-def generate_certificate_pdf(certificate, work, user):
+def render_certificate_html(certificate, work, user) -> str:
     with open(os.path.join(settings.BASE_DIR, 'templates/certificate.html'), 'r', encoding='utf-8') as f:
         html_string = f.read()
 
@@ -44,7 +50,9 @@ def generate_certificate_pdf(certificate, work, user):
         "{{LOGO_FABRICA}}": _file_to_data_url(logo_fabrica_path) or "",
         "{{LOGO_IFC}}": _file_to_data_url(logo_if_path) or "",
         "{{NOME}}": html.escape(user.name),
+        "{{NOME_CLASSE}}": "long" if len(user.name) > NAME_LONG_CHARS else "",
         "{{TITULO}}": html.escape(work.title),
+        "{{TITULO_CLASSE}}": "long" if len(work.title) > TITLE_LONG_CHARS else "",
         "{{CARGA_HORARIA}}": html.escape(str(work.edition.workload)),
         "{{QR_CODE}}": _qr_data_url(validation_url),
         "{{VALIDATION_URL}}": html.escape(validation_url),
@@ -52,6 +60,12 @@ def generate_certificate_pdf(certificate, work, user):
     }
     for marker, value in replacements.items():
         html_string = html_string.replace(marker, value)
+
+    return html_string
+
+
+def generate_certificate_pdf(certificate, work, user):
+    html_string = render_certificate_html(certificate, work, user)
 
     pdf_file_path = os.path.join(
         settings.MEDIA_ROOT,
