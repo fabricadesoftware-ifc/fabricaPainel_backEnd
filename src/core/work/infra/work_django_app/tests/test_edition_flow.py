@@ -372,6 +372,13 @@ class EditionFlowTestCase(APITransactionTestCase):
             StudentAssessments.objects.filter(work=work, student=self.student, grade=Decimal("9.00")).exists()
         )
 
+        # Relatório de notas: só admin/gestão e só depois do fim do evento.
+        admin = self.create_user("admin.report@test.local", UserType.Type.ADMIN.value)
+        self.client.force_authenticate(admin)
+        early = self.client.get(f"/api/generate-assessment-report/{edition.year}/")
+        self.assertEqual(early.status_code, status.HTTP_403_FORBIDDEN)
+        edition.final_event_date = self.today - timedelta(days=1)
+        edition.save()
         report_response = self.client.get(f"/api/generate-assessment-report/{edition.year}/")
         self.assertEqual(report_response.status_code, status.HTTP_200_OK)
         self.assertIn("application/pdf", report_response["Content-Type"])

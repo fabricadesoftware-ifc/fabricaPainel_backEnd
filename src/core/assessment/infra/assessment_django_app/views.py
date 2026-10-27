@@ -21,6 +21,9 @@ from django.db.models import Q
 
 from core.assessment.infra.assessment_django_app.models import Assessment, Assessments, StudentAssessments
 from core.assessment.domain.assessment_datas import prepare_grades
+from core.assessment.domain.report_availability import grades_report_availability
+from core.edition.infra.edition_django_app.models import Edition
+from django_project.permissions import IsAdminOrManagement
 from core.work.infra.work_django_app.models import Work
 from core.user.infra.user_django_app.models import Evaluator
 from core.user.domain.value_objects import UserType
@@ -89,8 +92,20 @@ class StudentAssessmentsViewSet(ModelViewSet):
     
 @api_view(["GET"])
 @throttle_classes([UserRateThrottle])
-@permission_classes([IsTeacherOrAdmin])
+@permission_classes([IsAdminOrManagement])
 def generate_assessment_report(request, year, class_name=None):
+    edition = Edition.objects.filter(year=year).first() if str(year).isdigit() else None
+    if edition:
+        availability = grades_report_availability(edition)
+        if not availability["available"]:
+            return Response(
+                {
+                    "error": availability["message"],
+                    "available_after": availability["available_after"],
+                },
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
     try:
         grades = prepare_grades(int(year), class_name)
     except ValueError as e:
@@ -136,3 +151,14 @@ def generate_assessment_report(request, year, class_name=None):
     doc.build(elements)
     buffer.seek(0)
     return FileResponse(buffer, as_attachment=True, filename="assessment_report.pdf")
+
+
+@api_view(["GET"])
+@throttle_classes([UserRateThrottle])
+@permission_classes([IsAdminOrManagement])
+def assessment_report_status(request, year):
+    edition = Edition.objects.filter(year=year).first() if str(year).isdigit() else None
+    if not edition:
+        return Response({"error": f"No edition found for year {year}"}, status=status.HTTP_404_NOT_FOUND)
+
+    return Response(grades_report_availability(edition))
