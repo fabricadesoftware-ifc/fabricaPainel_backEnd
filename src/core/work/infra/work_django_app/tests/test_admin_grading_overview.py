@@ -419,3 +419,67 @@ class ModuleWorkGradingTest(AdminGradingOverviewApiTest):
 
         self.assertEqual(scores[module_student.name], Decimal("9.50"))
         self.assertEqual(scores[self.student.name], Decimal("8.50"))  # 50/50 de 8.00 e 9.00
+
+
+class GradesReportAccessTest(AdminGradingOverviewApiTest):
+    """Relatório de notas: só admin/gestão e só depois do fim do evento."""
+
+    def report_url(self):
+        return f"/api/generate-assessment-report/{self.edition.year}/"
+
+    def status_url(self):
+        return f"/api/assessment-report-status/{self.edition.year}/"
+
+    def finish_event(self):
+        self.edition.final_event_date = self.today - timedelta(days=1)
+        self.edition.save()
+
+    def test_status_says_when_report_releases(self):
+        self.client.force_authenticate(self.admin)
+        data = self.client.get(self.status_url()).data
+
+        self.assertFalse(data["available"])
+        self.assertEqual(
+            data["available_after"], (self.edition.final_event_date + timedelta(days=1)).isoformat()
+        )
+        self.assertIn("disponível a partir de", data["message"])
+
+    def test_status_available_after_event_ends(self):
+        self.finish_event()
+        self.client.force_authenticate(self.manager)
+
+        self.assertTrue(self.client.get(self.status_url()).data["available"])
+
+    def test_download_blocked_before_release_even_for_admin(self):
+        self.client.force_authenticate(self.admin)
+        response = self.client.get(self.report_url())
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(
+            response.data["available_after"],
+            (self.edition.final_event_date + timedelta(days=1)).isoformat(),
+        )
+
+    def test_regular_teacher_and_student_cannot_access(self):
+        self.finish_event()
+        for user in (self.teacher, self.advisor, self.student):
+            self.client.force_authenticate(user)
+            self.assertEqual(self.client.get(self.report_url()).status_code, status.HTTP_403_FORBIDDEN)
+            self.assertEqual(self.client.get(self.status_url()).status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_admin_and_manager_download_after_release(self):
+        from core.user.infra.user_django_app.models import Class, UserClass
+
+        self.finish_event()
+        work = self.create_work("Trabalho do relatorio")
+        self.grade_by_advisor(work, self.student)
+        self.grade_by_evaluator(work)
+        UserClass.objects.create(
+            class_name=Class.objects.create(name="3info9"), user=self.student, year=self.edition.year
+        )
+
+        for user in (self.admin, self.manager):
+            self.client.force_authenticate(user)
+            response = self.client.get(self.report_url())
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
+            self.assertIn("application/pdf", response["Content-Type"])

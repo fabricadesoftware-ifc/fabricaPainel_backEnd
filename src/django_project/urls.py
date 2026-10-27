@@ -34,6 +34,7 @@ from core.user.infra.user_django_app.utils import (
 )
 from core.assessment.infra.assessment_django_app.views import (
     generate_assessment_report,
+    assessment_report_status,
 )
 
 from .router import router
@@ -52,6 +53,7 @@ urlpatterns = [
     path("api/token/logout/", TokenBlacklistView.as_view(), name="token_logout"),
     path("api/generate-assessment-report/<str:year>/<str:class_name>/", generate_assessment_report, name="generate-assessment-report"),
     path("api/generate-assessment-report/<str:year>/", generate_assessment_report, name="generate-assessment-report-by-class"),
+    path("api/assessment-report-status/<str:year>/", assessment_report_status, name="assessment-report-status"),
     path("api/canceled-work/<str:pk>/", CanceledWork.as_view(), name="canceled-work"),
     #orientador
     path("api/accept-advisor-work/<str:verification_token>/", accept_advisor_work, name="accept-advisor-work"),
