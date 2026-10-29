@@ -10,6 +10,10 @@ class EvaluationDailyWindowInline(admin.TabularInline):
 @admin.register(Edition)
 class EditionAdmin(admin.ModelAdmin):
     inlines = [EvaluationDailyWindowInline]
+    list_display = ("edition_name", "year", "theme", "event_date", "final_event_date")
+    search_fields = ("edition_name", "theme", "=year")
+    search_help_text = "Pesquise por: nome, tema ou ano (exato). Exemplos: 'integração', '2025'"
+    ordering = ("-year",)
     actions = ["preview_pending_grades", "send_pending_grades_reminders"]
 
     @admin.action(description="Ver quem ainda deve nota (não envia e-mail)")
@@ -46,5 +50,5 @@ class EditionAdmin(admin.ModelAdmin):
 @admin.register(EvaluationDailyWindow)
 class EvaluationDailyWindowAdmin(admin.ModelAdmin):
     list_display = ("edition", "date", "opens_at", "closes_at")
-    list_filter = ("edition",)
+    list_filter = ("edition", "date")
     ordering = ("edition", "date")

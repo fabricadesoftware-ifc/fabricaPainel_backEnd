@@ -23,7 +23,11 @@ class Assessment(models.Model):
 
     def __str__(self):
         return f"{self.evaluator} - {self.work.title} - {self.grade}"
-    
+
+    class Meta:
+        verbose_name = "Avaliação da banca"
+        verbose_name_plural = "Avaliações da banca"
+
 class Assessments(models.Model):
     if TYPE_CHECKING:
         id: int
@@ -37,7 +41,11 @@ class Assessments(models.Model):
 
     def __str__(self):
         return f"{self.evaluator} - {self.work.title}"
-    
+
+    class Meta:
+        verbose_name = "Avaliador do trabalho"
+        verbose_name_plural = "Avaliadores dos trabalhos"
+
 
 class StudentAssessments(models.Model):
     if TYPE_CHECKING:
@@ -57,3 +65,7 @@ class StudentAssessments(models.Model):
 
     def __str__(self):
         return f"{self.student} - {self.work.title} - {self.grade}"
+
+    class Meta:
+        verbose_name = "Nota do aluno"
+        verbose_name_plural = "Notas dos alunos"

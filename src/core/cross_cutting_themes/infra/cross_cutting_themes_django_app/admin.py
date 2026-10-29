@@ -1,6 +1,11 @@
 from django.contrib import admin
 
-# Register your models here.
 from .models import CrossCuttingTheme
 
-admin.site.register(CrossCuttingTheme)
+
+@admin.register(CrossCuttingTheme)
+class CrossCuttingThemeAdmin(admin.ModelAdmin):
+    list_display = ("name", "description")
+    search_fields = ("name", "description", "advisor__name", "advisor__email")
+    search_help_text = "Pesquise por: nome, descrição ou orientador (nome/e-mail)."
+    autocomplete_fields = ["advisor"]
