@@ -23,8 +23,14 @@ from core.work.infra.work_django_app.models import Team
 @admin.register(Evaluator)
 class EvaluatorAdmin(admin.ModelAdmin):
     autocomplete_fields = ["user"]
+    list_display = ("user", "get_email")
+    list_select_related = ("user",)
     # necessário para o WorkAdmin poder usar "evaluator" em autocomplete_fields
     search_fields = ["user__name", "user__email"]
+
+    @admin.display(description="E-mail", ordering="user__email")
+    def get_email(self, obj):
+        return obj.user.email
 
 
 class TeamEditionYearFilter(admin.SimpleListFilter):
@@ -212,14 +218,22 @@ class CustomUserAdmin(UserAdmin):
     readonly_fields = ["date_joined", "last_login", "is_evaluator_display"]
 
 
-admin.site.register(Specialty)
-admin.site.register(Class)
+@admin.register(Specialty)
+class SpecialtyAdmin(admin.ModelAdmin):
+    search_fields = ("name",)
+
+
+@admin.register(Class)
+class ClassAdmin(admin.ModelAdmin):
+    search_fields = ("name",)
 
 
 @admin.register(UserClass)
 class UserClassAdmin(admin.ModelAdmin):
-    list_display = ("user", "class_name")
-    search_fields = ("user__name", "user__email", "class_name__name", "=year")
+    list_display = ("user", "class_name", "year")
+    list_select_related = ("user", "class_name")
+    autocomplete_fields = ("user", "class_name")
+    search_fields = ("user__name", "user__email", "=user__registration", "class_name__name", "=year")
     search_help_text = (
         "Pesquise por: nome do usuário, email, nome da turma ou ano (exato). "
         "Exemplos: 'maria', '1info2', '2025'"
@@ -230,6 +244,7 @@ class UserClassAdmin(admin.ModelAdmin):
 @admin.register(Certificate)
 class CertificateAdmin(admin.ModelAdmin):
     list_display = ("user", "work", "created_at", "updated_at")
+    list_select_related = ("user", "work")
     search_fields = ("user__name", "user__email", "work__title", "hash_validate")
     autocomplete_fields = ("user", "work")
     list_filter = ("created_at", "updated_at")
