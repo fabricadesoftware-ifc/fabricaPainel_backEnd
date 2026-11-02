@@ -1,6 +1,5 @@
 from core.user.infra.user_django_app.models import User, Class, UserClass
 from core.populate.infra.resources.data_classes import classes
-from core.populate.infra.resources.data_student_classes import student_classes
 import random
 import datetime
 

@@ -28,7 +28,7 @@ CSRF_TRUSTED_ORIGINS = [
 
 API_URL = os.getenv("API_URL", "http://localhost:8000")
 PAINEL_URL = os.getenv("PAINEL_URL", "http://localhost:3000")
-BROKER_URL = os.getenv("BROKER_URL", "amqp://rafaelbochi:2012@localhost/fabricapainel")
+BROKER_URL = os.getenv("BROKER_URL", "amqp://guest:guest@localhost/fabricapainel")
 
 # Security settings (uncomment and configure for production)
 # SECURE_SSL_REDIRECT = True

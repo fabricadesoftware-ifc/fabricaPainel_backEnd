@@ -20,3 +20,5 @@ jobs:
           git_remote_url: 'ssh://dokku@app1.fabricadesoftware.ifc.edu.br:1022/painel-dev'
           ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
           branch: dev
+          # Histórico reescrito (repo novo): sem force o Dokku rejeita o push.
+          force: true

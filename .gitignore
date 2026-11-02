@@ -173,3 +173,10 @@ cython_debug/
 # Test and debug scripts
 scripts/
 corrigidos/
+
+# Dados pessoais (alunos, professores, TAEs): nunca versionar
+private_data/
+*.ods
+*.xlsx
+*.xls
+*.csv
